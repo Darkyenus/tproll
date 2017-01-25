@@ -13,6 +13,9 @@ val slf4jVersion = "1.7.22"
 
 libraryDependencies += "org.slf4j" % "slf4j-api" % slf4jVersion % "provided"
 
+//Integrations
+libraryDependencies += "com.esotericsoftware.minlog" % "minlog" % "1.2" % "provided"
+
 
 javacOptions in (Compile, compile) ++= Seq(
   "-Xlint",

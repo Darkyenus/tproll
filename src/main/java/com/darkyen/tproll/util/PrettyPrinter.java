@@ -1,4 +1,4 @@
-package com.darkyen.tproll;
+package com.darkyen.tproll.util;
 
 /**
  * Utility class for human readable printing of objects.

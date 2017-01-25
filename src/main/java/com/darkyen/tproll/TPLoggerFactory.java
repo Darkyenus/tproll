@@ -4,8 +4,11 @@ import org.slf4j.ILoggerFactory;
 
 /**
  */
+@SuppressWarnings("WeakerAccess")
 public final class TPLoggerFactory implements ILoggerFactory {
 
+    /** When true (default), only last dot-delimited part of logger name is used.
+     * (It is assumed, that the name is of a class, with package prepended.) */
     public static boolean USE_SHORT_NAMES = true;
 
     @Override

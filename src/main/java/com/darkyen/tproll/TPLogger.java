@@ -1,18 +1,25 @@
 package com.darkyen.tproll;
 
-import com.badlogic.gdx.utils.Array;
-import com.esotericsoftware.minlog.Log;
+import com.darkyen.tproll.util.LevelChangeListener;
+import com.darkyen.tproll.util.TimeProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 
-import static darkyenus.tinfoilpigeon.logging.PrettyPrinter.append;
+import java.util.ArrayList;
+
+import static com.darkyen.tproll.util.PrettyPrinter.append;
 
 /**
  * Lightweight, GC friendly and thread-safe logger implementation.
- * Ignores markers.
+ *
+ * Current implementation ignores markers.
+ *
+ * Default log level is INFO, default time provider is {@link TimeProvider#CURRENT_TIME_PROVIDER},
+ * default level change listener is {@link LevelChangeListener#LOG} and
+ * default log function is {@link LogFunction#SIMPLE_LOG_FUNCTION}.
  */
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "WeakerAccess"})
 public final class TPLogger implements Logger {
 
     private final String name;
@@ -31,6 +38,7 @@ public final class TPLogger implements Logger {
             case INFO: return "INFO";
             case WARN: return "WARN";
             case ERROR: return "ERROR";
+            case LOG: return "LOG";
             default: return "UNKNOWN LEVEL "+logLevel;
         }
     }
@@ -40,68 +48,82 @@ public final class TPLogger implements Logger {
     public static final byte INFO = 3;
     public static final byte WARN = 4;
     public static final byte ERROR = 5;
+    /** Special level which always gets through, used for logging-related messages. */
+    public static final byte LOG = 6;
 
     public static void TRACE() {
         logLevel = TRACE;
         trace = debug = info = warn = error = true;
-        Log.TRACE();
+        levelChangeListener.levelChanged(TRACE);
     }
 
     public static void DEBUG() {
         logLevel = DEBUG;
         trace = false;
         debug = info = warn = error = true;
-        Log.DEBUG();
+        levelChangeListener.levelChanged(DEBUG);
     }
 
     public static void INFO() {
         logLevel = INFO;
         trace = debug = false;
         info = warn = error = true;
-        Log.INFO();
+        levelChangeListener.levelChanged(INFO);
     }
 
     public static void WARN() {
         logLevel = WARN;
         trace = debug = info = false;
         warn = error = true;
-        Log.WARN();
+        levelChangeListener.levelChanged(WARN);
     }
 
     public static void ERROR() {
         logLevel = ERROR;
         trace = debug = info = warn = false;
         error = true;
-        Log.ERROR();
+        levelChangeListener.levelChanged(ERROR);
     }
 
     static {
         INFO();//Info is default log level
-
-        //Hook MinLog
-        Log.setLogger(new Log.Logger(){
-            @Override
-            public void log(int level, String category, String message, Throwable ex) {
-                logFunction.log(category, System.currentTimeMillis() - START_TIME, (byte)level, message, ex);
-            }
-        });
     }
 
     public static byte getLogLevel(){
         return logLevel;
     }
 
-    private static LogFunction logFunction = new LogFunction() {
-        @Override
-        public synchronized void log(String name, long time, byte level, CharSequence content, Throwable error) {
-            System.err.println(name + " " + time + " [" + levelName(level) + "]: " + content);
-            if (error != null) error.printStackTrace(System.err);
-        }
-    };
+    private static LogFunction logFunction = LogFunction.SIMPLE_LOG_FUNCTION;
+
+    private static LevelChangeListener levelChangeListener = LevelChangeListener.LOG;
+
+    private static TimeProvider timeProvider = TimeProvider.CURRENT_TIME_PROVIDER;
 
     public static void setLogFunction(LogFunction logFunction) {
-        assert logFunction != null;
+        if (logFunction == null) throw new NullPointerException("logFunction may not be null");
         TPLogger.logFunction = logFunction;
+    }
+
+    public static LogFunction getLogFunction() {
+        return logFunction;
+    }
+
+    public static void setLevelChangeListener(LevelChangeListener levelChangeListener) {
+        if (levelChangeListener == null) throw new NullPointerException("levelChangeListener may not be null");
+        TPLogger.levelChangeListener = levelChangeListener;
+    }
+
+    public static LevelChangeListener getLevelChangeListener() {
+        return levelChangeListener;
+    }
+
+    public static void setTimeProvider(TimeProvider timeProvider) {
+        if (timeProvider == null) throw new NullPointerException("timeProvider may not be null");
+        TPLogger.timeProvider = timeProvider;
+    }
+
+    public static TimeProvider getTimeProvider() {
+        return timeProvider;
     }
 
     public TPLogger(String name) {
@@ -325,7 +347,7 @@ public final class TPLogger implements Logger {
 
     @Override
     public boolean isWarnEnabled(Marker marker) {
-        return true;
+        return warn;
     }
 
     @Override
@@ -413,48 +435,74 @@ public final class TPLogger implements Logger {
         error(msg, t);
     }
 
+    public void log(String msg) {
+        log(LOG, msg);
+    }
+
+    public void log(String format, Object arg) {
+        log(LOG, format, arg);
+    }
+
+    public void log(String format, Object argA, Object argB) {
+        log(LOG, format, argA, argB);
+    }
+
+    public void log(String format, Object... arguments) {
+        log(LOG, format, arguments);
+    }
+
+    public void log(String msg, Throwable t) {
+        log(LOG, msg, t);
+    }
+
+    //------------------------------------- INTERNAL ----------------------------------------------------
+
+    private final ArrayList<Object> arguments = new ArrayList<>(8);
+
     private void log(byte level, String msg) {
-        synchronized (FORMAT_LOCK) {
+        synchronized (arguments) {
             doLog(level, msg);
         }
     }
 
     private void log(byte level, String format, Object arg) {
-        synchronized (FORMAT_LOCK) {
-            objects.add(arg);
+        synchronized (arguments) {
+            arguments.add(arg);
             doLog(level, format);
         }
     }
 
     private void log(byte level, String format, Object argA, Object argB) {
-        synchronized (FORMAT_LOCK) {
-            objects.add(argA);
-            objects.add(argB);
+        synchronized (arguments) {
+            arguments.add(argA);
+            arguments.add(argB);
             doLog(level, format);
         }
     }
 
     private void log(byte level, String format, Object... arguments) {
-        synchronized (FORMAT_LOCK) {
-            objects.addAll(arguments);
+        synchronized (this.arguments) {
+            this.arguments.ensureCapacity(arguments.length);
+            //noinspection ManualArrayToCollectionCopy
+            for (Object argument : arguments) {
+                this.arguments.add(argument);
+            }
             doLog(level, format);
         }
     }
 
-    private static final long START_TIME = System.currentTimeMillis();
-    private final Object FORMAT_LOCK = new Object();
-    private final Array<Object> objects = new Array<>(true, 8, Object.class);
     private final StringBuilder sb = new StringBuilder(64);
 
     private void doLog(byte level, String message) {
-        final Array<Object> objects = this.objects;
+        final ArrayList<Object> objects = this.arguments;
         final StringBuilder sb = this.sb;
+        final LogFunction logFunction = TPLogger.logFunction;
 
-        final long sinceStart = (System.currentTimeMillis() - START_TIME);
+        final long time = timeProvider.timeMillis();
 
-        if (objects.size == 0) {
+        if (objects.isEmpty()) {
             sb.append(message);
-            logFunction.log(name, sinceStart, level, sb, null);
+            logFunction.log(name, time, level, sb, null);
         } else {
             boolean escaping = false;
             boolean substituting = false;
@@ -466,8 +514,8 @@ public final class TPLogger implements Logger {
                 if (substituting) {
                     substituting = false;
                     if (c == '}') {
-                        if (substitutingIndex != objects.size) {
-                            final Object item = objects.items[substitutingIndex];
+                        if (substitutingIndex != objects.size()) {
+                            final Object item = objects.get(substitutingIndex);
                             if (item instanceof Throwable) {
                                 throwable = (Throwable) item;
                             }
@@ -501,17 +549,17 @@ public final class TPLogger implements Logger {
             }
             //There are items that were not appended yet, because they have no {}
             //It could be just one throwable, in that case do not substitute it in
-            if(substitutingIndex == objects.size - 1 && objects.items[substitutingIndex] instanceof Throwable){
-                throwable = (Throwable) objects.items[substitutingIndex];
-            } else if (substitutingIndex < objects.size) {
+            if(substitutingIndex == objects.size() - 1 && objects.get(substitutingIndex) instanceof Throwable){
+                throwable = (Throwable) objects.get(substitutingIndex);
+            } else if (substitutingIndex < objects.size()) {
                 //It is not one throwable. It could be more things ended with throwable though
                 sb.append(" {");
                 do{
-                    final Object item = objects.items[substitutingIndex];
+                    final Object item = objects.get(substitutingIndex);
                     append:{
                         if (item instanceof Throwable) {
                             throwable = (Throwable) item;
-                            if(substitutingIndex == objects.size - 1) {
+                            if(substitutingIndex == objects.size() - 1) {
                                 //When throwable is last in list and not in info string, don't print it.
                                 //It is guaranteed that it will be printed by trace.
                                 break append;
@@ -522,30 +570,18 @@ public final class TPLogger implements Logger {
                     substitutingIndex++;
 
                     sb.append(", ");
-                }while(substitutingIndex < objects.size);
+                }while(substitutingIndex < objects.size());
                 sb.setLength(sb.length() - 2);
                 sb.append('}');
             }
             objects.clear();
-            logFunction.log(name, sinceStart, level, sb, throwable);
+            logFunction.log(name, time, level, sb, throwable);
         }
         sb.setLength(0);
     }
 
-    public interface LogFunction {
-        /**
-         * Called when logger needs to log a message. Called only when that log level is enabled in the logger.
-         * Can be called by any thread, and thus MUST be thread safe.
-         *
-         * @param name of the logger
-         * @param time in ms since start of the app
-         * @param level of this message
-         * @param content of this message, formatted. Do not keep around!
-         * @param error holding the stack trace logging function should handle
-         */
-        void log(String name, long time, byte level, CharSequence content, Throwable error);
-    }
-
+    /** Will call {@link Thread#setDefaultUncaughtExceptionHandler(Thread.UncaughtExceptionHandler)}
+     * with a function that logs these exceptions. If there already is a handler, it is called after the exception is logged. */
     public static void attachUnhandledExceptionLogger(){
         final Logger logger = LoggerFactory.getLogger("UnhandledException");
         final Thread.UncaughtExceptionHandler originalHandler = Thread.getDefaultUncaughtExceptionHandler();
