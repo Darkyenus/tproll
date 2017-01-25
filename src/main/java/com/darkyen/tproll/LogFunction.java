@@ -1,5 +1,6 @@
 package com.darkyen.tproll;
 
+import com.darkyen.tproll.util.TerminalColor;
 import com.darkyen.tproll.util.TimeFormatter;
 
 import java.io.PrintStream;
@@ -29,13 +30,22 @@ public interface LogFunction {
                 .appendLiteral(':')
                 .appendValue(ChronoField.MINUTE_OF_HOUR, 2)
                 .appendLiteral(':')
-                .appendValue(ChronoField.SECOND_OF_MINUTE)
+                .appendValue(ChronoField.SECOND_OF_MINUTE, 2)
                 .toFormatter());
         private final TimeFormatter relativeTimeFormatter = new TimeFormatter.RelativeTimeFormatter(false, true, true, true, false);
 
+        private PrintStream log_lastStream;
+
         @Override
         public synchronized void log(String name, long time, byte level, CharSequence content, Throwable error) {
-            PrintStream out = level <= TPLogger.INFO || level == TPLogger.LOG ? System.out : System.err;
+            PrintStream out = (level <= TPLogger.INFO || level == TPLogger.LOG || TerminalColor.COLOR_SUPPORTED) ? System.out : System.err;
+            if (log_lastStream != out) {
+                if (log_lastStream != null){
+                    log_lastStream.flush();//To preserve out/err order
+                }
+                log_lastStream = out;
+            }
+
             final StringBuilder sb = this.sb;
             black(sb);
             sb.append('[');
@@ -45,13 +55,51 @@ public interface LogFunction {
             } else {
                 absoluteTimeFormatter.format(time, sb);
             }
-            cyan(sb);
-            sb.append(' ').append(name);
+            sb.append(' ');
+
+            switch (level) {
+                case TPLogger.TRACE: {
+                    white(sb);
+                    sb.append("TRACE");
+                    break;
+                }
+                case TPLogger.DEBUG: {
+                    green(sb);
+                    sb.append("DEBUG");
+                    break;
+                }
+                case TPLogger.INFO: {
+                    cyan(sb);
+                    sb.append("INFO ");
+                    break;
+                }
+                case TPLogger.WARN: {
+                    yellow(sb);
+                    sb.append("WARN ");
+                    break;
+                }
+                case TPLogger.ERROR: {
+                    red(sb);
+                    sb.append("ERROR");
+                    break;
+                }
+                case TPLogger.LOG: {
+                    blue(sb);
+                    sb.append("LOG  ");
+                    break;
+                }
+                default:  {
+                    red(sb);
+                    sb.append("UNKNOWN LEVEL ").append(level);
+                    break;
+                }
+            }
+
             black(sb);
             sb.append(']');
             purple(sb);
             sb.append(' ');
-            sb.append(TPLogger.levelName(level));
+            sb.append(name);
             black(sb);
             sb.append(':');
             sb.append(' ');
@@ -59,7 +107,7 @@ public interface LogFunction {
 
             sb.append(content);
 
-            out.append(sb);
+            out.append(sb).append('\n');
 
             sb.setLength(0);
 

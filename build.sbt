@@ -13,6 +13,8 @@ val slf4jVersion = "1.7.22"
 
 libraryDependencies += "org.slf4j" % "slf4j-api" % slf4jVersion % "provided"
 
+libraryDependencies += "org.slf4j" % "slf4j-api" % slf4jVersion % "test"
+
 //Integrations
 libraryDependencies += "com.esotericsoftware.minlog" % "minlog" % "1.2" % "provided"
 

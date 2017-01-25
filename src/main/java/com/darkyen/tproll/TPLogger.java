@@ -85,10 +85,6 @@ public final class TPLogger implements Logger {
         levelChangeListener.levelChanged(ERROR);
     }
 
-    static {
-        INFO();//Info is default log level
-    }
-
     public static byte getLogLevel(){
         return logLevel;
     }
@@ -98,6 +94,10 @@ public final class TPLogger implements Logger {
     private static LevelChangeListener levelChangeListener = LevelChangeListener.LOG;
 
     private static TimeProvider timeProvider = TimeProvider.CURRENT_TIME_PROVIDER;
+
+    static {
+        INFO();//Info is default log level
+    }
 
     public static void setLogFunction(LogFunction logFunction) {
         if (logFunction == null) throw new NullPointerException("logFunction may not be null");

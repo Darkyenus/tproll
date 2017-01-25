@@ -65,7 +65,7 @@ public class FileLogFunction implements LogFunction {
                 timeFormatter.format(time, sb);
                 sb.append(' ');
             }
-            sb.append(TPLogger.levelName(level)).append(']').append(' ').append(name).append(':').append(' ');
+            sb.append(alignedLevelName(level)).append(']').append(' ').append(name).append(':').append(' ');
             sb.append(content).append('\n');
             if (error != null) {
                 final PrintWriter writer = this.log_sb_writer;
@@ -86,6 +86,18 @@ public class FileLogFunction implements LogFunction {
                 logFileHandler.dispose();
                 logFileHandlerInitialized = false;
             }
+        }
+    }
+
+    public static String alignedLevelName(byte logLevel){
+        switch (logLevel) {
+            case TPLogger.TRACE: return "TRACE";
+            case TPLogger.DEBUG: return "DEBUG";
+            case TPLogger.INFO:  return "INFO ";
+            case TPLogger.WARN:  return "WARN ";
+            case TPLogger.ERROR: return "ERROR";
+            case TPLogger.LOG:   return "LOG  ";
+            default: return "UNKNOWN LEVEL "+logLevel;
         }
     }
 }

@@ -6,7 +6,7 @@ import com.darkyen.tproll.util.TimeProvider;
 
 import java.io.*;
 import java.nio.file.FileAlreadyExistsException;
-import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.ChronoField;
@@ -28,7 +28,11 @@ public class SimpleLogFileHandler implements LogFileHandler {
             .appendLiteral(':')
             .appendValue(ChronoField.MINUTE_OF_HOUR, 2)
             .appendLiteral(':')
-            .appendValue(ChronoField.SECOND_OF_MINUTE)
+            .appendValue(ChronoField.SECOND_OF_MINUTE,2)
+            .appendLiteral(' ')
+            .appendZoneId()
+            .appendLiteral(' ')
+            .appendOffsetId()
             .toFormatter();
 
     private final File logFolder;
@@ -84,7 +88,7 @@ public class SimpleLogFileHandler implements LogFileHandler {
             fileWriter = new PrintWriter(new FileWriter(logFile, fileCreationStrategy.shouldAppend()), true);
 
             fileWriter.append("Log file opened at ");
-            FILE_ACTION_TIME_FORMATTER.formatTo(Instant.now(), fileWriter);
+            FILE_ACTION_TIME_FORMATTER.formatTo(ZonedDateTime.now(), fileWriter);
             fileWriter.append('\n');
             fileWriter.flush();
 
@@ -101,7 +105,7 @@ public class SimpleLogFileHandler implements LogFileHandler {
         if (fileWriter != null) {
             fileWriter.append(message);
         } else {
-            System.err.append("com.darkyen.tproll.advanced.SimpleLogFileHandler: broken, using stderr");
+            System.err.append("com.darkyen.tproll.advanced.SimpleLogFileHandler: broken, using stderr:\n");
             System.err.append(message);
         }
     }
@@ -116,7 +120,7 @@ public class SimpleLogFileHandler implements LogFileHandler {
         if(fileWriter != null){
 
             fileWriter.append("Log file closed at ");
-            FILE_ACTION_TIME_FORMATTER.formatTo(Instant.now(), fileWriter);
+            FILE_ACTION_TIME_FORMATTER.formatTo(ZonedDateTime.now(), fileWriter);
             fileWriter.append('\n');
             fileWriter.flush();
 
