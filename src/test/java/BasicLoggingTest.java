@@ -1,7 +1,7 @@
 import com.darkyen.tproll.TPLogger;
 import com.darkyen.tproll.logfunctions.FileLogFunction;
 import com.darkyen.tproll.logfunctions.LogFileCreationStrategy;
-import com.darkyen.tproll.logfunctions.SimpleLogFileHandler;
+import com.darkyen.tproll.logfunctions.LogFileHandler;
 import com.darkyen.tproll.util.TimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,11 +41,14 @@ public class BasicLoggingTest {
     }
 
 
-    public static void main(String[] args){
+    public static void main(String[] args) throws Exception {
+        TPLogger.attachUnhandledExceptionLogger();
         final Logger LOG = LoggerFactory.getLogger("TestLogger");
         logThings(LOG);
 
-        TPLogger.setLogFunction(new FileLogFunction(new TimeFormatter.AbsoluteTimeFormatter(), new SimpleLogFileHandler(new File("test logs"), LogFileCreationStrategy.createSimpleDateStrategy(), true), true));
+        TPLogger.setLogFunction(new FileLogFunction(new TimeFormatter.AbsoluteTimeFormatter(), new LogFileHandler(new File("test logs"), LogFileCreationStrategy.createDefaultDateStrategy(), true), true));
         logThings(LOG);
+
+        throw new Exception("Test exception");
     }
 }

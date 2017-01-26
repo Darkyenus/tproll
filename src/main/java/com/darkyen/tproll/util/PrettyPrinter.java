@@ -1,5 +1,8 @@
 package com.darkyen.tproll.util;
 
+import java.io.File;
+import java.io.IOException;
+
 /**
  * Utility class for human readable printing of objects.
  *
@@ -28,6 +31,19 @@ public final class PrettyPrinter {
             sb.append(((Integer) item).intValue());
         } else if (item instanceof Float) {
             sb.append(((Float) item).floatValue());
+        } else if (item instanceof File) {
+            String path;
+            try {
+                path = ((File) item).getCanonicalPath();
+            } catch (Exception ex) {
+                try {
+                    path = ((File) item).getAbsolutePath();
+                } catch (Exception exx) {
+                    sb.append(item);
+                    return;
+                }
+            }
+            sb.append("File[").append(path).append(']');
         } else {
             //It can be an array or plain object, check it
             printStandard:

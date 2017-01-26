@@ -13,14 +13,14 @@ public final class LogFunctionMultiplexer implements LogFunction {
 
     private static final int MAX_TARGETS = Long.BYTES * 8;
 
-    private final LogFunction defaultTarget;
     private LogFunction[] muxTargets = {};
+    private long optOutMask = 0;
 
-    public LogFunctionMultiplexer(LogFunction defaultTarget) {
-        this.defaultTarget = defaultTarget;
-    }
-
-    public synchronized MuxMarker addMuxTarget(LogFunction function) {
+    /** Add multiplexing target.
+     * If optOut is false, only messages with returned marker are logged.
+     * If optOut is true, all messages, except those with returned marker are logged.
+     * @param function to which this branch should log */
+    public synchronized MuxMarker addMuxTarget(LogFunction function, boolean optOut) {
         final LogFunction[] oldTargets = this.muxTargets;
         final int newIndex = oldTargets.length;
         if (newIndex > MAX_TARGETS) throw new IllegalStateException("Too many targets, max is "+MAX_TARGETS);
@@ -28,22 +28,23 @@ public final class LogFunctionMultiplexer implements LogFunction {
         System.arraycopy(oldTargets, 0, newTargets, 0, newIndex);
         newTargets[newIndex] = function;
         this.muxTargets = newTargets;
+
+        if (optOut) {
+            optOutMask |= 1 << newIndex;
+        }
         return new MuxMarker(this, newIndex);
     }
 
     @Override
     public void log(String name, long time, byte level, Marker marker, CharSequence content, Throwable error) {
-        if (marker == null) {
-            defaultTarget.log(name, time, level, null, content, error);
-        } else {
-            long remainingTargetMask = findMuxTargets(this, marker);
-            final LogFunction[] muxTargets = this.muxTargets;
-            int target = 0;
-            for (long mask = 1; remainingTargetMask != 0; mask <<= 1, target++) {
-                if ((remainingTargetMask & mask) != 0) {
-                    remainingTargetMask &= ~mask;
-                    muxTargets[target].log(name, time, level, marker, content, error);
-                }
+        long remainingTargetMask = findMuxTargets(this, marker);
+        remainingTargetMask ^= optOutMask;
+        final LogFunction[] muxTargets = this.muxTargets;
+        int target = 0;
+        for (long mask = 1; remainingTargetMask != 0; mask <<= 1, target++) {
+            if ((remainingTargetMask & mask) != 0) {
+                remainingTargetMask &= ~mask;
+                muxTargets[target].log(name, time, level, marker, content, error);
             }
         }
     }

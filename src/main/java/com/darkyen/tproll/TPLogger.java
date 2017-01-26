@@ -33,16 +33,24 @@ public final class TPLogger implements Logger {
     }
     //endregion
 
+    public static final byte TRACE = 1;
+    public static final byte DEBUG = 2;
+    public static final byte INFO = 3;
+    public static final byte WARN = 4;
+    public static final byte ERROR = 5;
+    /** Special level which always gets through, used for logging-related messages. */
+    public static final byte LOG = 6;
+
     private static LogFunction logFunction = LogFunction.SIMPLE_LOG_FUNCTION;
     private static LevelChangeListener levelChangeListener = LevelChangeListener.LOG;
     private static TimeProvider timeProvider = TimeProvider.CURRENT_TIME_PROVIDER;
 
-    private static byte logLevel;
-    private static boolean trace;
-    private static boolean debug;
-    private static boolean info;
-    private static boolean warn;
-    private static boolean error;
+    private static byte logLevel = INFO;
+    private static boolean trace = false;
+    private static boolean debug = false;
+    private static boolean info = true;
+    private static boolean warn = true;
+    private static boolean error = true;
 
     public static String levelName(byte logLevel){
         switch (logLevel) {
@@ -55,14 +63,6 @@ public final class TPLogger implements Logger {
             default: return "UNKNOWN LEVEL "+logLevel;
         }
     }
-
-    public static final byte TRACE = 1;
-    public static final byte DEBUG = 2;
-    public static final byte INFO = 3;
-    public static final byte WARN = 4;
-    public static final byte ERROR = 5;
-    /** Special level which always gets through, used for logging-related messages. */
-    public static final byte LOG = 6;
 
     public static void TRACE() {
         logLevel = TRACE;
@@ -100,10 +100,6 @@ public final class TPLogger implements Logger {
 
     public static byte getLogLevel(){
         return logLevel;
-    }
-
-    static {
-        INFO();//Info is default log level
     }
 
     public static void setLogFunction(LogFunction logFunction) {

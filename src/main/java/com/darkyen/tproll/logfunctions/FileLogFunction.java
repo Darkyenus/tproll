@@ -16,7 +16,7 @@ public class FileLogFunction implements LogFunction {
 
     private final Object LOCK = new Object();
     private final TimeFormatter timeFormatter;
-    private final LogFileHandler logFileHandler;
+    private final ILogFileHandler logFileHandler;
 
     private boolean logFileHandlerInitialized = false;
 
@@ -25,7 +25,7 @@ public class FileLogFunction implements LogFunction {
      * @param logFileHandler for file handling
      * @param registerShutdownHook to automatically call dispose (and flush log files!) when the application shuts down. Recommended: true.
      */
-    public FileLogFunction(TimeFormatter timeFormatter, LogFileHandler logFileHandler, boolean registerShutdownHook) {
+    public FileLogFunction(TimeFormatter timeFormatter, ILogFileHandler logFileHandler, boolean registerShutdownHook) {
         this.timeFormatter = timeFormatter;
         this.logFileHandler = logFileHandler;
 
@@ -56,8 +56,8 @@ public class FileLogFunction implements LogFunction {
     public void log(String name, long time, byte level, Marker marker, CharSequence content, Throwable error) {
         synchronized (LOCK) {
             if (!logFileHandlerInitialized) {
-                logFileHandler.initialize();
                 logFileHandlerInitialized = true;
+                logFileHandler.initialize();
             }
 
             final StringBuilder sb = this.log_sb;

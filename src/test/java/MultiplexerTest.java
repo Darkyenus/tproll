@@ -10,15 +10,16 @@ import org.slf4j.Marker;
  */
 public class MultiplexerTest {
     public static void main(String[] args){
-        final LogFunctionMultiplexer mux = new LogFunctionMultiplexer(new PrefixLogger("DEFAULT"));
-        final LogFunctionMultiplexer.MuxMarker A = mux.addMuxTarget(new PrefixLogger("<A>"));
-        final LogFunctionMultiplexer.MuxMarker B = mux.addMuxTarget(new PrefixLogger("<B>"));
-        final LogFunctionMultiplexer.MuxMarker C = mux.addMuxTarget(new PrefixLogger("<C>"));
-        final LogFunctionMultiplexer.MuxMarker D = mux.addMuxTarget(new PrefixLogger("<D>"));
-        final LogFunctionMultiplexer.MuxMarker E = mux.addMuxTarget(new PrefixLogger("<E>"));
-        final LogFunctionMultiplexer.MuxMarker F = mux.addMuxTarget(new PrefixLogger("<F>"));
-        final LogFunctionMultiplexer.MuxMarker G = mux.addMuxTarget(new PrefixLogger("<G>"));
-        final LogFunctionMultiplexer.MuxMarker H = mux.addMuxTarget(new PrefixLogger("<H>"));
+        final LogFunctionMultiplexer mux = new LogFunctionMultiplexer();
+        final LogFunctionMultiplexer.MuxMarker DEFAULT = mux.addMuxTarget(new PrefixLogger("DEFAULT"), true);
+        final LogFunctionMultiplexer.MuxMarker A = mux.addMuxTarget(new PrefixLogger("<A>"), false);
+        final LogFunctionMultiplexer.MuxMarker B = mux.addMuxTarget(new PrefixLogger("<B>"), false);
+        final LogFunctionMultiplexer.MuxMarker C = mux.addMuxTarget(new PrefixLogger("<C>"), false);
+        final LogFunctionMultiplexer.MuxMarker D = mux.addMuxTarget(new PrefixLogger("<D>"), false);
+        final LogFunctionMultiplexer.MuxMarker E = mux.addMuxTarget(new PrefixLogger("<E>"), false);
+        final LogFunctionMultiplexer.MuxMarker F = mux.addMuxTarget(new PrefixLogger("<F>"), false);
+        final LogFunctionMultiplexer.MuxMarker G = mux.addMuxTarget(new PrefixLogger("<G>"), false);
+        final LogFunctionMultiplexer.MuxMarker H = mux.addMuxTarget(new PrefixLogger("<H>"), false);
         TPLogger.setLogFunction(mux);
 
         final Logger LOG = LoggerFactory.getLogger("MultiplexerTest");
