@@ -2,6 +2,7 @@ package com.darkyen.tproll;
 
 import com.darkyen.tproll.util.TerminalColor;
 import com.darkyen.tproll.util.TimeFormatter;
+import org.slf4j.Marker;
 
 import java.io.PrintStream;
 import java.time.format.DateTimeFormatterBuilder;
@@ -13,14 +14,14 @@ public interface LogFunction {
     /**
      * Called when logger needs to log a message. Called only when that log level is enabled in the logger.
      * Can be called by any thread, and thus MUST be thread safe.
-     *
-     * @param name    of the logger
+     *  @param name    of the logger
      * @param time    in ms since start of the app
      * @param level   of this message
+     * @param marker provided or null
      * @param content of this message, formatted. Do not keep around!
      * @param error   holding the stack trace logging function should handle
      */
-    void log(String name, long time, byte level, CharSequence content, Throwable error);
+    void log(String name, long time, byte level, Marker marker, CharSequence content, Throwable error);
 
     LogFunction SIMPLE_LOG_FUNCTION = new LogFunction() {
 
@@ -37,7 +38,7 @@ public interface LogFunction {
         private PrintStream log_lastStream;
 
         @Override
-        public synchronized void log(String name, long time, byte level, CharSequence content, Throwable error) {
+        public synchronized void log(String name, long time, byte level, Marker marker, CharSequence content, Throwable error) {
             PrintStream out = (level <= TPLogger.INFO || level == TPLogger.LOG || TerminalColor.COLOR_SUPPORTED) ? System.out : System.err;
             if (log_lastStream != out) {
                 if (log_lastStream != null){

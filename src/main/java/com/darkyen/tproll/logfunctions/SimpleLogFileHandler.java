@@ -1,4 +1,4 @@
-package com.darkyen.tproll.advanced;
+package com.darkyen.tproll.logfunctions;
 
 import com.darkyen.tproll.LogFunction;
 import com.darkyen.tproll.TPLogger;
@@ -160,6 +160,6 @@ public class SimpleLogFileHandler implements LogFileHandler {
     }
 
     private void logInternalError(String problem, Throwable error){
-        LogFunction.SIMPLE_LOG_FUNCTION.log("com.darkyen.tproll.advanced.SimpleLogFileHandler", TimeProvider.CURRENT_TIME_PROVIDER.timeMillis(), TPLogger.ERROR, "INTERNAL ERROR: "+problem, error);
+        LogFunction.SIMPLE_LOG_FUNCTION.log("com.darkyen.tproll.advanced.SimpleLogFileHandler", TimeProvider.CURRENT_TIME_PROVIDER.timeMillis(), TPLogger.ERROR, null, "INTERNAL ERROR: "+problem, error);
     }
 }

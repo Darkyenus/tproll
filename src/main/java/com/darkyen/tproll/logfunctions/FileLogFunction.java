@@ -1,8 +1,9 @@
-package com.darkyen.tproll.advanced;
+package com.darkyen.tproll.logfunctions;
 
 import com.darkyen.tproll.LogFunction;
 import com.darkyen.tproll.TPLogger;
 import com.darkyen.tproll.util.TimeFormatter;
+import org.slf4j.Marker;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -52,7 +53,7 @@ public class FileLogFunction implements LogFunction {
     });
 
     @Override
-    public void log(String name, long time, byte level, CharSequence content, Throwable error) {
+    public void log(String name, long time, byte level, Marker marker, CharSequence content, Throwable error) {
         synchronized (LOCK) {
             if (!logFileHandlerInitialized) {
                 logFileHandler.initialize();

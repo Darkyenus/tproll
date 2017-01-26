@@ -1,7 +1,7 @@
 import com.darkyen.tproll.TPLogger;
-import com.darkyen.tproll.advanced.FileLogFunction;
-import com.darkyen.tproll.advanced.LogFileCreationStrategy;
-import com.darkyen.tproll.advanced.SimpleLogFileHandler;
+import com.darkyen.tproll.logfunctions.FileLogFunction;
+import com.darkyen.tproll.logfunctions.LogFileCreationStrategy;
+import com.darkyen.tproll.logfunctions.SimpleLogFileHandler;
 import com.darkyen.tproll.util.TimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

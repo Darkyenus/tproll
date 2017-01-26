@@ -1,4 +1,4 @@
-package com.darkyen.tproll.advanced;
+package com.darkyen.tproll.logfunctions;
 
 import java.io.File;
 import java.time.LocalDateTime;

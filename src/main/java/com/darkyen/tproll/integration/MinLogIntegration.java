@@ -2,6 +2,7 @@ package com.darkyen.tproll.integration;
 
 import com.darkyen.tproll.util.LevelChangeListener;
 import com.darkyen.tproll.TPLogger;
+import com.darkyen.tproll.util.SimpleMarker;
 import com.esotericsoftware.minlog.Log;
 
 /**
@@ -12,6 +13,13 @@ import com.esotericsoftware.minlog.Log;
  */
 @SuppressWarnings("WeakerAccess")
 public class MinLogIntegration {
+
+    public static final SimpleMarker MIN_LOG_MARKER = new SimpleMarker() {
+        @Override
+        public String getName() {
+            return "MinLog";
+        }
+    };
 
     /** Calls {@link Log#setLogger} with a logger which uses logger of {@link TPLogger} for logging.
      * Also sets */
@@ -25,7 +33,7 @@ public class MinLogIntegration {
         Log.setLogger(new Log.Logger(){
             @Override
             public void log(int level, String category, String message, Throwable ex) {
-                TPLogger.getLogFunction().log(category, TPLogger.getTimeProvider().timeMillis(), (byte)level, message, ex);
+                TPLogger.getLogFunction().log(category, TPLogger.getTimeProvider().timeMillis(), (byte)level, MIN_LOG_MARKER, message, ex);
             }
         });
     }

@@ -1,4 +1,4 @@
-package com.darkyen.tproll.advanced;
+package com.darkyen.tproll.logfunctions;
 
 /**
  *
