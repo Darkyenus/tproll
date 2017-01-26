@@ -15,7 +15,8 @@ import java.time.temporal.TemporalAmount;
 import java.util.ArrayList;
 
 /**
- *
+ * FileCreationStrategy which returns files with current date/time.
+ * It can also, optionally, delete old log files when they take up too much space.
  */
 public class DateTimeFileCreationStrategy implements LogFileCreationStrategy {
 
@@ -56,7 +57,7 @@ public class DateTimeFileCreationStrategy implements LogFileCreationStrategy {
     }
 
     @Override
-    public File getLogFile(File logFolder) throws Exception {
+    public File getLogFile(File logDirectory) throws Exception {
         final StringBuilder sb = new StringBuilder();
         final ZonedDateTime now = TPLogger.getTimeProvider().time();
 
@@ -65,14 +66,14 @@ public class DateTimeFileCreationStrategy implements LogFileCreationStrategy {
 
         sb.append(extension);
 
-        File logFile = new File(logFolder, sb.toString());
+        File logFile = new File(logDirectory, sb.toString());
         if(logFile.exists()){
             //Need to try appendages
             tryAppendages: {
                 for (int i = 2; i < 1000; i++) {
                     sb.setLength(dateLength);
                     sb.append('.').append(i).append(extension);
-                    logFile = new File(logFolder, sb.toString());
+                    logFile = new File(logDirectory, sb.toString());
                     if(!logFile.exists()) break tryAppendages;
                 }
                 //Failed to find non-existing file
@@ -84,9 +85,9 @@ public class DateTimeFileCreationStrategy implements LogFileCreationStrategy {
     }
 
     @Override
-    public void performCleanup(File logFolder, File currentLogFile, TPLogger logger) {
+    public void performCleanup(File logDirectory, File currentLogFile, TPLogger logger) {
         if (folderByteLimit <= 0) return;
-        final File[] filesInLogFolder = logFolder.listFiles();
+        final File[] filesInLogFolder = logDirectory.listFiles();
         if (filesInLogFolder == null || filesInLogFolder.length == 0) {
             logger.debug("Cleanup not happening, nothing to cleanup");
             return;

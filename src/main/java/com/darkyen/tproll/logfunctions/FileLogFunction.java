@@ -5,12 +5,17 @@ import com.darkyen.tproll.TPLogger;
 import com.darkyen.tproll.util.TimeFormatter;
 import org.slf4j.Marker;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
+import java.time.Duration;
 
 /**
+ * LogFunction which logs to a file.
+ * Actual file handling is done through {@link ILogFileHandler} interface.
  *
+ * @see LogFileHandler default implementation of ILogFileHandler
  */
 public class FileLogFunction implements LogFunction {
 
@@ -32,6 +37,29 @@ public class FileLogFunction implements LogFunction {
         if (registerShutdownHook) {
             Runtime.getRuntime().addShutdownHook(new Thread(this::dispose));
         }
+    }
+
+    /**
+     * Shortcut constructor for most common usage.
+     * Messages are logged with absolute time, to files with date in name and default extension (.log).
+     * These files are not appended to, as they are compressed on exit.
+     * When logs take over 512MB, oldest ones are deleted, but not those younger than 60 days.
+     *
+     * @param logDirectory to place logs in
+     */
+    public FileLogFunction(File logDirectory) {
+        this(
+                new TimeFormatter.AbsoluteTimeFormatter(),
+                new LogFileHandler(
+                        logDirectory,
+                        new DateTimeFileCreationStrategy(
+                                DateTimeFileCreationStrategy.DEFAULT_DATE_FILE_NAME_FORMATTER,
+                                false,
+                                DateTimeFileCreationStrategy.DEFAULT_LOG_FILE_EXTENSION,
+                                512 * 1024,
+                                Duration.ofDays(60)),
+                        true),
+                true);
     }
 
     private final StringBuilder log_sb = new StringBuilder();

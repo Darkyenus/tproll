@@ -16,6 +16,21 @@ public final class LogFunctionMultiplexer implements LogFunction {
     private LogFunction[] muxTargets = {};
     private long optOutMask = 0;
 
+    public LogFunctionMultiplexer() {
+    }
+
+    /**
+     * Convenience constructor, equivalent (but slightly faster) to using the default constructor and then
+     * calling {@link #addMuxTarget(LogFunction, boolean)} for each target supplied and optOut parameter "true".
+     * Note that since this does not return any {@link MuxMarker}s, it is not actually possible to "opt-out" from these
+     * loggers.
+     *
+     * @param defaultOptOutTargets Initial mux targets */
+    public LogFunctionMultiplexer(LogFunction...defaultOptOutTargets) {
+        this.muxTargets = defaultOptOutTargets;
+        this.optOutMask = (1 << defaultOptOutTargets.length) - 1;
+    }
+
     /** Add multiplexing target.
      * If optOut is false, only messages with returned marker are logged.
      * If optOut is true, all messages, except those with returned marker are logged.

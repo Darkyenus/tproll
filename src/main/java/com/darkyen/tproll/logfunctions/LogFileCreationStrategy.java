@@ -11,21 +11,23 @@ import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.ChronoField;
 
 /**
+ * Handles file choosing and cleanup for {@link LogFileHandler}. File janitor.
  *
+ * @see DateTimeFileCreationStrategy for default implementation
  */
 public interface LogFileCreationStrategy {
 
-    File getLogFile(File logFolder) throws Exception;
+    /** Select a file from given directory to log to. The file may or may not exist yet. */
+    File getLogFile(File logDirectory) throws Exception;
 
-    void performCleanup(File logFolder, File currentLogFile, TPLogger logger);
+    /** After the file is created, old files may need to be removed or otherwise handled.
+     * This should do it, if applicable.
+     * @param logDirectory in which logs are saved
+     * @param currentLogFile to which we are currently logging - DON'T TOUCH IT HERE!
+     * @param logger for internal logging, use "LOG" message level for important messages */
+    void performCleanup(File logDirectory, File currentLogFile, TPLogger logger);
 
+    /** Whether or not is the file returned by {@link #getLogFile(File)} meant for appending or overwriting. */
     boolean shouldAppend();
 
-    static LogFileCreationStrategy createDefaultDateStrategy() {
-        return new DateTimeFileCreationStrategy(DateTimeFileCreationStrategy.DEFAULT_DATE_FILE_NAME_FORMATTER,
-                true,
-                DateTimeFileCreationStrategy.DEFAULT_LOG_FILE_EXTENSION,
-                1024*512, // 0.5 GB of logs
-                Duration.ofDays(30));
-    }
 }

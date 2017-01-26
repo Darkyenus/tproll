@@ -46,7 +46,7 @@ public class BasicLoggingTest {
         final Logger LOG = LoggerFactory.getLogger("TestLogger");
         logThings(LOG);
 
-        TPLogger.setLogFunction(new FileLogFunction(new TimeFormatter.AbsoluteTimeFormatter(), new LogFileHandler(new File("test logs"), LogFileCreationStrategy.createDefaultDateStrategy(), true), true));
+        TPLogger.setLogFunction(new FileLogFunction(new File("test logs")));
         logThings(LOG);
 
         throw new Exception("Test exception");

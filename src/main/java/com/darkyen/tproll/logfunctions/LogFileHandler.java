@@ -6,7 +6,6 @@ import com.darkyen.tproll.util.TimeProvider;
 
 import java.io.*;
 import java.nio.file.FileAlreadyExistsException;
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.ChronoField;
@@ -37,15 +36,15 @@ public class LogFileHandler implements ILogFileHandler {
 
     private final TPLogger LOG = new TPLogger("LogFileHandler");
 
-    private final File logFolder;
+    private final File logDirectory;
     private final LogFileCreationStrategy fileCreationStrategy;
     private final boolean compressOnExit;
 
     private File openedFile = null;
     private PrintWriter fileWriter = null;
 
-    public LogFileHandler(File logFolder, LogFileCreationStrategy fileCreationStrategy, boolean compressOnExit) {
-        this.logFolder = logFolder;
+    public LogFileHandler(File logDirectory, LogFileCreationStrategy fileCreationStrategy, boolean compressOnExit) {
+        this.logDirectory = logDirectory;
         this.fileCreationStrategy = fileCreationStrategy;
         this.compressOnExit = compressOnExit;
     }
@@ -54,7 +53,7 @@ public class LogFileHandler implements ILogFileHandler {
     public void initialize() {
         PrintWriter fileWriter;
         try {
-            final File logFile = fileCreationStrategy.getLogFile(logFolder);
+            final File logFile = fileCreationStrategy.getLogFile(logDirectory);
 
             //Verify that the file is valid
             if(logFile == null) {
@@ -97,7 +96,7 @@ public class LogFileHandler implements ILogFileHandler {
             this.fileWriter = fileWriter;
             this.openedFile = logFile;
 
-            fileCreationStrategy.performCleanup(logFolder, logFile, LOG);
+            fileCreationStrategy.performCleanup(logDirectory, logFile, LOG);
         } catch (Exception e) {
             logInternalError("Log file creation failed, being System.err only.", e);
         }
