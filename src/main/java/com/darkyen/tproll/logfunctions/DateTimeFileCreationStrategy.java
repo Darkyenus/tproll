@@ -59,29 +59,44 @@ public class DateTimeFileCreationStrategy implements LogFileCreationStrategy {
     @Override
     public File getLogFile(File logDirectory) throws Exception {
         final StringBuilder sb = new StringBuilder();
-        final ZonedDateTime now = TPLogger.getTimeProvider().time();
-
-        formatter.formatTo(now, sb);
-        final int dateLength = sb.length();
-
+        formatter.formatTo(TPLogger.getTimeProvider().time(), sb);
+        final int lengthBeforeExtension = sb.length();
         sb.append(extension);
 
-        File logFile = new File(logDirectory, sb.toString());
-        if(logFile.exists()){
-            //Need to try appendages
-            tryAppendages: {
-                for (int i = 2; i < 1000; i++) {
-                    sb.setLength(dateLength);
-                    sb.append('.').append(i).append(extension);
-                    logFile = new File(logDirectory, sb.toString());
-                    if(!logFile.exists()) break tryAppendages;
+        final String[] existingFiles = logDirectory.list();
+        int nextFileNumber = 2;
+        String currentName = sb.toString();
+
+        while (true) {
+            fileExists:
+            {
+                if (existingFiles != null) {
+                    for (String file : existingFiles) {
+                        if (file.startsWith(currentName)) {
+                            // Such file exists
+                            break fileExists;
+                        }
+                    }
+                } else {
+                    // Pessimistic fallback
+                    if (new File(logDirectory, currentName).exists()) {
+                        break fileExists;
+                    }
                 }
-                //Failed to find non-existing file
+                //No such file exists! We can use it.
+                break;
+            }
+            // Try different file, if not exhausted
+            sb.setLength(lengthBeforeExtension);
+            sb.append('.').append(nextFileNumber).append(extension);
+            currentName = sb.toString();
+            nextFileNumber++;
+            if (nextFileNumber >= 10_000) {
+                //Can't find anything that does not exist
                 throw new Exception("Failed to create log file, all variants exist.");
             }
         }
-
-        return logFile;
+        return new File(logDirectory, currentName);
     }
 
     @Override
