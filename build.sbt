@@ -1,7 +1,7 @@
 
 name := "tproll"
 
-version := "1.1"
+version := "1.1-SNAPSHOT"
 
 organization := "com.darkyen"
 
