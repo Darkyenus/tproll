@@ -16,7 +16,7 @@ import java.io.PrintStream;
 public class LogBenchmark {
 
     public static void main(String[] args){
-        final LogFunction NOP_FUNCTION = (name, time, level, marker, content, error) -> {
+        final LogFunction NOP_FUNCTION = (name, time, level, marker, content) -> {
             //NOP
         };
         TPLogger.setLogFunction(NOP_FUNCTION);

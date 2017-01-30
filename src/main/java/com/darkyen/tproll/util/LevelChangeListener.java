@@ -19,7 +19,7 @@ public interface LevelChangeListener {
 
         @Override
         public void levelChanged(byte to) {
-            LOG.log("Changed to {}", TPLogger.levelName(to));
+            LOG.log(TPLogger.LOG, null, "Changed to {}", TPLogger.levelName(to));
         }
     };
 }

@@ -6,9 +6,6 @@ import com.darkyen.tproll.util.TimeFormatter;
 import org.slf4j.Marker;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.Writer;
 import java.time.Duration;
 
 /**
@@ -63,25 +60,9 @@ public class FileLogFunction implements LogFunction {
     }
 
     private final StringBuilder log_sb = new StringBuilder();
-    private final PrintWriter log_sb_writer = new PrintWriter(new Writer() {
-        @Override
-        public void write(char[] cbuf, int off, int len) throws IOException {
-            log_sb.append(cbuf, off, len);
-        }
-
-        @Override
-        public void flush() throws IOException {
-            //NOP
-        }
-
-        @Override
-        public void close() throws IOException {
-            //NOP
-        }
-    });
 
     @Override
-    public void log(String name, long time, byte level, Marker marker, CharSequence content, Throwable error) {
+    public void log(String name, long time, byte level, Marker marker, CharSequence content) {
         synchronized (LOCK) {
             if (!logFileHandlerInitialized) {
                 logFileHandlerInitialized = true;
@@ -96,11 +77,6 @@ public class FileLogFunction implements LogFunction {
             }
             sb.append(alignedLevelName(level)).append(']').append(' ').append(name).append(':').append(' ');
             sb.append(content).append('\n');
-            if (error != null) {
-                final PrintWriter writer = this.log_sb_writer;
-                error.printStackTrace(writer);
-                writer.flush();
-            }
 
             logFileHandler.log(sb);
 

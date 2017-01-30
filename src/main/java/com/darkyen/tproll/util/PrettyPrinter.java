@@ -1,10 +1,9 @@
 package com.darkyen.tproll.util;
 
 import java.io.File;
-import java.io.IOException;
 
 /**
- * Utility class for human readable printing of objects.
+ * Utility class for safe and human readable printing of objects.
  *
  * Thread safe.
  */
@@ -25,12 +24,19 @@ public final class PrettyPrinter {
     private static boolean prettyPrintArrays = true;
 
     public static void append(StringBuilder sb, Object item, int maxArrayElements){
-        if (item == null) {
-            sb.append("null");
-        } else if (item instanceof Integer) {//Prepared for more efficient SB impl
-            sb.append(((Integer) item).intValue());
+        //To use faster overloads
+        if (item instanceof Boolean) {
+            sb.append((boolean)item);
+        } else if (item instanceof Character) {
+            sb.append((char)item);
+        } else if (item instanceof Long) {
+            sb.append((long) item);
         } else if (item instanceof Float) {
-            sb.append(((Float) item).floatValue());
+            sb.append((float) item);
+        } else if (item instanceof Double) {
+            sb.append((double) item);
+        } else if (item instanceof Integer || item instanceof Short || item instanceof Byte) {
+            sb.append((int) item);
         } else if (item instanceof File) {
             String path;
             try {

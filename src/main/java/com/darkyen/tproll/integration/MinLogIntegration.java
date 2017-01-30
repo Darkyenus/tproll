@@ -20,6 +20,7 @@ public class MinLogIntegration {
             return "MinLog";
         }
     };
+    public static final TPLogger LOGGER = new TPLogger("MinLog");
 
     /** Calls {@link Log#setLogger} with a logger which uses logger of {@link TPLogger} for logging.
      * Also sets */
@@ -33,7 +34,11 @@ public class MinLogIntegration {
         Log.setLogger(new Log.Logger(){
             @Override
             public void log(int level, String category, String message, Throwable ex) {
-                TPLogger.getLogFunction().log(category, TPLogger.getTimeProvider().timeMillis(), (byte)level, MIN_LOG_MARKER, message, ex);
+                if (ex == null) {
+                    LOGGER.log((byte)level, MIN_LOG_MARKER, "[{}] {}", category, message);
+                } else {
+                    LOGGER.log((byte)level, MIN_LOG_MARKER, "[{}] {}", category, message, ex);
+                }
             }
         });
     }

@@ -165,13 +165,13 @@ public class DateTimeFileCreationStrategy implements LogFileCreationStrategy {
         for (int delete = keep; delete < deletableFiles.size(); delete++) {
             final File fileToDelete = deletableFiles.get(delete).file;
             deletedBytes += fileToDelete.length();
-            logger.log("Deleting old log file over size limit: {}", fileToDelete);
+            logger.log(TPLogger.LOG, null, "Deleting old log file over size limit: {}", fileToDelete);
             if(!fileToDelete.delete()) {
                 logger.warn("Old log file not deleted!");
             }
         }
         if(deletableFiles.size() != keep) {
-            logger.log("Deleted {} old log files with total size of {} bytes", deletableFiles.size() - keep, deletedBytes);
+            logger.log(TPLogger.LOG, null, "Deleted {} old log files with total size of {} bytes", deletableFiles.size() - keep, deletedBytes);
         }
     }
 

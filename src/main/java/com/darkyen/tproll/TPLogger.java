@@ -1,6 +1,7 @@
 package com.darkyen.tproll;
 
 import com.darkyen.tproll.util.LevelChangeListener;
+import com.darkyen.tproll.util.StringBuilderWriter;
 import com.darkyen.tproll.util.TimeProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -132,335 +133,340 @@ public final class TPLogger implements Logger {
     //region isEnabled
     @Override
     public boolean isTraceEnabled() {
-        return trace;
+        return trace && logFunction.isEnabled(TRACE, null);
     }
 
     @Override
     public boolean isTraceEnabled(Marker marker) {
-        return trace;
+        return trace && logFunction.isEnabled(TRACE, marker);
     }
 
     @Override
     public boolean isDebugEnabled() {
-        return debug;
+        return debug && logFunction.isEnabled(DEBUG, null);
     }
 
     @Override
     public boolean isDebugEnabled(Marker marker) {
-        return debug;
+        return debug && logFunction.isEnabled(DEBUG, marker);
     }
 
     @Override
     public boolean isInfoEnabled() {
-        return info;
+        return info && logFunction.isEnabled(INFO, null);
     }
 
     @Override
     public boolean isInfoEnabled(Marker marker) {
-        return info;
+        return info && logFunction.isEnabled(INFO, marker);
     }
 
     @Override
     public boolean isWarnEnabled() {
-        return warn;
+        return warn && logFunction.isEnabled(WARN, null);
     }
 
     @Override
     public boolean isWarnEnabled(Marker marker) {
-        return warn;
+        return warn && logFunction.isEnabled(WARN, marker);
     }
 
     @Override
     public boolean isErrorEnabled() {
-        return error;
+        return error && logFunction.isEnabled(ERROR, null);
     }
 
     @Override
     public boolean isErrorEnabled(Marker marker) {
-        return error;
+        return error && logFunction.isEnabled(ERROR, marker);
     }
     //endregion
 
     //region Trace
     @Override
     public void trace(String msg) {
-        if (trace) log(TRACE, null, msg);
+        if (trace) _log(TRACE, null, msg);
     }
 
     @Override
     public void trace(String format, Object arg) {
-        if (trace) log(TRACE, null, format, arg);
+        if (trace) _log(TRACE, null, format, arg);
     }
 
     @Override
     public void trace(String format, Object argA, Object argB) {
-        if (trace) log(TRACE, null, format, argA, argB);
+        if (trace) _log(TRACE, null, format, argA, argB);
     }
 
     @Override
     public void trace(String format, Object... arguments) {
-        if (trace) log(TRACE, null, format, arguments);
+        if (trace) _log(TRACE, null, format, arguments);
     }
 
     @Override
     public void trace(String msg, Throwable t) {
-        if (trace) log(TRACE, null, msg, t);
+        if (trace) _log(TRACE, null, msg, t);
     }
 
     @Override
     public void trace(Marker marker, String msg) {
-        if (trace) log(TRACE, marker, msg);
+        if (trace) _log(TRACE, marker, msg);
     }
 
     @Override
     public void trace(Marker marker, String format, Object arg) {
-        if (trace) log(TRACE, marker, format, arg);
+        if (trace) _log(TRACE, marker, format, arg);
     }
 
     @Override
     public void trace(Marker marker, String format, Object arg1, Object arg2) {
-        if (trace) log(TRACE, marker, format, arg1, arg2);
+        if (trace) _log(TRACE, marker, format, arg1, arg2);
     }
 
     @Override
     public void trace(Marker marker, String format, Object... argArray) {
-        if (trace) log(TRACE, marker, format, argArray);
+        if (trace) _log(TRACE, marker, format, argArray);
     }
 
     @Override
     public void trace(Marker marker, String msg, Throwable t) {
-        if (trace) log(TRACE, marker, msg, t);
+        if (trace) _log(TRACE, marker, msg, t);
     }
     //endregion
 
     //region Debug
     @Override
     public void debug(String msg) {
-        if (debug) log(DEBUG, null, msg);
+        if (debug) _log(DEBUG, null, msg);
     }
 
     @Override
     public void debug(String format, Object arg) {
-        if (debug) log(DEBUG, null, format, arg);
+        if (debug) _log(DEBUG, null, format, arg);
     }
 
     @Override
     public void debug(String format, Object argA, Object argB) {
-        if (debug) log(DEBUG, null, format, argA, argB);
+        if (debug) _log(DEBUG, null, format, argA, argB);
     }
 
     @Override
     public void debug(String format, Object... arguments) {
-        if (debug) log(DEBUG, null, format, arguments);
+        if (debug) _log(DEBUG, null, format, arguments);
     }
 
     @Override
     public void debug(String msg, Throwable t) {
-        if (debug) log(DEBUG, null, msg, t);
+        if (debug) _log(DEBUG, null, msg, t);
     }
 
 
     @Override
     public void debug(Marker marker, String msg) {
-        if (debug) log(DEBUG, marker, msg);
+        if (debug) _log(DEBUG, marker, msg);
     }
 
     @Override
     public void debug(Marker marker, String format, Object arg) {
-        if (debug) log(DEBUG, marker, format, arg);
+        if (debug) _log(DEBUG, marker, format, arg);
     }
 
     @Override
     public void debug(Marker marker, String format, Object arg1, Object arg2) {
-        if (debug) log(DEBUG, marker, format, arg1, arg2);
+        if (debug) _log(DEBUG, marker, format, arg1, arg2);
     }
 
     @Override
     public void debug(Marker marker, String format, Object... arguments) {
-        if (debug) log(DEBUG, marker, format, arguments);
+        if (debug) _log(DEBUG, marker, format, arguments);
     }
 
     @Override
     public void debug(Marker marker, String msg, Throwable t) {
-        if (debug) log(DEBUG, marker, msg, t);
+        if (debug) _log(DEBUG, marker, msg, t);
     }
     //endregion
 
     //region Info
     @Override
     public void info(String msg) {
-        if (info) log(INFO, null, msg);
+        if (info) _log(INFO, null, msg);
     }
 
     @Override
     public void info(String format, Object arg) {
-        if (info) log(INFO, null, format, arg);
+        if (info) _log(INFO, null, format, arg);
     }
 
     @Override
     public void info(String format, Object argA, Object argB) {
-        if (info) log(INFO, null, format, argA, argB);
+        if (info) _log(INFO, null, format, argA, argB);
     }
 
     @Override
     public void info(String format, Object... arguments) {
-        if (info) log(INFO, null, format, arguments);
+        if (info) _log(INFO, null, format, arguments);
     }
 
     @Override
     public void info(String msg, Throwable t) {
-        if (info) log(INFO, null, msg, t);
+        if (info) _log(INFO, null, msg, t);
     }
 
     @Override
     public void info(Marker marker, String msg) {
-        if (info) log(INFO, marker, msg);
+        if (info) _log(INFO, marker, msg);
     }
 
     @Override
     public void info(Marker marker, String format, Object arg) {
-        if (info) log(INFO, marker, format, arg);
+        if (info) _log(INFO, marker, format, arg);
     }
 
     @Override
     public void info(Marker marker, String format, Object arg1, Object arg2) {
-        if (info) log(INFO, marker, format, arg1, arg2);
+        if (info) _log(INFO, marker, format, arg1, arg2);
     }
 
     @Override
     public void info(Marker marker, String format, Object... arguments) {
-        if (info) log(INFO, marker, format, arguments);
+        if (info) _log(INFO, marker, format, arguments);
     }
 
     @Override
     public void info(Marker marker, String msg, Throwable t) {
-        if (info) log(INFO, marker, msg, t);
+        if (info) _log(INFO, marker, msg, t);
     }
     //endregion
 
     //region Warn
     @Override
     public void warn(String msg) {
-        if (warn) log(WARN, null, msg);
+        if (warn) _log(WARN, null, msg);
     }
 
     @Override
     public void warn(String format, Object arg) {
-        if (warn) log(WARN, null, format, arg);
+        if (warn) _log(WARN, null, format, arg);
     }
 
     @Override
     public void warn(String format, Object... arguments) {
-        if (warn) log(WARN, null, format, arguments);
+        if (warn) _log(WARN, null, format, arguments);
     }
 
     @Override
     public void warn(String format, Object argA, Object argB) {
-        if (warn) log(WARN, null, format, argA, argB);
+        if (warn) _log(WARN, null, format, argA, argB);
     }
 
     @Override
     public void warn(String msg, Throwable t) {
-        if (warn) log(WARN, null, msg, t);
+        if (warn) _log(WARN, null, msg, t);
     }
 
     @Override
     public void warn(Marker marker, String msg) {
-        if (warn) log(WARN, marker, msg);
+        if (warn) _log(WARN, marker, msg);
     }
 
     @Override
     public void warn(Marker marker, String format, Object arg) {
-        if (warn) log(WARN, marker, format, arg);
+        if (warn) _log(WARN, marker, format, arg);
     }
 
     @Override
     public void warn(Marker marker, String format, Object arg1, Object arg2) {
-        if (warn) log(WARN, marker, format, arg1, arg2);
+        if (warn) _log(WARN, marker, format, arg1, arg2);
     }
 
     @Override
     public void warn(Marker marker, String format, Object... arguments) {
-        if (warn) log(WARN, marker, format, arguments);
+        if (warn) _log(WARN, marker, format, arguments);
     }
 
     @Override
     public void warn(Marker marker, String msg, Throwable t) {
-        if (warn) log(WARN, marker, msg, t);
+        if (warn) _log(WARN, marker, msg, t);
     }
     //endregion
 
     //region Error
     @Override
     public void error(String msg) {
-        if (error) log(ERROR, null, msg);
+        if (error) _log(ERROR, null, msg);
     }
 
     @Override
     public void error(String format, Object arg) {
-        if (error) log(ERROR, null, format, arg);
+        if (error) _log(ERROR, null, format, arg);
     }
 
     @Override
     public void error(String format, Object argA, Object argB) {
-        if (error) log(ERROR, null, format, argA, argB);
+        if (error) _log(ERROR, null, format, argA, argB);
     }
 
     @Override
     public void error(String format, Object... arguments) {
-        if (error) log(ERROR, null, format, arguments);
+        if (error) _log(ERROR, null, format, arguments);
     }
 
     @Override
     public void error(String msg, Throwable t) {
-        if (error) log(ERROR, null, msg, t);
+        if (error) _log(ERROR, null, msg, t);
     }
 
     @Override
     public void error(Marker marker, String msg) {
-        if (error) log(ERROR, marker, msg);
+        if (error) _log(ERROR, marker, msg);
     }
 
     @Override
     public void error(Marker marker, String format, Object arg) {
-        if (error) log(ERROR, marker, format, arg);
+        if (error) _log(ERROR, marker, format, arg);
     }
 
     @Override
     public void error(Marker marker, String format, Object arg1, Object arg2) {
-        if (error) log(ERROR, marker, format, arg1, arg2);
+        if (error) _log(ERROR, marker, format, arg1, arg2);
     }
 
     @Override
     public void error(Marker marker, String format, Object... arguments) {
-        if (error) log(ERROR, marker, format, arguments);
+        if (error) _log(ERROR, marker, format, arguments);
     }
 
     @Override
     public void error(Marker marker, String msg, Throwable t) {
-        if (error) log(ERROR, marker, msg, t);
+        if (error) _log(ERROR, marker, msg, t);
     }
     //endregion
 
     //region Log
-    public void log(String msg) {
-        log(LOG, null, msg);
+    public void log(byte level, Marker marker, String msg) {
+        if (level < TPLogger.logLevel) return;
+        _log(level, marker, msg);
     }
 
-    public void log(String format, Object arg) {
-        log(LOG, null, format, arg);
+    public void log(byte level, Marker marker, String format, Object arg) {
+        if (level < TPLogger.logLevel) return;
+        _log(level, marker, format, arg);
     }
 
-    public void log(String format, Object argA, Object argB) {
-        log(LOG, null, format, argA, argB);
+    public void log(byte level, Marker marker, String format, Object argA, Object argB) {
+        if (level < TPLogger.logLevel) return;
+        _log(level, marker, format, argA, argB);
     }
 
-    public void log(String format, Object... arguments) {
-        log(LOG, null, format, arguments);
+    public void log(byte level, Marker marker, String format, Object... arguments) {
+        if (level < TPLogger.logLevel) return;
+        _log(level, marker, format, arguments);
     }
 
-    public void log(String msg, Throwable t) {
-        log(LOG, null, msg, t);
+    public void log(byte level, Marker marker, String msg, Throwable t) {
+        if (level < TPLogger.logLevel) return;
+        _log(level, marker, msg, t);
     }
     //endregion
 
@@ -468,20 +474,23 @@ public final class TPLogger implements Logger {
 
     private final ArrayList<Object> arguments = new ArrayList<>();
 
-    private void log(byte level, Marker marker, String msg) {
+    private void _log(byte level, Marker marker, String msg) {
+        if(!logFunction.isEnabled(level, marker)) return;
         synchronized (arguments) {
             doLog(level, marker, msg);
         }
     }
 
-    private void log(byte level, Marker marker, String format, Object arg) {
+    private void _log(byte level, Marker marker, String format, Object arg) {
+        if(!logFunction.isEnabled(level, marker)) return;
         synchronized (arguments) {
             arguments.add(arg);
             doLog(level, marker, format);
         }
     }
 
-    private void log(byte level, Marker marker, String format, Object argA, Object argB) {
+    private void _log(byte level, Marker marker, String format, Object argA, Object argB) {
+        if(!logFunction.isEnabled(level, marker)) return;
         synchronized (arguments) {
             arguments.add(argA);
             arguments.add(argB);
@@ -489,7 +498,8 @@ public final class TPLogger implements Logger {
         }
     }
 
-    private void log(byte level, Marker marker, String format, Object... arguments) {
+    private void _log(byte level, Marker marker, String format, Object... arguments) {
+        if(!logFunction.isEnabled(level, marker)) return;
         synchronized (this.arguments) {
             this.arguments.ensureCapacity(arguments.length);
             //noinspection ManualArrayToCollectionCopy
@@ -501,6 +511,7 @@ public final class TPLogger implements Logger {
     }
 
     private final StringBuilder sb = new StringBuilder(64);
+    private StringBuilderWriter sbw;
 
     private void doLog(byte level, Marker marker, String message) {
         final ArrayList<Object> objects = this.arguments;
@@ -511,7 +522,7 @@ public final class TPLogger implements Logger {
 
         if (objects.isEmpty()) {
             sb.append(message);
-            logFunction.log(name, time, level, marker, sb, null);
+            logFunction.log(name, time, level, marker, sb);
         } else {
             boolean escaping = false;
             boolean substituting = false;
@@ -584,7 +595,20 @@ public final class TPLogger implements Logger {
                 sb.append('}');
             }
             objects.clear();
-            logFunction.log(name, time, level, marker, sb, throwable);
+
+            //Append throwable if any
+            if (throwable != null) {
+                StringBuilderWriter sbw = this.sbw;
+                if (sbw == null) {
+                    sbw = this.sbw = new StringBuilderWriter(sb);
+                }
+
+                sb.append('\n');
+                throwable.printStackTrace(sbw);
+                //TODO Strip \n at the end
+            }
+
+            logFunction.log(name, time, level, marker, sb);
         }
         sb.setLength(0);
     }

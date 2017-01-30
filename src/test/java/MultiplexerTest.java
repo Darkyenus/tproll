@@ -11,15 +11,15 @@ import org.slf4j.Marker;
 public class MultiplexerTest {
     public static void main(String[] args){
         final LogFunctionMultiplexer mux = new LogFunctionMultiplexer();
-        final LogFunctionMultiplexer.MuxMarker DEFAULT = mux.addMuxTarget(new PrefixLogger("DEFAULT"), true);
-        final LogFunctionMultiplexer.MuxMarker A = mux.addMuxTarget(new PrefixLogger("<A>"), false);
-        final LogFunctionMultiplexer.MuxMarker B = mux.addMuxTarget(new PrefixLogger("<B>"), false);
-        final LogFunctionMultiplexer.MuxMarker C = mux.addMuxTarget(new PrefixLogger("<C>"), false);
-        final LogFunctionMultiplexer.MuxMarker D = mux.addMuxTarget(new PrefixLogger("<D>"), false);
-        final LogFunctionMultiplexer.MuxMarker E = mux.addMuxTarget(new PrefixLogger("<E>"), false);
-        final LogFunctionMultiplexer.MuxMarker F = mux.addMuxTarget(new PrefixLogger("<F>"), false);
-        final LogFunctionMultiplexer.MuxMarker G = mux.addMuxTarget(new PrefixLogger("<G>"), false);
-        final LogFunctionMultiplexer.MuxMarker H = mux.addMuxTarget(new PrefixLogger("<H>"), false);
+        final LogFunctionMultiplexer.MuxMarker DEFAULT = mux.addMuxTarget(new TestLogger("DEFAULT"), true);
+        final LogFunctionMultiplexer.MuxMarker A = mux.addMuxTarget(new TestLogger("<A>"), false);
+        final LogFunctionMultiplexer.MuxMarker B = mux.addMuxTarget(new TestLogger("<B>"), false);
+        final LogFunctionMultiplexer.MuxMarker C = mux.addMuxTarget(new TestLogger("<C>"), false);
+        final LogFunctionMultiplexer.MuxMarker D = mux.addMuxTarget(new TestLogger("<D>"), false);
+        final LogFunctionMultiplexer.MuxMarker E = mux.addMuxTarget(new TestLogger("<E>"), false);
+        final LogFunctionMultiplexer.MuxMarker F = mux.addMuxTarget(new TestLogger("<F>"), false);
+        final LogFunctionMultiplexer.MuxMarker G = mux.addMuxTarget(new TestLogger("<G>"), false);
+        final LogFunctionMultiplexer.MuxMarker H = mux.addMuxTarget(new TestLogger("<H>"), false);
         TPLogger.setLogFunction(mux);
 
         final Logger LOG = LoggerFactory.getLogger("MultiplexerTest");
@@ -49,17 +49,17 @@ public class MultiplexerTest {
         LOG.info(BDFH, "Hello");
     }
 
-    private static class PrefixLogger implements LogFunction {
+    private static class TestLogger implements LogFunction {
 
         private final String prefix;
 
-        private PrefixLogger(String prefix) {
+        private TestLogger(String prefix) {
             this.prefix = prefix;
         }
 
         @Override
-        public void log(String name, long time, byte level, Marker marker, CharSequence content, Throwable error) {
-            LogFunction.SIMPLE_LOG_FUNCTION.log(name, time, level, marker, prefix+content, error);
+        public void log(String name, long time, byte level, Marker marker, CharSequence content) {
+            LogFunction.SIMPLE_LOG_FUNCTION.log(name, time, level, marker, prefix+content);
         }
     }
 }

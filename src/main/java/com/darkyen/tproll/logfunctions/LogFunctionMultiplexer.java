@@ -51,7 +51,7 @@ public final class LogFunctionMultiplexer implements LogFunction {
     }
 
     @Override
-    public void log(String name, long time, byte level, Marker marker, CharSequence content, Throwable error) {
+    public void log(String name, long time, byte level, Marker marker, CharSequence content) {
         long remainingTargetMask = findMuxTargets(this, marker);
         remainingTargetMask ^= optOutMask;
         final LogFunction[] muxTargets = this.muxTargets;
@@ -59,9 +59,26 @@ public final class LogFunctionMultiplexer implements LogFunction {
         for (long mask = 1; remainingTargetMask != 0; mask <<= 1, target++) {
             if ((remainingTargetMask & mask) != 0) {
                 remainingTargetMask &= ~mask;
-                muxTargets[target].log(name, time, level, marker, content, error);
+                muxTargets[target].log(name, time, level, marker, content);
             }
         }
+    }
+
+    @Override
+    public boolean isEnabled(byte level, Marker marker) {
+        long remainingTargetMask = findMuxTargets(this, marker);
+        remainingTargetMask ^= optOutMask;
+        final LogFunction[] muxTargets = this.muxTargets;
+        int target = 0;
+        for (long mask = 1; remainingTargetMask != 0; mask <<= 1, target++) {
+            if ((remainingTargetMask & mask) != 0) {
+                remainingTargetMask &= ~mask;
+                if (muxTargets[target].isEnabled(level, marker)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     @SuppressWarnings("serialVersionUID")

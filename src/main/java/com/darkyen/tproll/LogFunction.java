@@ -14,14 +14,22 @@ public interface LogFunction {
     /**
      * Called when logger needs to log a message. Called only when that log level is enabled in the logger.
      * Can be called by any thread, and thus MUST be thread safe.
-     *  @param name    of the logger
+     * @param name    of the logger
      * @param time    in ms since start of the app
      * @param level   of this message
      * @param marker provided or null
-     * @param content of this message, formatted. Do not keep around!
-     * @param error   holding the stack trace logging function should handle
+     * @param content of this message, formatted, without trailing newline. Do not keep around!
      */
-    void log(String name, long time, byte level, Marker marker, CharSequence content, Throwable error);
+    void log(String name, long time, byte level, Marker marker, CharSequence content);
+
+    /**
+     * Additional check whether this log function will log message of given level/marker.
+     * This is only secondary check, primary level check is done through log level of TPLogger.
+     * @return if such message would be logged
+     */
+    default boolean isEnabled(byte level, Marker marker){
+        return true;
+    }
 
     LogFunction SIMPLE_LOG_FUNCTION = new LogFunction() {
 
@@ -38,7 +46,7 @@ public interface LogFunction {
         private PrintStream log_lastStream;
 
         @Override
-        public synchronized void log(String name, long time, byte level, Marker marker, CharSequence content, Throwable error) {
+        public synchronized void log(String name, long time, byte level, Marker marker, CharSequence content) {
             PrintStream out = (level <= TPLogger.INFO || level == TPLogger.LOG || TerminalColor.COLOR_SUPPORTED) ? System.out : System.err;
             if (log_lastStream != out) {
                 if (log_lastStream != null){
@@ -111,10 +119,6 @@ public interface LogFunction {
             out.append(sb).append('\n');
 
             sb.setLength(0);
-
-            if (error != null) {
-                error.printStackTrace(out);
-            }
         }
     };
 }
