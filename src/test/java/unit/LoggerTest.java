@@ -134,6 +134,12 @@ public class LoggerTest {
         assertLogIs(INFO_PREFIX + "I have these banknotes: String\\[100, 200, -560, 1M Zimbabwe \\$\\]");
     }
 
+    @Test
+    public void nullArg() {
+        log.info("Reason: {}", (Object)null);
+        assertLogIs(INFO_PREFIX + "Reason: null");
+    }
+
     @SuppressWarnings("serial")
     private static final class DummyException extends Exception {
         public DummyException(String message) {

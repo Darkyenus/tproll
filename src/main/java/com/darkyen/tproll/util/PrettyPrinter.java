@@ -25,7 +25,9 @@ public final class PrettyPrinter {
 
     public static void append(StringBuilder sb, Object item, int maxArrayElements){
         //To use faster overloads
-        if (item instanceof Boolean) {
+        if (item == null) {
+            sb.append((String)null);
+        } else if (item instanceof Boolean) {
             sb.append((boolean)item);
         } else if (item instanceof Character) {
             sb.append((char)item);
