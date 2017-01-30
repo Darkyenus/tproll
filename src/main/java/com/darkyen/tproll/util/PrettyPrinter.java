@@ -1,6 +1,7 @@
 package com.darkyen.tproll.util;
 
 import java.io.File;
+import java.lang.reflect.Array;
 
 /**
  * Utility class for safe and human readable printing of objects.
@@ -65,7 +66,7 @@ public final class PrettyPrinter {
                             final Class<?> arrayType = item.getClass().getComponentType();
                             sb.append(arrayType.getSimpleName());
 
-                            final int length = java.lang.reflect.Array.getLength(item);
+                            final int length = Array.getLength(item);
                             if(length == 0){
                                 sb.append("[]");
                             }else{
@@ -74,18 +75,18 @@ public final class PrettyPrinter {
                                 sb.append('[');
                                 if(arrayType.equals(Byte.class) || arrayType.equals(byte.class)){
                                     //Byte arrays are logged in hex without delimiter
-                                    appendByteHex(sb, java.lang.reflect.Array.getByte(item, 0));
+                                    appendByteHex(sb, Array.getByte(item, 0));
                                     for (int i = 1; i < printLength; i++) {
-                                        appendByteHex(sb, java.lang.reflect.Array.getByte(item, i));
+                                        appendByteHex(sb, Array.getByte(item, i));
                                     }
                                     if(printLength < length){
                                         sb.append(" ... (").append(length - printLength).append(" more)");
                                     }
                                 }else{
-                                    append(sb, java.lang.reflect.Array.get(item, 0));
+                                    append(sb, Array.get(item, 0));
                                     for (int i = 1; i < printLength; i++) {
                                         sb.append(", ");
-                                        append(sb, java.lang.reflect.Array.get(item, i));
+                                        append(sb, Array.get(item, i));
                                     }
                                     if(printLength < length){
                                         sb.append(", ... (").append(length - printLength).append(" more)");

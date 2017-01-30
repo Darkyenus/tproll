@@ -605,7 +605,10 @@ public final class TPLogger implements Logger {
 
                 sb.append('\n');
                 throwable.printStackTrace(sbw);
-                //TODO Strip \n at the end
+                //Strip \n at the end
+                if (sb.charAt(sb.length() - 1) == '\n') {
+                    sb.setLength(sb.length()-1);
+                }
             }
 
             logFunction.log(name, time, level, marker, sb);
