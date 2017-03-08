@@ -2,11 +2,10 @@ package com.darkyen.tproll;
 
 import com.darkyen.tproll.util.TerminalColor;
 import com.darkyen.tproll.util.TimeFormatter;
+import org.joda.time.format.DateTimeFormatterBuilder;
 import org.slf4j.Marker;
 
 import java.io.PrintStream;
-import java.time.format.DateTimeFormatterBuilder;
-import java.time.temporal.ChronoField;
 
 import static com.darkyen.tproll.util.TerminalColor.*;
 
@@ -25,21 +24,19 @@ public interface LogFunction {
     /**
      * Additional check whether this log function will log message of given level/marker.
      * This is only secondary check, primary level check is done through log level of TPLogger.
-     * @return if such message would be logged
+     * @return if such message would be logged, basic implementations should return true
      */
-    default boolean isEnabled(byte level, Marker marker){
-        return true;
-    }
+    boolean isEnabled(byte level, Marker marker);
 
     LogFunction SIMPLE_LOG_FUNCTION = new LogFunction() {
 
         private final StringBuilder sb = new StringBuilder();
         private final TimeFormatter absoluteTimeFormatter = new TimeFormatter.AbsoluteTimeFormatter(new DateTimeFormatterBuilder()
-                .appendValue(ChronoField.HOUR_OF_DAY, 2)
+                .appendHourOfDay(2)
                 .appendLiteral(':')
-                .appendValue(ChronoField.MINUTE_OF_HOUR, 2)
+                .appendMinuteOfHour(2)
                 .appendLiteral(':')
-                .appendValue(ChronoField.SECOND_OF_MINUTE, 2)
+                .appendSecondOfMinute(2)
                 .toFormatter());
         private final TimeFormatter relativeTimeFormatter = new TimeFormatter.RelativeTimeFormatter(false, true, true, true, false);
 
@@ -119,6 +116,11 @@ public interface LogFunction {
             out.append(sb).append('\n');
 
             sb.setLength(0);
+        }
+
+        @Override
+        public boolean isEnabled(byte level, Marker marker) {
+            return true;
         }
     };
 }

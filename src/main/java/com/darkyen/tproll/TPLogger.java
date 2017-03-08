@@ -621,10 +621,13 @@ public final class TPLogger implements Logger {
     public static void attachUnhandledExceptionLogger(){
         final Logger logger = LoggerFactory.getLogger("UnhandledException");
         final Thread.UncaughtExceptionHandler originalHandler = Thread.getDefaultUncaughtExceptionHandler();
-        Thread.setDefaultUncaughtExceptionHandler((t, e) -> {
-            logger.error("{} has crashed with exception: {}",t, e);
-            if(originalHandler != null){
-                originalHandler.uncaughtException(t, e);
+        Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+            @Override
+            public void uncaughtException(Thread t, Throwable e) {
+                logger.error("{} has crashed with exception: {}", t, e);
+                if (originalHandler != null) {
+                    originalHandler.uncaughtException(t, e);
+                }
             }
         });
     }

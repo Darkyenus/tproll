@@ -22,12 +22,13 @@ libraryDependencies += "com.novocode" % "junit-interface" % "0.11" % "test"
 //Integrations
 libraryDependencies += "com.esotericsoftware.minlog" % "minlog" % "1.2" % "provided"
 
+libraryDependencies += "joda-time" % "joda-time" % "2.9.7"
 
 javacOptions in (Compile, compile) ++= Seq(
   "-Xlint",
   "-encoding", "UTF-8",
-  "-source", "1.8",
-  "-target", "1.8",
+  "-source", "1.7",
+  "-target", "1.7",
   "-g",
   "-Xdiags:verbose"
 )
