@@ -16,7 +16,7 @@ import static com.darkyen.tproll.util.PrettyPrinter.append;
  *
  * Default log level is INFO, default time provider is {@link TimeProvider#CURRENT_TIME_PROVIDER},
  * default level change listener is {@link LevelChangeListener#LOG} and
- * default log function is {@link LogFunction#SIMPLE_LOG_FUNCTION}.
+ * default log function is {@link LogFunction#DEFAULT_LOG_FUNCTION}.
  */
 @SuppressWarnings({"unused", "WeakerAccess"})
 public final class TPLogger implements Logger {
@@ -42,7 +42,7 @@ public final class TPLogger implements Logger {
     /** Special level which always gets through, used for logging-related messages. */
     public static final byte LOG = 6;
 
-    private static LogFunction logFunction = LogFunction.SIMPLE_LOG_FUNCTION;
+    private static LogFunction logFunction = LogFunction.DEFAULT_LOG_FUNCTION;
     private static LevelChangeListener levelChangeListener = LevelChangeListener.LOG;
     private static TimeProvider timeProvider = TimeProvider.CURRENT_TIME_PROVIDER;
 
@@ -66,12 +66,14 @@ public final class TPLogger implements Logger {
     }
 
     public static void TRACE() {
+        if (logLevel == TRACE) return;
         logLevel = TRACE;
         trace = debug = info = warn = error = true;
         levelChangeListener.levelChanged(TRACE);
     }
 
     public static void DEBUG() {
+        if (logLevel == DEBUG) return;
         logLevel = DEBUG;
         trace = false;
         debug = info = warn = error = true;
@@ -79,6 +81,7 @@ public final class TPLogger implements Logger {
     }
 
     public static void INFO() {
+        if (logLevel == INFO) return;
         logLevel = INFO;
         trace = debug = false;
         info = warn = error = true;
@@ -86,6 +89,7 @@ public final class TPLogger implements Logger {
     }
 
     public static void WARN() {
+        if (logLevel == WARN) return;
         logLevel = WARN;
         trace = debug = info = false;
         warn = error = true;
@@ -93,6 +97,7 @@ public final class TPLogger implements Logger {
     }
 
     public static void ERROR() {
+        if (logLevel == ERROR) return;
         logLevel = ERROR;
         trace = debug = info = warn = false;
         error = true;
@@ -554,7 +559,7 @@ public final class TPLogger implements Logger {
 
         if (objects.isEmpty()) {
             sb.append(message);
-            logFunction.log(this.name, time, level, marker, sb);
+            logFunction.log(name, time, level, marker, sb);
         } else {
             boolean escaping = false;
             boolean substituting = false;
@@ -643,7 +648,7 @@ public final class TPLogger implements Logger {
                 }
             }
 
-            logFunction.log(this.name, time, level, marker, sb);
+            logFunction.log(name, time, level, marker, sb);
         }
         sb.setLength(0);
     }

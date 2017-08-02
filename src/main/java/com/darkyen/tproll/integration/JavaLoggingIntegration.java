@@ -68,14 +68,24 @@ public class JavaLoggingIntegration {
     /** Calls {@link Log#setLogger} with a logger which uses logger of {@link TPLogger} for logging.
      * Also sets */
     public static void enable() {
-        final Logger globalLogger = Logger.getGlobal();
-        for (Handler handler : globalLogger.getHandlers()) {
-            globalLogger.removeHandler(handler);
+        final Logger rootLogger = Logger.getLogger("");
+        for (Handler handler : rootLogger.getHandlers()) {
+            rootLogger.removeHandler(handler);
         }
-        globalLogger.addHandler(new Handler() {
+        rootLogger.addHandler(new Handler() {
             @Override
             public void publish(LogRecord record) {
-                LOGGER.logCustom(record.getLoggerName(), record.getMillis(), toTPLevel(record.getLevel()), JAVA_LOGGING_MARKER, record.getMessage(), record.getParameters(), record.getThrown());
+                final Object[] parameters = record.getParameters();
+                final Throwable thrown = record.getThrown();
+                if (parameters != null && thrown != null) {
+                    LOGGER.logCustom(record.getLoggerName(), record.getMillis(), toTPLevel(record.getLevel()), JAVA_LOGGING_MARKER, record.getMessage(), parameters, thrown);
+                } else if (parameters != null) {
+                    LOGGER.logCustom(record.getLoggerName(), record.getMillis(), toTPLevel(record.getLevel()), JAVA_LOGGING_MARKER, record.getMessage(), parameters);
+                } else if (thrown != null) {
+                    LOGGER.logCustom(record.getLoggerName(), record.getMillis(), toTPLevel(record.getLevel()), JAVA_LOGGING_MARKER, record.getMessage(), thrown);
+                } else {
+                    LOGGER.logCustom(record.getLoggerName(), record.getMillis(), toTPLevel(record.getLevel()), JAVA_LOGGING_MARKER, record.getMessage());
+                }
             }
 
             @Override
@@ -87,11 +97,11 @@ public class JavaLoggingIntegration {
             }
         });
 
-        globalLogger.setLevel(fromTPLevel(TPLogger.getLogLevel()));
+        rootLogger.setLevel(fromTPLevel(TPLogger.getLogLevel()));
         final LevelChangeListener oldChangeListener = TPLogger.getLevelChangeListener();
         TPLogger.setLevelChangeListener(to -> {
             oldChangeListener.levelChanged(to);
-            globalLogger.setLevel(fromTPLevel(to));
+            rootLogger.setLevel(fromTPLevel(to));
         });
     }
 }

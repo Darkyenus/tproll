@@ -163,7 +163,7 @@ public class LogFileHandler implements ILogFileHandler {
     }
 
     private void logInternalError(String problem, Throwable error){
-        LogFunction.SIMPLE_LOG_FUNCTION.log("com.darkyen.tproll.advanced.LogFileHandler", TimeProvider.CURRENT_TIME_PROVIDER.timeMillis(), TPLogger.ERROR, null, "INTERNAL ERROR: "+problem);
+        LogFunction.DEFAULT_LOG_FUNCTION.log("com.darkyen.tproll.advanced.LogFileHandler", TimeProvider.CURRENT_TIME_PROVIDER.timeMillis(), TPLogger.ERROR, null, "INTERNAL ERROR: "+problem);
         if (error != null) {
             System.out.flush();
             error.printStackTrace(System.err);

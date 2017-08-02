@@ -39,7 +39,7 @@ public class LogBenchmark {
             }
         }));
 
-        TPLogger.setLogFunction(LogFunction.SIMPLE_LOG_FUNCTION);
+        TPLogger.setLogFunction(LogFunction.DEFAULT_LOG_FUNCTION);
         measure();
         measure();
         measure();
@@ -51,7 +51,7 @@ public class LogBenchmark {
         measure();
         final int file = measure();
 
-        TPLogger.setLogFunction(new LogFunctionMultiplexer(LogFunction.SIMPLE_LOG_FUNCTION, TPLogger.getLogFunction()));
+        TPLogger.setLogFunction(new LogFunctionMultiplexer(LogFunction.DEFAULT_LOG_FUNCTION, TPLogger.getLogFunction()));
         measure();
         measure();
         measure();

@@ -59,7 +59,7 @@ public class MultiplexerTest {
 
         @Override
         public void log(String name, long time, byte level, Marker marker, CharSequence content) {
-            LogFunction.SIMPLE_LOG_FUNCTION.log(name, time, level, marker, prefix+content);
+            LogFunction.DEFAULT_LOG_FUNCTION.log(name, time, level, marker, prefix+content);
         }
     }
 }
