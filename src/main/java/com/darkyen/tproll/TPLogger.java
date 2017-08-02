@@ -185,344 +185,376 @@ public final class TPLogger implements Logger {
     //region Trace
     @Override
     public void trace(String msg) {
-        if (trace) _log(TRACE, null, msg);
+        if (trace) _log(name, timeProvider.timeMillis(), TRACE, null, msg);
     }
 
     @Override
     public void trace(String format, Object arg) {
-        if (trace) _log(TRACE, null, format, arg);
+        if (trace) _log(name, timeProvider.timeMillis(), TRACE, null, format, arg);
     }
 
     @Override
     public void trace(String format, Object argA, Object argB) {
-        if (trace) _log(TRACE, null, format, argA, argB);
+        if (trace) _log(name, timeProvider.timeMillis(), TRACE, null, format, argA, argB);
     }
 
     @Override
     public void trace(String format, Object... arguments) {
-        if (trace) _log(TRACE, null, format, arguments);
+        if (trace) _log(name, timeProvider.timeMillis(), TRACE, null, format, arguments);
     }
 
     @Override
     public void trace(String msg, Throwable t) {
-        if (trace) _log(TRACE, null, msg, t);
+        if (trace) _log(name, timeProvider.timeMillis(), TRACE, null, msg, t);
     }
 
     @Override
     public void trace(Marker marker, String msg) {
-        if (trace) _log(TRACE, marker, msg);
+        if (trace) _log(name, timeProvider.timeMillis(), TRACE, marker, msg);
     }
 
     @Override
     public void trace(Marker marker, String format, Object arg) {
-        if (trace) _log(TRACE, marker, format, arg);
+        if (trace) _log(name, timeProvider.timeMillis(), TRACE, marker, format, arg);
     }
 
     @Override
     public void trace(Marker marker, String format, Object arg1, Object arg2) {
-        if (trace) _log(TRACE, marker, format, arg1, arg2);
+        if (trace) _log(name, timeProvider.timeMillis(), TRACE, marker, format, arg1, arg2);
     }
 
     @Override
     public void trace(Marker marker, String format, Object... argArray) {
-        if (trace) _log(TRACE, marker, format, argArray);
+        if (trace) _log(name, timeProvider.timeMillis(), TRACE, marker, format, argArray);
     }
 
     @Override
     public void trace(Marker marker, String msg, Throwable t) {
-        if (trace) _log(TRACE, marker, msg, t);
+        if (trace) _log(name, timeProvider.timeMillis(), TRACE, marker, msg, t);
     }
     //endregion
 
     //region Debug
     @Override
     public void debug(String msg) {
-        if (debug) _log(DEBUG, null, msg);
+        if (debug) _log(name, timeProvider.timeMillis(), DEBUG, null, msg);
     }
 
     @Override
     public void debug(String format, Object arg) {
-        if (debug) _log(DEBUG, null, format, arg);
+        if (debug) _log(name, timeProvider.timeMillis(), DEBUG, null, format, arg);
     }
 
     @Override
     public void debug(String format, Object argA, Object argB) {
-        if (debug) _log(DEBUG, null, format, argA, argB);
+        if (debug) _log(name, timeProvider.timeMillis(), DEBUG, null, format, argA, argB);
     }
 
     @Override
     public void debug(String format, Object... arguments) {
-        if (debug) _log(DEBUG, null, format, arguments);
+        if (debug) _log(name, timeProvider.timeMillis(), DEBUG, null, format, arguments);
     }
 
     @Override
     public void debug(String msg, Throwable t) {
-        if (debug) _log(DEBUG, null, msg, t);
+        if (debug) _log(name, timeProvider.timeMillis(), DEBUG, null, msg, t);
     }
 
 
     @Override
     public void debug(Marker marker, String msg) {
-        if (debug) _log(DEBUG, marker, msg);
+        if (debug) _log(name, timeProvider.timeMillis(), DEBUG, marker, msg);
     }
 
     @Override
     public void debug(Marker marker, String format, Object arg) {
-        if (debug) _log(DEBUG, marker, format, arg);
+        if (debug) _log(name, timeProvider.timeMillis(), DEBUG, marker, format, arg);
     }
 
     @Override
     public void debug(Marker marker, String format, Object arg1, Object arg2) {
-        if (debug) _log(DEBUG, marker, format, arg1, arg2);
+        if (debug) _log(name, timeProvider.timeMillis(), DEBUG, marker, format, arg1, arg2);
     }
 
     @Override
     public void debug(Marker marker, String format, Object... arguments) {
-        if (debug) _log(DEBUG, marker, format, arguments);
+        if (debug) _log(name, timeProvider.timeMillis(), DEBUG, marker, format, arguments);
     }
 
     @Override
     public void debug(Marker marker, String msg, Throwable t) {
-        if (debug) _log(DEBUG, marker, msg, t);
+        if (debug) _log(name, timeProvider.timeMillis(), DEBUG, marker, msg, t);
     }
     //endregion
 
     //region Info
     @Override
     public void info(String msg) {
-        if (info) _log(INFO, null, msg);
+        if (info) _log(name, timeProvider.timeMillis(), INFO, null, msg);
     }
 
     @Override
     public void info(String format, Object arg) {
-        if (info) _log(INFO, null, format, arg);
+        if (info) _log(name, timeProvider.timeMillis(), INFO, null, format, arg);
     }
 
     @Override
     public void info(String format, Object argA, Object argB) {
-        if (info) _log(INFO, null, format, argA, argB);
+        if (info) _log(name, timeProvider.timeMillis(), INFO, null, format, argA, argB);
     }
 
     @Override
     public void info(String format, Object... arguments) {
-        if (info) _log(INFO, null, format, arguments);
+        if (info) _log(name, timeProvider.timeMillis(), INFO, null, format, arguments);
     }
 
     @Override
     public void info(String msg, Throwable t) {
-        if (info) _log(INFO, null, msg, t);
+        if (info) _log(name, timeProvider.timeMillis(), INFO, null, msg, t);
     }
 
     @Override
     public void info(Marker marker, String msg) {
-        if (info) _log(INFO, marker, msg);
+        if (info) _log(name, timeProvider.timeMillis(), INFO, marker, msg);
     }
 
     @Override
     public void info(Marker marker, String format, Object arg) {
-        if (info) _log(INFO, marker, format, arg);
+        if (info) _log(name, timeProvider.timeMillis(), INFO, marker, format, arg);
     }
 
     @Override
     public void info(Marker marker, String format, Object arg1, Object arg2) {
-        if (info) _log(INFO, marker, format, arg1, arg2);
+        if (info) _log(name, timeProvider.timeMillis(), INFO, marker, format, arg1, arg2);
     }
 
     @Override
     public void info(Marker marker, String format, Object... arguments) {
-        if (info) _log(INFO, marker, format, arguments);
+        if (info) _log(name, timeProvider.timeMillis(), INFO, marker, format, arguments);
     }
 
     @Override
     public void info(Marker marker, String msg, Throwable t) {
-        if (info) _log(INFO, marker, msg, t);
+        if (info) _log(name, timeProvider.timeMillis(), INFO, marker, msg, t);
     }
     //endregion
 
     //region Warn
     @Override
     public void warn(String msg) {
-        if (warn) _log(WARN, null, msg);
+        if (warn) _log(name, timeProvider.timeMillis(), WARN, null, msg);
     }
 
     @Override
     public void warn(String format, Object arg) {
-        if (warn) _log(WARN, null, format, arg);
+        if (warn) _log(name, timeProvider.timeMillis(), WARN, null, format, arg);
     }
 
     @Override
     public void warn(String format, Object... arguments) {
-        if (warn) _log(WARN, null, format, arguments);
+        if (warn) _log(name, timeProvider.timeMillis(), WARN, null, format, arguments);
     }
 
     @Override
     public void warn(String format, Object argA, Object argB) {
-        if (warn) _log(WARN, null, format, argA, argB);
+        if (warn) _log(name, timeProvider.timeMillis(), WARN, null, format, argA, argB);
     }
 
     @Override
     public void warn(String msg, Throwable t) {
-        if (warn) _log(WARN, null, msg, t);
+        if (warn) _log(name, timeProvider.timeMillis(), WARN, null, msg, t);
     }
 
     @Override
     public void warn(Marker marker, String msg) {
-        if (warn) _log(WARN, marker, msg);
+        if (warn) _log(name, timeProvider.timeMillis(), WARN, marker, msg);
     }
 
     @Override
     public void warn(Marker marker, String format, Object arg) {
-        if (warn) _log(WARN, marker, format, arg);
+        if (warn) _log(name, timeProvider.timeMillis(), WARN, marker, format, arg);
     }
 
     @Override
     public void warn(Marker marker, String format, Object arg1, Object arg2) {
-        if (warn) _log(WARN, marker, format, arg1, arg2);
+        if (warn) _log(name, timeProvider.timeMillis(), WARN, marker, format, arg1, arg2);
     }
 
     @Override
     public void warn(Marker marker, String format, Object... arguments) {
-        if (warn) _log(WARN, marker, format, arguments);
+        if (warn) _log(name, timeProvider.timeMillis(), WARN, marker, format, arguments);
     }
 
     @Override
     public void warn(Marker marker, String msg, Throwable t) {
-        if (warn) _log(WARN, marker, msg, t);
+        if (warn) _log(name, timeProvider.timeMillis(), WARN, marker, msg, t);
     }
     //endregion
 
     //region Error
     @Override
     public void error(String msg) {
-        if (error) _log(ERROR, null, msg);
+        if (error) _log(name, timeProvider.timeMillis(), ERROR, null, msg);
     }
 
     @Override
     public void error(String format, Object arg) {
-        if (error) _log(ERROR, null, format, arg);
+        if (error) _log(name, timeProvider.timeMillis(), ERROR, null, format, arg);
     }
 
     @Override
     public void error(String format, Object argA, Object argB) {
-        if (error) _log(ERROR, null, format, argA, argB);
+        if (error) _log(name, timeProvider.timeMillis(), ERROR, null, format, argA, argB);
     }
 
     @Override
     public void error(String format, Object... arguments) {
-        if (error) _log(ERROR, null, format, arguments);
+        if (error) _log(name, timeProvider.timeMillis(), ERROR, null, format, arguments);
     }
 
     @Override
     public void error(String msg, Throwable t) {
-        if (error) _log(ERROR, null, msg, t);
+        if (error) _log(name, timeProvider.timeMillis(), ERROR, null, msg, t);
     }
 
     @Override
     public void error(Marker marker, String msg) {
-        if (error) _log(ERROR, marker, msg);
+        if (error) _log(name, timeProvider.timeMillis(), ERROR, marker, msg);
     }
 
     @Override
     public void error(Marker marker, String format, Object arg) {
-        if (error) _log(ERROR, marker, format, arg);
+        if (error) _log(name, timeProvider.timeMillis(), ERROR, marker, format, arg);
     }
 
     @Override
     public void error(Marker marker, String format, Object arg1, Object arg2) {
-        if (error) _log(ERROR, marker, format, arg1, arg2);
+        if (error) _log(name, timeProvider.timeMillis(), ERROR, marker, format, arg1, arg2);
     }
 
     @Override
     public void error(Marker marker, String format, Object... arguments) {
-        if (error) _log(ERROR, marker, format, arguments);
+        if (error) _log(name, timeProvider.timeMillis(), ERROR, marker, format, arguments);
     }
 
     @Override
     public void error(Marker marker, String msg, Throwable t) {
-        if (error) _log(ERROR, marker, msg, t);
+        if (error) _log(name, timeProvider.timeMillis(), ERROR, marker, msg, t);
     }
     //endregion
 
     //region Log
     public void log(byte level, Marker marker, String msg) {
         if (level < TPLogger.logLevel) return;
-        _log(level, marker, msg);
+        _log(name, timeProvider.timeMillis(), level, marker, msg);
     }
 
     public void log(byte level, Marker marker, String format, Object arg) {
         if (level < TPLogger.logLevel) return;
-        _log(level, marker, format, arg);
+        _log(name, timeProvider.timeMillis(), level, marker, format, arg);
     }
 
     public void log(byte level, Marker marker, String format, Object argA, Object argB) {
         if (level < TPLogger.logLevel) return;
-        _log(level, marker, format, argA, argB);
+        _log(name, timeProvider.timeMillis(), level, marker, format, argA, argB);
     }
 
     public void log(byte level, Marker marker, String format, Object... arguments) {
         if (level < TPLogger.logLevel) return;
-        _log(level, marker, format, arguments);
+        _log(name, timeProvider.timeMillis(), level, marker, format, arguments);
     }
 
     public void log(byte level, Marker marker, String msg, Throwable t) {
         if (level < TPLogger.logLevel) return;
-        _log(level, marker, msg, t);
+        _log(name, timeProvider.timeMillis(), level, marker, msg, t);
     }
     //endregion
 
+    //region Custom
+
+    /**
+     * Custom log functions for easier integration with other log systems.
+     * @param name Logger name
+     * @param time time, as provided by {@link TimeProvider}
+     */
+    public void logCustom(String name, long time, byte level, Marker marker, String msg) {
+        if (level < TPLogger.logLevel) return;
+        _log(name, time, level, marker, msg);
+    }
+
+    public void logCustom(String name, long time, byte level, Marker marker, String format, Object arg) {
+        if (level < TPLogger.logLevel) return;
+        _log(name, time, level, marker, format, arg);
+    }
+
+    public void logCustom(String name, long time, byte level, Marker marker, String format, Object argA, Object argB) {
+        if (level < TPLogger.logLevel) return;
+        _log(name, time, level, marker, format, argA, argB);
+    }
+
+    public void logCustom(String name, long time, byte level, Marker marker, String format, Object... arguments) {
+        if (level < TPLogger.logLevel) return;
+        _log(name, time, level, marker, format, arguments);
+    }
+
+    public void logCustom(String name, long time, byte level, Marker marker, String msg, Throwable t) {
+        if (level < TPLogger.logLevel) return;
+        _log(name, time, level, marker, msg, t);
+    }
+    //endregion
+    
     //------------------------------------- INTERNAL ----------------------------------------------------
 
     private final ArrayList<Object> arguments = new ArrayList<>();
 
-    private void _log(byte level, Marker marker, String msg) {
+    private void _log(String name, long time, byte level, Marker marker, String msg) {
         if(!logFunction.isEnabled(level, marker)) return;
         synchronized (arguments) {
-            doLog(level, marker, msg);
+            doLog(name, time, level, marker, msg);
         }
     }
 
-    private void _log(byte level, Marker marker, String format, Object arg) {
+    private void _log(String name, long time, byte level, Marker marker, String format, Object arg) {
         if(!logFunction.isEnabled(level, marker)) return;
         synchronized (arguments) {
             arguments.add(arg);
-            doLog(level, marker, format);
+            doLog(name, time, level, marker, format);
         }
     }
 
-    private void _log(byte level, Marker marker, String format, Object argA, Object argB) {
+    private void _log(String name, long time, byte level, Marker marker, String format, Object argA, Object argB) {
         if(!logFunction.isEnabled(level, marker)) return;
         synchronized (arguments) {
             arguments.add(argA);
             arguments.add(argB);
-            doLog(level, marker, format);
+            doLog(name, time, level, marker, format);
         }
     }
 
-    private void _log(byte level, Marker marker, String format, Object... arguments) {
+    private void _log(String name, long time, byte level, Marker marker, String format, Object... arguments) {
         if(!logFunction.isEnabled(level, marker)) return;
         synchronized (this.arguments) {
             this.arguments.ensureCapacity(arguments.length);
             //noinspection ManualArrayToCollectionCopy
             for (Object argument : arguments) {
+                //noinspection UseBulkOperation
                 this.arguments.add(argument);
             }
-            doLog(level, marker, format);
+            doLog(name, time, level, marker, format);
         }
     }
 
     private final StringBuilder sb = new StringBuilder(64);
     private StringBuilderWriter sbw;
 
-    private void doLog(byte level, Marker marker, String message) {
+    private void doLog(final String name, final long time, final byte level, final Marker marker, final String message) {
         final ArrayList<Object> objects = this.arguments;
         final StringBuilder sb = this.sb;
         final LogFunction logFunction = TPLogger.logFunction;
 
-        final long time = timeProvider.timeMillis();
-
         if (objects.isEmpty()) {
             sb.append(message);
-            logFunction.log(name, time, level, marker, sb);
+            logFunction.log(this.name, time, level, marker, sb);
         } else {
             boolean escaping = false;
             boolean substituting = false;
@@ -611,7 +643,7 @@ public final class TPLogger implements Logger {
                 }
             }
 
-            logFunction.log(name, time, level, marker, sb);
+            logFunction.log(this.name, time, level, marker, sb);
         }
         sb.setLength(0);
     }

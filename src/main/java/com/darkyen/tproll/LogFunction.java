@@ -14,9 +14,9 @@ public interface LogFunction {
     /**
      * Called when logger needs to log a message. Called only when that log level is enabled in the logger.
      * Can be called by any thread, and thus MUST be thread safe.
-     * @param name    of the logger
-     * @param time    in ms since start of the app
-     * @param level   of this message
+     * @param name of the logger
+     * @param time in ms since start of the app or since 1970
+     * @param level of this message
      * @param marker provided or null
      * @param content of this message, formatted, without trailing newline. Do not keep around!
      */
@@ -59,7 +59,7 @@ public interface LogFunction {
             black(sb);
             sb.append('[');
             blue(sb);
-            if (time < (1000L * 60 * 60 * 24 * 365 * 10)) {//Less than 10 years? (lets assume that no system with this logger will have 10 year uptime)
+            if (time < (1000L * 60 * 60 * 24 * 365 * 20)) {//Less than 20 years? (lets assume that no system with this logger will have more years of uptime)
                 relativeTimeFormatter.format(time, sb);
             } else {
                 absoluteTimeFormatter.format(time, sb);

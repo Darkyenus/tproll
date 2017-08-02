@@ -8,11 +8,11 @@ import com.esotericsoftware.minlog.Log;
 /**
  * Call {@link #enable()} if you want to route MinLog logs through tproll.
  * You must have MinLog in classpath to use this class.
- *
- * Instantiating this class
  */
-@SuppressWarnings("WeakerAccess")
 public class MinLogIntegration {
+
+    private MinLogIntegration() {
+    }
 
     public static final SimpleMarker MIN_LOG_MARKER = new SimpleMarker() {
         @Override
@@ -34,10 +34,11 @@ public class MinLogIntegration {
         Log.setLogger(new Log.Logger(){
             @Override
             public void log(int level, String category, String message, Throwable ex) {
+                final long time = TPLogger.getTimeProvider().timeMillis();
                 if (ex == null) {
-                    LOGGER.log((byte)level, MIN_LOG_MARKER, "[{}] {}", category, message);
+                    LOGGER.logCustom(category, time, (byte)level, MIN_LOG_MARKER, message);
                 } else {
-                    LOGGER.log((byte)level, MIN_LOG_MARKER, "[{}] {}", category, message, ex);
+                    LOGGER.logCustom(category, time, (byte)level, MIN_LOG_MARKER, message, ex);
                 }
             }
         });
