@@ -43,16 +43,20 @@ public final class PrettyPrinter {
         } else if (item instanceof File) {
             String path;
             try {
-                path = ((File) item).getCanonicalPath();
-            } catch (Exception ex) {
-                try {
-                    path = ((File) item).getAbsolutePath();
-                } catch (Exception exx) {
-                    sb.append(item);
-                    return;
-                }
+                path = ((File) item).getAbsolutePath();
+            } catch (Exception exx) {
+                sb.append(item);
+                return;
             }
-            sb.append("File[").append(path).append(']');
+            sb.append("File[").append(path);
+            try {
+                final File canonicalFile = ((File) item).getCanonicalFile();
+                //noinspection ConstantConditions
+                if (canonicalFile != null && !item.equals(canonicalFile)) {
+                    sb.append(" (-> ").append(canonicalFile.getAbsolutePath()).append(')');
+                }
+            } catch (Exception ignored) {}
+            sb.append(']');
         } else {
             //It can be an array or plain object, check it
             printStandard:
