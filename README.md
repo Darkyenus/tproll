@@ -7,6 +7,13 @@ Simple logging backend, designed to have minimal overhead and easy setup, while 
 This is a SLF4J backend, so make sure you have [SLF4J API](http://search.maven.org/#search%7Cga%7C1%7Ca%3A%22slf4j-api%22).
 Then, get it from jitpack: [![](https://jitpack.io/v/Darkyenus/tproll.svg)](https://jitpack.io/#Darkyenus/tproll)
 
+For convenience:
+```
+jitpack at https://jitpack.io
+org.slf4j:slf4j-api:1.7.22
+com.github.Darkyenus:tproll:v1.2.4
+```
+
 ## Use
 If you have tproll and SLF4J api on classpath, you can start using SLF4J logging as usual.
 By default, the backend is logging to the stdout/err only, and from info level up.
@@ -36,7 +43,7 @@ private static final Logger LOG = LoggerFactory.getLogger(Main.class);
 public static void main(String[] args) throws Exception {
     TPLogger.setLogFunction(
             new LogFunctionMultiplexer(
-                    LogFunction.SIMPLE_LOG_FUNCTION, // Log to console
+                    LogFunction.DEFAULT_LOG_FUNCTION, // Log to console
                     new FileLogFunction(new File("test logs")) // & Log to file in "test logs" directory
             ));
 
