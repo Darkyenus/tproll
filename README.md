@@ -38,6 +38,9 @@ This class can (and is primarily built to) route various log messages to differe
 **TL;DR**, what do I need to copy/paste to leverage this framework?
 
 ```java
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+
 private static final Logger LOG = LoggerFactory.getLogger(Main.class);
 
 public static void main(String[] args) throws Exception {
