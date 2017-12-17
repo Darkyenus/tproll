@@ -1,7 +1,7 @@
 
 name := "tproll"
 
-version := "1.2.4"
+version := "1.2.5"
 
 organization := "com.darkyen"
 
@@ -11,6 +11,7 @@ crossPaths := false
 
 val slf4jVersion = "1.7.22"
 
+// Provided, because users may want to supply different version
 libraryDependencies += "org.slf4j" % "slf4j-api" % slf4jVersion % "provided"
 
 libraryDependencies += "org.slf4j" % "slf4j-api" % slf4jVersion % "test"
