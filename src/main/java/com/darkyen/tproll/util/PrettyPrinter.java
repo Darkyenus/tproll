@@ -342,7 +342,24 @@ public final class PrettyPrinter {
     }
 
     /**
-     * Appends given item into the sb
+     * Appends given item into the sb.
+     *
+     * Primitives and null is appended unchanged.
+     *
+     * Files are printed as normalized path, with " ⌫" suffix when not-exists,
+     * or with / suffix when directory, and/or with " ⇥" suffix when broken link,
+     * or " → "+path when points to a different file after symlink resolution.
+     *
+     * Arrays and collections are printed in a pretty-print format, unless specified otherwise.
+     *
+     * Example of pretty-printed array: int[4, 6, 3, ... (15 more)] (when maxCollectionElements is 3).
+     * byte[] arrays are printed in hex, without delimiters: byte[FFC473423456].
+     *
+     * Example of pretty-printed ArrayList of HashMaps: ArrayList[HashMap{1=2, 3=4}, HashMap{foo=bar, baz=4, ... (2 more)}].
+     * (when maxCollectionElements is 2 - this cascades to nested pretty-printed collections).
+     *
+     * Example of maxCollectionElements = 0: Boolean[23 elements]
+     *
      * @param sb to append to
      * @param item to append
      * @param maxCollectionElements to print, when printing arrays or pretty-printed collections.
