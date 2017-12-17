@@ -1,18 +1,36 @@
 package com.darkyen.tproll.util;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.lang.reflect.Array;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
+import java.util.AbstractCollection;
+import java.util.AbstractList;
+import java.util.AbstractSet;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.RandomAccess;
+import java.util.TreeSet;
 
 /**
  * Utility class for safe and human readable printing of objects.
  *
  * Thread safe.
  */
+@SuppressWarnings({"unused", "rawtypes", "unchecked"})
 public final class PrettyPrinter {
+
+    private static final Logger LOG = LoggerFactory.getLogger("Tproll-PrettyPrinter");
 
     private static final char[] HEX_NUMBERS = {'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
     public static void appendByteHex(StringBuilder sb, byte b){
@@ -28,9 +46,82 @@ public final class PrettyPrinter {
      * Failure is costly, so when it happens, it turns array pretty printing off using this switch. */
     private static boolean prettyPrintArrays = true;
 
+    public enum PrettyPrintMode {
+        /**
+         * Pretty print, iterate with iterator.
+         */
+        YES,
+        /**
+         * Pretty print, iterate with forEach. (Somewhat slower maxCollectionElements support)
+         */
+        YES_SYNCHRONIZED,
+        /**
+         * Pretty print, cast to List and iterate with get(int).
+         */
+        YES_RANDOM,
+        /**
+         * Do not pretty print
+         */
+        NO,
+    }
+
+    private static final Map<Class<? extends Collection>, PrettyPrintMode> PRETTY_PRINT_COLLECTIONS = Collections.synchronizedMap(new HashMap<>());
+    static {
+        PRETTY_PRINT_COLLECTIONS.put(AbstractCollection.class, PrettyPrintMode.YES);
+        PRETTY_PRINT_COLLECTIONS.put(AbstractList.class, PrettyPrintMode.YES);
+        PRETTY_PRINT_COLLECTIONS.put(ArrayList.class, PrettyPrintMode.YES_RANDOM);
+        PRETTY_PRINT_COLLECTIONS.put(LinkedList.class, PrettyPrintMode.YES);
+        PRETTY_PRINT_COLLECTIONS.put(AbstractSet.class, PrettyPrintMode.YES);
+        PRETTY_PRINT_COLLECTIONS.put(HashSet.class, PrettyPrintMode.YES);
+        PRETTY_PRINT_COLLECTIONS.put(TreeSet.class, PrettyPrintMode.YES);
+
+        PRETTY_PRINT_COLLECTIONS.put(Collections.synchronizedCollection(Collections.emptyList()).getClass(), PrettyPrintMode.YES_SYNCHRONIZED);
+        PRETTY_PRINT_COLLECTIONS.put(Collections.synchronizedList(Collections.emptyList()).getClass(), PrettyPrintMode.YES_SYNCHRONIZED);
+        PRETTY_PRINT_COLLECTIONS.put(Collections.synchronizedSet(Collections.emptySet()).getClass(), PrettyPrintMode.YES_SYNCHRONIZED);
+        PRETTY_PRINT_COLLECTIONS.put(Collections.synchronizedNavigableSet(Collections.emptyNavigableSet()).getClass(), PrettyPrintMode.YES_SYNCHRONIZED);
+    }
+
+    public static PrettyPrintMode setPrettyPrintModeForCollection(Class<? extends Collection> type, PrettyPrintMode mode) {
+        assert type != null;
+        assert Collection.class.isAssignableFrom(type);
+        if (mode == null) {
+            return PRETTY_PRINT_COLLECTIONS.remove(type);
+        } else {
+            return PRETTY_PRINT_COLLECTIONS.put(type, mode);
+        }
+    }
+
+    public static PrettyPrintMode getPrettyPrintModeForCollection(Class<? extends Collection> type) {
+        assert type != null;
+        assert Collection.class.isAssignableFrom(type);
+
+        PrettyPrintMode mode = PRETTY_PRINT_COLLECTIONS.get(type);
+        if (mode != null) {
+            return mode;
+        }
+
+        try {
+            final Class toStringDeclaringClass = type.getMethod("toString").getDeclaringClass();
+            mode = PRETTY_PRINT_COLLECTIONS.get(toStringDeclaringClass);
+            if (mode == null) {
+                mode = PrettyPrintMode.NO;
+            } else if (mode == PrettyPrintMode.YES
+                    && RandomAccess.class.isAssignableFrom(type)
+                    && List.class.isAssignableFrom(type)) {
+                mode = PrettyPrintMode.YES_RANDOM;
+            }
+        } catch (Exception e) {
+            LOG.warn("Failed to determine pretty-print mode for class {}, defaulting to NO", type, e);
+            mode = PrettyPrintMode.NO;
+        }
+
+        PRETTY_PRINT_COLLECTIONS.put(type, mode);
+        return mode;
+    }
+
     private static Path APPLICATION_ROOT_DIRECTORY = null;
 
-    private static void append(StringBuilder sb, Path path) {
+    private static void appendPath(StringBuilder sb, Path path) {
         path = path.normalize();
 
         final Path root = APPLICATION_ROOT_DIRECTORY;
@@ -65,7 +156,7 @@ public final class PrettyPrinter {
                 Path leadsToPath = null;
                 try {
                     final Path realPath = path.toRealPath();
-                    if (!path.equals(realPath)) {
+                    if (!path.toAbsolutePath().equals(realPath)) {
                         leadsToPath = realPath;
                     }
                 } catch (Throwable ignored) {}
@@ -80,91 +171,233 @@ public final class PrettyPrinter {
         }
     }
 
-    public static void append(StringBuilder sb, Object item, int maxArrayElements){
-        //To use faster overloads
-        if (item == null) {
-            sb.append((String)null);
-        } else if (item instanceof Boolean) {
-            sb.append((boolean)item);
-        } else if (item instanceof Character) {
-            sb.append((char)item);
-        } else if (item instanceof Long) {
-            sb.append((long) item);
-        } else if (item instanceof Float) {
-            sb.append((float) item);
-        } else if (item instanceof Double) {
-            sb.append((double) item);
-        } else if (item instanceof Integer || item instanceof Short || item instanceof Byte) {
-            sb.append((int) item);
-        } else if (item instanceof File) {
-            append(sb, ((File) item).toPath());
-        } else if (item instanceof Path) {
-            append(sb, (Path) item);
-        } else {
-            //It can be an array or plain object, check it
-            printStandard:
-            {
-                if (prettyPrintArrays) {
-                    try {
-                        if (item.getClass().isArray()) {
-                            //It is an array, print it nicely
-
-                            //Append element type
-                            final Class<?> arrayType = item.getClass().getComponentType();
-                            sb.append(arrayType.getSimpleName());
-
-                            final int length = Array.getLength(item);
-                            if(length == 0){
-                                sb.append("[]");
-                            }else{
-                                final int printLength = length > maxArrayElements ? maxArrayElements : length;
-
-                                sb.append('[');
-                                if(arrayType.equals(Byte.class) || arrayType.equals(byte.class)){
-                                    //Byte arrays are logged in hex without delimiter
-                                    appendByteHex(sb, Array.getByte(item, 0));
-                                    for (int i = 1; i < printLength; i++) {
-                                        appendByteHex(sb, Array.getByte(item, i));
-                                    }
-                                    if(printLength < length){
-                                        sb.append(" ... (").append(length - printLength).append(" more)");
-                                    }
-                                }else{
-                                    append(sb, Array.get(item, 0));
-                                    for (int i = 1; i < printLength; i++) {
-                                        sb.append(", ");
-                                        append(sb, Array.get(item, i));
-                                    }
-                                    if(printLength < length){
-                                        sb.append(", ... (").append(length - printLength).append(" more)");
-                                    }
-                                }
-
-                                sb.append(']');
-                            }
-
-                            break printStandard; //Skip standard printing
-                        }//else Not an array, fallback to standard printing
-                    } catch (Exception ex) {
-                        sb.append("<Internal Error: Failed to pretty-print array: ").append(ex).append(">");
-                        prettyPrintArrays = false;
-                    }
-                }
-
-                String itemString;
-                try {
-                    itemString = item.toString();
-                } catch (Exception ex) {
-                    itemString = "(Failed to convert to string: " + ex + ")";
-                }
-                sb.append(itemString);
+    private static <E> int appendCollection(StringBuilder sb, Collection<E> collection, int maxCollectionElements) {
+        int written = 0;
+        for (E element : collection) {
+            if (written == maxCollectionElements) {
+                return collection.size() - written;
             }
+
+            if (written != 0) {
+                sb.append(", ");
+            }
+            append(sb, element, maxCollectionElements);
+            written++;
         }
+        return 0;
     }
 
-    public static String toString(Object object, int maxArrayElements){
+    private static <E> int appendCollectionRandom(StringBuilder sb, List<E> collection, int maxCollectionElements) {
+        final int collectionSize = collection.size();
+        if (collectionSize <= 0) {
+            return 0;
+        }
+
+        append(sb, collection.get(0), maxCollectionElements);
+        for (int i = 1; i < collectionSize; i++) {
+            if (i == maxCollectionElements) {
+                return collectionSize - i;
+            }
+
+            sb.append(", ");
+            append(sb, collection.get(i), maxCollectionElements);
+        }
+        return 0;
+    }
+
+    private static <E> int appendCollectionSynchronized(StringBuilder sb, Collection<E> collection, int maxCollectionElements) {
+        final int[] writtenAndRemaining = {0, 0};
+        collection.forEach(element -> {
+            if (writtenAndRemaining[0] == maxCollectionElements) {
+                writtenAndRemaining[1]++;
+            } else {
+                if (writtenAndRemaining[0] != 0) {
+                    sb.append(", ");
+                }
+                append(sb, element, maxCollectionElements);
+                writtenAndRemaining[0]++;
+            }
+        });
+        return writtenAndRemaining[1];
+    }
+
+    /**
+     * Appends given item into the sb
+     * @param sb to append to
+     * @param item to append
+     * @param maxCollectionElements to print, when printing arrays or pretty-printed collections.
+     *                              0 means print only size, negative means ignore
+     */
+    public static void append(StringBuilder sb, Object item, int maxCollectionElements) {
+        //To use faster/low-garbage overloads
+        if (item == null) {
+            sb.append((String) null);
+            return;
+        }
+        if (item instanceof Boolean) {
+            sb.append((boolean) item);
+            return;
+        }
+        if (item instanceof Character) {
+            sb.append((char) item);
+            return;
+        }
+        if (item instanceof Long) {
+            sb.append((long) item);
+            return;
+        }
+        if (item instanceof Float) {
+            sb.append((float) item);
+            return;
+        }
+        if (item instanceof Double) {
+            sb.append((double) item);
+            return;
+        }
+        if (item instanceof Integer || item instanceof Short || item instanceof Byte) {
+            sb.append((int) item);
+            return;
+        }
+        if (item instanceof File) {
+            appendPath(sb, ((File) item).toPath());
+            return;
+        }
+        if (item instanceof Path) {
+            appendPath(sb, (Path) item);
+            return;
+        }
+
+        if (maxCollectionElements < 0) {
+            maxCollectionElements = Integer.MAX_VALUE;
+        }
+
+        if (prettyPrintArrays) {
+            try {
+                if (item.getClass().isArray()) {
+                    //It is an array, print it nicely
+
+                    //Append element type
+                    final Class<?> arrayType = item.getClass().getComponentType();
+                    sb.append(arrayType.getSimpleName());
+
+                    final int length = Array.getLength(item);
+                    if (maxCollectionElements == 0) {
+                        sb.append('[').append(length);
+                        if (length == 1) {
+                            sb.append(" element]");
+                        } else {
+                            sb.append(" elements]");
+                        }
+                    } else if (length <= 0) {
+                        sb.append("[]");
+                    } else {
+                        final int printLength = length > maxCollectionElements ? maxCollectionElements : length;
+
+                        sb.append('[');
+                        if (arrayType.equals(Byte.class) || arrayType.equals(byte.class)) {
+                            //Byte arrays are logged in hex without delimiter
+                            for (int i = 0; i < printLength; i++) {
+                                appendByteHex(sb, Array.getByte(item, i));
+                            }
+                            if (printLength < length) {
+                                sb.append(" ... (").append(length - printLength).append(" more)");
+                            }
+                        } else {
+                            append(sb, Array.get(item, 0));
+                            for (int i = 1; i < printLength; i++) {
+                                sb.append(", ");
+                                append(sb, Array.get(item, i));
+                            }
+                            if (printLength < length) {
+                                sb.append(", ... (").append(length - printLength).append(" more)");
+                            }
+                        }
+
+                        sb.append(']');
+                    }
+
+                    return;
+                }//else Not an array, fallback to standard printing
+            } catch (Exception ex) {
+                prettyPrintArrays = false;
+                LOG.warn("Failed to pretty-print array: ", ex);
+            }
+        }
+
+        prettyPrintCollections:
+        if (item instanceof Collection) {
+            //noinspection unchecked
+            final Class<? extends Collection> collectionClass = (Class<? extends Collection>) item.getClass();
+            final PrettyPrintMode collectionPrettyPrintMode = getPrettyPrintModeForCollection(collectionClass);
+            if (collectionPrettyPrintMode == PrettyPrintMode.NO) {
+                break prettyPrintCollections;
+            }
+
+            final int originalSbLength = sb.length();
+            final Collection collection = (Collection) item;
+            sb.append(collectionClass.getSimpleName()).append('[');
+
+            final int postHeaderSbLength = sb.length();
+            try {
+                final int size = collection.size();
+                final int moreElements;
+                if (maxCollectionElements == 0) {
+                    sb.append(size);
+                    if (size == 1) {
+                        sb.append(" element]");
+                    } else {
+                        sb.append(" elements]");
+                    }
+                    return;
+                } else if (collectionPrettyPrintMode == PrettyPrintMode.YES_RANDOM) {
+                    //noinspection unchecked
+                    moreElements = appendCollectionRandom(sb, (List)collection, maxCollectionElements);
+                } else if (collectionPrettyPrintMode == PrettyPrintMode.YES_SYNCHRONIZED) {
+                    //noinspection unchecked
+                    moreElements = appendCollectionSynchronized(sb, collection, maxCollectionElements);
+                } else {
+                    if (collectionPrettyPrintMode != PrettyPrintMode.YES) {
+                        LOG.error("Unexpected PrettyPrintMode: {}", collectionPrettyPrintMode);
+                    }
+                    //noinspection unchecked
+                    moreElements = appendCollection(sb, collection, maxCollectionElements);
+                }
+
+                if (moreElements > 0) {
+                    sb.append(", ... (").append(moreElements).append(" more)");
+                }
+                sb.append(']');
+                return;
+            } catch (StackOverflowError ex) {
+                sb.setLength(postHeaderSbLength);
+                sb.append("<<<StackOverflow>>>]");
+                LOG.warn("StackOverflow while pretty-printing a collection. Self containing collection?");
+                return;
+            } catch (Exception ex) {
+                sb.setLength(originalSbLength);
+                LOG.error("Exception while pretty-printing a collection.", ex);
+            }
+        }
+
+        String itemString;
+        try {
+            itemString = item.toString();
+        } catch (Exception ex) {
+            LOG.error("Failed to convert object to string", ex);
+            itemString = "<toString() failed>";
+        }
+        sb.append(itemString);
+    }
+
+    public static String toString(Object object){
         final StringBuilder result = new StringBuilder();
-        append(result, object, maxArrayElements);
+        append(result, object);
+        return result.toString();
+    }
+
+    public static String toString(Object object, int maxCollectionElements){
+        final StringBuilder result = new StringBuilder();
+        append(result, object, maxCollectionElements);
         return result.toString();
     }
 

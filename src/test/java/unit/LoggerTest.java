@@ -2,6 +2,7 @@ package unit;
 
 import com.darkyen.tproll.TPLogger;
 import com.darkyen.tproll.TPLoggerFactory;
+import com.darkyen.tproll.util.PrettyPrinter;
 import org.hamcrest.CustomTypeSafeMatcher;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -10,7 +11,12 @@ import org.junit.Test;
 
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 /**
@@ -140,6 +146,37 @@ public class LoggerTest {
         assertLogIs(INFO_PREFIX + "Reason: null");
     }
 
+    @Test
+    public void prettyPrintCollection() throws Exception {
+        // .toRealPath() is needed, because sometimes tempRoot itself contains symlinks
+        final Path tempRoot = Files.createTempDirectory("PrettyPrintTest").toRealPath();
+
+        final Path simple = tempRoot.resolve("simple");
+        Files.createFile(simple);
+
+        try {
+            PrettyPrinter.setApplicationRootDirectory(tempRoot);
+
+            final List<Path> arrayList = new ArrayList<>();
+            arrayList.add(simple);
+            assertEquals("ArrayList[1 element]", PrettyPrinter.toString(arrayList, 0));
+            arrayList.add(simple);
+            assertEquals("ArrayList[simple, simple]", PrettyPrinter.toString(arrayList));
+            assertEquals("ArrayList[2 elements]", PrettyPrinter.toString(arrayList, 0));
+            assertEquals("ArrayList[simple, ... (1 more)]", PrettyPrinter.toString(arrayList, 1));
+
+            final List<Path> phonyList = new PhonyList<>();
+            phonyList.add(simple);
+            assertEquals("PhonyList[1 element]", PrettyPrinter.toString(phonyList, 0));
+            phonyList.add(simple);
+            assertEquals("PhonyList[simple, simple]", PrettyPrinter.toString(phonyList));
+            assertEquals("PhonyList[2 elements]", PrettyPrinter.toString(phonyList, 0));
+            assertEquals("PhonyList[simple, ... (1 more)]", PrettyPrinter.toString(phonyList, 1));
+        } finally {
+            PrettyPrinter.setApplicationRootDirectory((Path) null);
+        }
+    }
+
     @SuppressWarnings("serial")
     private static final class DummyException extends Exception {
         public DummyException(String message) {
@@ -161,4 +198,6 @@ public class LoggerTest {
             return "java.lang.Exception: "+getMessage();
         }
     }
+
+    private static final class PhonyList<T> extends ArrayList<T> {}
 }
