@@ -13,13 +13,21 @@ import java.util.Locale;
  */
 public final class StringBuilderWriter extends PrintWriter {
 
-    private final StringBuilder sb;
+    private StringBuilder sb;
     private static final char LINE_END = '\n';
 
     public StringBuilderWriter(StringBuilder sb) {
         super(NOP_WRITER, false);
         this.sb = sb;
         this.out = null;
+    }
+
+    public StringBuilderWriter() {
+        this(null);
+    }
+
+    public void setStringBuilder(StringBuilder sb) {
+        this.sb = sb;
     }
 
     @Override

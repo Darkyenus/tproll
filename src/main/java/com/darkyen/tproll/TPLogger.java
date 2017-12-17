@@ -1,7 +1,6 @@
 package com.darkyen.tproll;
 
 import com.darkyen.tproll.util.LevelChangeListener;
-import com.darkyen.tproll.util.StringBuilderWriter;
 import com.darkyen.tproll.util.TimeProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,7 +8,7 @@ import org.slf4j.Marker;
 
 import java.util.ArrayList;
 
-import static com.darkyen.tproll.util.PrettyPrinter.append;
+import static com.darkyen.tproll.util.PrettyPrinter.patternSubstituteInto;
 
 /**
  * Lightweight, GC friendly and thread-safe logger implementation.
@@ -550,106 +549,12 @@ public final class TPLogger implements Logger {
     }
 
     private final StringBuilder sb = new StringBuilder(64);
-    private StringBuilderWriter sbw;
 
     private void doLog(final String name, final long time, final byte level, final Marker marker, final String message) {
-        final ArrayList<Object> objects = this.arguments;
         final StringBuilder sb = this.sb;
-        final LogFunction logFunction = TPLogger.logFunction;
 
-        if (objects.isEmpty()) {
-            sb.append(message);
-            logFunction.log(name, time, level, marker, sb);
-        } else {
-            boolean escaping = false;
-            boolean substituting = false;
-            int substitutingIndex = 0;
-            Throwable throwable = null;
-
-            for (int i = 0, l = message.length(); i < l; i++) {
-                final char c = message.charAt(i);
-                if (substituting) {
-                    substituting = false;
-                    if (c == '}') {
-                        if (substitutingIndex != objects.size()) {
-                            final Object item = objects.get(substitutingIndex);
-                            if (item instanceof Throwable) {
-                                throwable = (Throwable) item;
-                            }
-                            append(sb, item);
-                            substitutingIndex++;
-                        } else {
-                            sb.append("{}");
-                        }
-                        continue;
-                    } else {
-                        sb.append('{');
-                    }
-                }
-
-                if (c == '\\') {
-                    if (escaping) {
-                        sb.append('\\');
-                    } else {
-                        escaping = true;
-                    }
-                } else if (c == '{') {
-                    if (escaping) {
-                        escaping = false;
-                        sb.append('{');
-                    } else {
-                        substituting = true;
-                    }
-                } else {
-                    sb.append(c);
-                }
-            }
-            //There are items that were not appended yet, because they have no {}
-            //It could be just one throwable, in that case do not substitute it in
-            if(substitutingIndex == objects.size() - 1 && objects.get(substitutingIndex) instanceof Throwable){
-                throwable = (Throwable) objects.get(substitutingIndex);
-            } else if (substitutingIndex < objects.size()) {
-                //It is not one throwable. It could be more things ended with throwable though
-                sb.append(" {");
-                do{
-                    final Object item = objects.get(substitutingIndex);
-                    append:{
-                        if (item instanceof Throwable) {
-                            throwable = (Throwable) item;
-                            if(substitutingIndex == objects.size() - 1) {
-                                //When throwable is last in list and not in info string, don't print it.
-                                //It is guaranteed that it will be printed by trace.
-                                break append;
-                            }
-                        }
-                        append(sb, item);
-                    }
-                    substitutingIndex++;
-
-                    sb.append(", ");
-                }while(substitutingIndex < objects.size());
-                sb.setLength(sb.length() - 2);
-                sb.append('}');
-            }
-            objects.clear();
-
-            //Append throwable if any
-            if (throwable != null) {
-                StringBuilderWriter sbw = this.sbw;
-                if (sbw == null) {
-                    sbw = this.sbw = new StringBuilderWriter(sb);
-                }
-
-                sb.append('\n');
-                throwable.printStackTrace(sbw);
-                //Strip \n at the end
-                if (sb.charAt(sb.length() - 1) == '\n') {
-                    sb.setLength(sb.length()-1);
-                }
-            }
-
-            logFunction.log(name, time, level, marker, sb);
-        }
+        patternSubstituteInto(sb, message, this.arguments);
+        TPLogger.logFunction.log(name, time, level, marker, sb);
         sb.setLength(0);
     }
 
