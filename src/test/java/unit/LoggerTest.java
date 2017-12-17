@@ -23,12 +23,15 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 
+import static org.hamcrest.CoreMatchers.anyOf;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 /**
  * Test for TPLogger
  */
+@SuppressWarnings("serial")
 public class LoggerTest {
 
     private static final String LOGGER_NAME = "TEST-LOGGER";
@@ -60,17 +63,13 @@ public class LoggerTest {
         logOut.setLength(0);
     }
 
-    private void assertLogIs(String logContent, String message) {
-        assertThat(message, logOut.toString(), new CustomTypeSafeMatcher<String>("matching regex \"" + logContent + "\"") {
+    private void assertLogIs(String logContent) {
+        assertThat(logOut.toString(), new CustomTypeSafeMatcher<String>("matching regex \"" + logContent + "\"") {
             @Override
             protected boolean matchesSafely(String item) {
                 return (item).matches(logContent);
             }
         });
-    }
-
-    private void assertLogIs(String logContent) {
-        assertLogIs(logContent, "");
     }
 
     private static final String INFO_PREFIX = LOGGER_NAME + " \\d+ \\[INFO\\]: ";
@@ -320,20 +319,25 @@ public class LoggerTest {
 
             final Map<Object, Object> hashMap = new HashMap<>();
             hashMap.put("uno", simple);
-            assertEquals("HashMap{1 pair}", PrettyPrinter.toString(hashMap, 0));
+            assertEquals("HashMap{1 entry}", PrettyPrinter.toString(hashMap, 0));
             assertEquals("HashMap{uno=simple}", PrettyPrinter.toString(hashMap, 1));
             hashMap.put(simple, "dos");
-            assertEquals("HashMap{uno=simple, simple=dos}", PrettyPrinter.toString(hashMap));
-            assertEquals("HashMap{2 pairs}", PrettyPrinter.toString(hashMap, 0));
-            assertEquals("HashMap{uno=simple, ... (1 more)}", PrettyPrinter.toString(hashMap, 1));
+            assertThat(PrettyPrinter.toString(hashMap), anyOf(
+                    is("HashMap{uno=simple, simple=dos}"),
+                    is("HashMap{simple=dos, uno=simple}")));
+            assertEquals("HashMap{2 entries}", PrettyPrinter.toString(hashMap, 0));
+            assertThat(PrettyPrinter.toString(hashMap, 1), anyOf(
+                    is("HashMap{uno=simple, ... (1 more)}"),
+                    is("HashMap{simple=dos, ... (1 more)}")
+            ));
 
             final Map<Object, Object> phonyMap = new PhonyMap<>();
             phonyMap.put("uno", simple);
-            assertEquals("PhonyMap{1 pair}", PrettyPrinter.toString(phonyMap, 0));
+            assertEquals("PhonyMap{1 entry}", PrettyPrinter.toString(phonyMap, 0));
             assertEquals("PhonyMap{uno=simple}", PrettyPrinter.toString(phonyMap, 1));
             phonyMap.put(simple, "dos");
             assertEquals("PhonyMap{uno=simple, simple=dos}", PrettyPrinter.toString(phonyMap));
-            assertEquals("PhonyMap{2 pairs}", PrettyPrinter.toString(phonyMap, 0));
+            assertEquals("PhonyMap{2 entries}", PrettyPrinter.toString(phonyMap, 0));
             assertEquals("PhonyMap{uno=simple, ... (1 more)}", PrettyPrinter.toString(phonyMap, 1));
 
             final Map<Object, Object> customMap = new Map<Object, Object>() {
