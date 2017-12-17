@@ -10,6 +10,7 @@ import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.util.AbstractCollection;
 import java.util.AbstractList;
+import java.util.AbstractMap;
 import java.util.AbstractSet;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -20,6 +21,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.RandomAccess;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 /**
@@ -57,6 +59,7 @@ public final class PrettyPrinter {
         YES_SYNCHRONIZED,
         /**
          * Pretty print, cast to List and iterate with get(int).
+         * (Does not apply to maps!)
          */
         YES_RANDOM,
         /**
@@ -116,6 +119,55 @@ public final class PrettyPrinter {
         }
 
         PRETTY_PRINT_COLLECTIONS.put(type, mode);
+        return mode;
+    }
+
+    private static final Map<Class<? extends Map>, PrettyPrintMode> PRETTY_PRINT_MAPS = Collections.synchronizedMap(new HashMap<>());
+    static {
+        PRETTY_PRINT_MAPS.put(AbstractMap.class, PrettyPrintMode.YES);
+        PRETTY_PRINT_MAPS.put(HashMap.class, PrettyPrintMode.YES);
+        PRETTY_PRINT_MAPS.put(TreeMap.class, PrettyPrintMode.YES);
+
+        PRETTY_PRINT_MAPS.put(Collections.synchronizedMap(Collections.emptyMap()).getClass(), PrettyPrintMode.YES_SYNCHRONIZED);
+        PRETTY_PRINT_MAPS.put(Collections.synchronizedNavigableMap(Collections.emptyNavigableMap()).getClass(), PrettyPrintMode.YES_SYNCHRONIZED);
+    }
+
+    public static PrettyPrintMode setPrettyPrintModeForMap(Class<? extends Map> type, PrettyPrintMode mode) {
+        assert type != null;
+        assert Map.class.isAssignableFrom(type);
+
+        if (mode == null) {
+            return PRETTY_PRINT_MAPS.remove(type);
+        } else {
+            if (mode == PrettyPrintMode.YES_RANDOM) {
+                LOG.warn("YES_RANDOM is not applicable to Maps, defaulting to YES");
+                mode = PrettyPrintMode.YES;
+            }
+            return PRETTY_PRINT_MAPS.put(type, mode);
+        }
+    }
+
+    public static PrettyPrintMode getPrettyPrintModeForMap(Class<? extends Map> type) {
+        assert type != null;
+        assert Map.class.isAssignableFrom(type);
+
+        PrettyPrintMode mode = PRETTY_PRINT_MAPS.get(type);
+        if (mode != null) {
+            return mode;
+        }
+
+        try {
+            final Class toStringDeclaringClass = type.getMethod("toString").getDeclaringClass();
+            mode = PRETTY_PRINT_MAPS.get(toStringDeclaringClass);
+            if (mode == null) {
+                mode = PrettyPrintMode.NO;
+            }
+        } catch (Exception e) {
+            LOG.warn("Failed to determine pretty-print mode for class {}, defaulting to NO", type, e);
+            mode = PrettyPrintMode.NO;
+        }
+
+        PRETTY_PRINT_MAPS.put(type, mode);
         return mode;
     }
 
@@ -179,9 +231,13 @@ public final class PrettyPrinter {
             }
 
             if (written != 0) {
-                sb.append(", ");
+                sb.append(',').append(' ');
             }
-            append(sb, element, maxCollectionElements);
+            if (element == collection) {
+                sb.append("(this Collection)");
+            } else {
+                append(sb, element, maxCollectionElements);
+            }
             written++;
         }
         return 0;
@@ -199,8 +255,13 @@ public final class PrettyPrinter {
                 return collectionSize - i;
             }
 
-            sb.append(", ");
-            append(sb, collection.get(i), maxCollectionElements);
+            sb.append(',').append(' ');
+            final E element = collection.get(i);
+            if (element == collection) {
+                sb.append("(this Collection)");
+            } else {
+                append(sb, element, maxCollectionElements);
+            }
         }
         return 0;
     }
@@ -212,9 +273,68 @@ public final class PrettyPrinter {
                 writtenAndRemaining[1]++;
             } else {
                 if (writtenAndRemaining[0] != 0) {
+                    sb.append(',').append(' ');
+                }
+                if (element == collection) {
+                    sb.append("(this Collection)");
+                } else {
+                    append(sb, element, maxCollectionElements);
+                }
+                writtenAndRemaining[0]++;
+            }
+        });
+        return writtenAndRemaining[1];
+    }
+
+    private static <K, V> int appendMap(StringBuilder sb, Map<K, V> map, int maxCollectionElements) {
+        int written = 0;
+        for (Map.Entry<K, V> entry : map.entrySet()) {
+            if (written == maxCollectionElements) {
+                return map.size() - written;
+            }
+
+            if (written != 0) {
+                sb.append(',').append(' ');
+            }
+            final K key = entry.getKey();
+            final V value = entry.getValue();
+            if (key == map) {
+                sb.append("(this Map)");
+            } else {
+                append(sb, key, maxCollectionElements);
+            }
+            sb.append('=');
+            if (value == map) {
+                sb.append("(this Map)");
+            } else {
+                append(sb, value, maxCollectionElements);
+            }
+
+            written++;
+        }
+        return 0;
+    }
+
+    private static <K, V> int appendMapSynchronized(StringBuilder sb, Map<K, V> map, int maxCollectionElements) {
+        final int[] writtenAndRemaining = {0, 0};
+        map.forEach((key, value) -> {
+            if (writtenAndRemaining[0] == maxCollectionElements) {
+                writtenAndRemaining[1]++;
+            } else {
+                if (writtenAndRemaining[0] != 0) {
                     sb.append(", ");
                 }
-                append(sb, element, maxCollectionElements);
+                if (key == map) {
+                    sb.append("(this Map)");
+                } else {
+                    append(sb, key, maxCollectionElements);
+                }
+                sb.append('=');
+                if (value == map) {
+                    sb.append("(this Map)");
+                } else {
+                    append(sb, value, maxCollectionElements);
+                }
                 writtenAndRemaining[0]++;
             }
         });
@@ -376,6 +496,58 @@ public final class PrettyPrinter {
             } catch (Exception ex) {
                 sb.setLength(originalSbLength);
                 LOG.error("Exception while pretty-printing a collection.", ex);
+            }
+        }
+
+        prettyPrintMaps:
+        if (item instanceof Map) {
+            //noinspection unchecked
+            final Class<? extends Map> collectionClass = (Class<? extends Map>) item.getClass();
+            final PrettyPrintMode mapPrettyPrintMode = getPrettyPrintModeForMap(collectionClass);
+            if (mapPrettyPrintMode == PrettyPrintMode.NO) {
+                break prettyPrintMaps;
+            }
+
+            final int originalSbLength = sb.length();
+            final Map map = (Map) item;
+            sb.append(collectionClass.getSimpleName()).append('{');
+
+            final int postHeaderSbLength = sb.length();
+            try {
+                final int size = map.size();
+                final int moreElements;
+                if (maxCollectionElements == 0) {
+                    sb.append(size);
+                    if (size == 1) {
+                        sb.append(" entry}");
+                    } else {
+                        sb.append(" entries}");
+                    }
+                    return;
+                } else if (mapPrettyPrintMode == PrettyPrintMode.YES_SYNCHRONIZED) {
+                    //noinspection unchecked
+                    moreElements = appendMapSynchronized(sb, map, maxCollectionElements);
+                } else {
+                    if (mapPrettyPrintMode != PrettyPrintMode.YES) {
+                        LOG.error("Unexpected PrettyPrintMode: {}", mapPrettyPrintMode);
+                    }
+                    //noinspection unchecked
+                    moreElements = appendMap(sb, map, maxCollectionElements);
+                }
+
+                if (moreElements > 0) {
+                    sb.append(", ... (").append(moreElements).append(" more)");
+                }
+                sb.append('}');
+                return;
+            } catch (StackOverflowError ex) {
+                sb.setLength(postHeaderSbLength);
+                sb.append("<<<StackOverflow>>>]");
+                LOG.warn("StackOverflow while pretty-printing a map. Self containing map?");
+                return;
+            } catch (Exception ex) {
+                sb.setLength(originalSbLength);
+                LOG.error("Exception while pretty-printing a map.", ex);
             }
         }
 
