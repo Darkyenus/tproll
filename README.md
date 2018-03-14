@@ -34,6 +34,11 @@ This may look like a lot of classes, but don't worry, most are short and don't d
 **What if I want to log to a file AND to stdout/err at the same time?** Just use `LogFunctionMultiplexer` with the ultimate logging functions as constructor parameter.
 This class can (and is primarily built to) route various log messages to different LogFunctions using `Marker`s. See the JavaDoc!
 
+**tproll uses/doesn't use colors, how do I tell it to turn them on/off?**
+Color is used only when outputting to the stdout/err, so don't worry about it polluting log files.
+Color support detection is very basic. To override it, set either Java property `tproll.color` (`$ java -Dtproll.color=true -jar ...`)
+or environment variable `TPROLL_COLOR` to `true` to enable color or `false` to disable.
+
 ## Example
 **TL;DR**, what do I need to copy/paste to leverage this framework?
 

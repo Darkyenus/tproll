@@ -9,10 +9,11 @@ public class TerminalColor {
     public static final boolean COLOR_SUPPORTED;
 
     static {
-        //Check environment variable "TPROLL_COLOR"
-        final String env = System.getenv("TPROLL_COLOR");
+        //Check property tproll.color and then environment variable "TPROLL_COLOR"
+        final String env = System.getProperty("tproll.color", System.getenv("TPROLL_COLOR"));
+
         if (env != null) {
-            COLOR_SUPPORTED = "true".equalsIgnoreCase(env) || "yes".equalsIgnoreCase(env) || "1".equalsIgnoreCase(env);
+            COLOR_SUPPORTED = "true".equalsIgnoreCase(env);
         } else {
             // No environment variable, do heuristic
             // If we are on windows, disable, otherwise enable
@@ -79,6 +80,5 @@ public class TerminalColor {
             sb.append("\u001B[37m");
         }
     }
-
 
 }
