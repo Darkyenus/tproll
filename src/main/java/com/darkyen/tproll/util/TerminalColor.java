@@ -1,7 +1,7 @@
 package com.darkyen.tproll.util;
 
 /**
- *
+ * Simple implementation of ANSI terminal colors.
  */
 public class TerminalColor {
 

@@ -6,7 +6,7 @@ import org.slf4j.Marker;
 /**
  * LogFunction adapter, which allows filtering of messages with too low or too high log level
  */
-public final class LevelFilter implements LogFunction {
+public final class LevelFilter extends LogFunction {
 
     private final LogFunction parent;
     private final byte minLevel, maxLevel;

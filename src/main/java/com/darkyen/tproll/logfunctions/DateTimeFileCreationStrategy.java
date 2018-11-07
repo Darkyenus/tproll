@@ -1,18 +1,15 @@
 package com.darkyen.tproll.logfunctions;
 
 import com.darkyen.tproll.TPLogger;
+import org.joda.time.DateTime;
+import org.joda.time.MutableDateTime;
+import org.joda.time.ReadableDuration;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.DateTimeFormatterBuilder;
 
 import java.io.File;
-import java.text.ParsePosition;
-import java.time.DateTimeException;
-import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
-import java.time.temporal.ChronoField;
-import java.time.temporal.TemporalAccessor;
-import java.time.temporal.TemporalAmount;
 import java.util.ArrayList;
+import java.util.Collections;
 
 /**
  * FileCreationStrategy which returns files with current date/time.
@@ -20,24 +17,26 @@ import java.util.ArrayList;
  */
 public class DateTimeFileCreationStrategy implements LogFileCreationStrategy {
 
-    public static final DateTimeFormatter DEFAULT_DATE_FILE_NAME_FORMATTER = new DateTimeFormatterBuilder().appendValue(ChronoField.YEAR, 4)
+    public static final DateTimeFormatter DEFAULT_DATE_FILE_NAME_FORMATTER = new DateTimeFormatterBuilder()
+            .appendYear(4, 4)
             .appendLiteral('-')
-            .appendValue(ChronoField.MONTH_OF_YEAR, 2)
+            .appendMonthOfYear(2)
             .appendLiteral('-')
-            .appendValue(ChronoField.DAY_OF_MONTH, 2)
+            .appendDayOfMonth(2)
             .toFormatter();
 
-    public static final DateTimeFormatter DEFAULT_DATE_TIME_FILE_NAME_FORMATTER = new DateTimeFormatterBuilder().appendValue(ChronoField.YEAR, 4)
+    public static final DateTimeFormatter DEFAULT_DATE_TIME_FILE_NAME_FORMATTER = new DateTimeFormatterBuilder()
+            .appendYear(4, 4)
             .appendLiteral('-')
-            .appendValue(ChronoField.MONTH_OF_YEAR, 2)
+            .appendMonthOfYear(2)
             .appendLiteral('-')
-            .appendValue(ChronoField.DAY_OF_MONTH, 2)
+            .appendDayOfMonth(2)
             .appendLiteral('.')
-            .appendValue(ChronoField.HOUR_OF_DAY, 2)
+            .appendHourOfDay(2)
             .appendLiteral('-')
-            .appendValue(ChronoField.MINUTE_OF_HOUR, 2)
+            .appendMinuteOfHour(2)
             .appendLiteral('-')
-            .appendValue(ChronoField.SECOND_OF_MINUTE)
+            .appendSecondOfMinute(2)
             .toFormatter();
 
     public static final String DEFAULT_LOG_FILE_EXTENSION = ".log";
@@ -46,9 +45,9 @@ public class DateTimeFileCreationStrategy implements LogFileCreationStrategy {
     private final boolean allowAppend;
     private final String extension;
     private final long folderByteLimit;
-    private final TemporalAmount keepLogsAtLeastFor;
+    private final ReadableDuration keepLogsAtLeastFor;
 
-    public DateTimeFileCreationStrategy(DateTimeFormatter formatter, boolean allowAppend, String extension, long folderKBLimit, TemporalAmount keepLogsAtLeastFor) {
+    public DateTimeFileCreationStrategy(DateTimeFormatter formatter, boolean allowAppend, String extension, long folderKBLimit, ReadableDuration keepLogsAtLeastFor) {
         this.formatter = formatter;
         this.allowAppend = allowAppend;
         this.extension = extension;
@@ -59,7 +58,7 @@ public class DateTimeFileCreationStrategy implements LogFileCreationStrategy {
     @Override
     public File getLogFile(File logDirectory) throws Exception {
         final StringBuilder sb = new StringBuilder();
-        formatter.formatTo(TPLogger.getTimeProvider().time(), sb);
+        formatter.printTo(sb, TPLogger.getTimeProvider().time());
         final int lengthBeforeExtension = sb.length();
         sb.append(extension);
 
@@ -91,7 +90,7 @@ public class DateTimeFileCreationStrategy implements LogFileCreationStrategy {
             sb.append('.').append(nextFileNumber).append(extension);
             currentName = sb.toString();
             nextFileNumber++;
-            if (nextFileNumber >= 10_000) {
+            if (nextFileNumber >= 10000) {
                 //Can't find anything that does not exist
                 throw new Exception("Failed to create log file, all variants exist.");
             }
@@ -108,50 +107,53 @@ public class DateTimeFileCreationStrategy implements LogFileCreationStrategy {
             return;
         }
 
-        final ZonedDateTime now = TPLogger.getTimeProvider().time();
+        final DateTime now = TPLogger.getTimeProvider().time();
 
-        final ArrayList<FileWithTime> deletableFiles = new ArrayList<>();
+        final ArrayList<FileWithTime> deletableFiles = new ArrayList<FileWithTime>();
         for (File file : filesInLogFolder) {
             if (file.equals(currentLogFile)) continue;
             if (!file.isFile() || file.isHidden()) continue;
 
+            final String fileName = file.getName();
+            final MutableDateTime mutableDateTime = new MutableDateTime();
             try {
-                final ParsePosition position = new ParsePosition(0);
-                final String fileName = file.getName();
-                final TemporalAccessor dateTime = formatter.parse(fileName, position);
-                if (fileName.indexOf(extension, position.getIndex()) == -1) {
+                final int positionAfterParse = formatter.parseInto(mutableDateTime, fileName, 0);
+                if (positionAfterParse < 0) {
+                    // Not a log file, probably
+                    continue;
+                }
+
+                if (fileName.indexOf(extension, positionAfterParse) == -1) {
                     //Extension is missing, not a log file
                     continue;
                 }
-
-                ZonedDateTime from;
-                try {
-                    from = ZonedDateTime.from(dateTime);
-                } catch (DateTimeException ex) {
-                    final LocalDateTime localFrom = LocalDateTime.from(dateTime);
-                    from = ZonedDateTime.of(localFrom, now.getZone());
-                }
-
-                if (from.isAfter(now)) {
-                    logger.warn("While trying to clean up, found log file which is from the future: {}. Aborting cleanup.", file);
-                    continue;
-                }
-
-                if (keepLogsAtLeastFor == null) {
-                    deletableFiles.add(new FileWithTime(file, from));
-                } else {
-                    final ZonedDateTime willBeDeletableAtTime = from.plus(keepLogsAtLeastFor);
-                    if (willBeDeletableAtTime.isBefore(now)) {
-                        //Already deletable
-                        deletableFiles.add(new FileWithTime(file, from));
-                    }
-                }
-            } catch (DateTimeException ex) {
+            } catch (UnsupportedOperationException ex) {
                 //Not a log file, probably
+                continue;
+            } catch (IllegalArgumentException ex) {
+                //Not a log file, probably
+                continue;
+            }
+
+            if (mutableDateTime.isAfter(now)) {
+                logger.warn("While trying to clean up, found log file which is from the future: {}. Aborting cleanup.", file);
+                continue;
+            }
+
+            final DateTime dateTime = mutableDateTime.toDateTime();
+
+            if (keepLogsAtLeastFor == null) {
+                deletableFiles.add(new FileWithTime(file, dateTime));
+            } else {
+                final DateTime willBeDeletableAtTime = dateTime.plus(keepLogsAtLeastFor);
+                if (willBeDeletableAtTime.isBefore(now)) {
+                    //Already deletable
+                    deletableFiles.add(new FileWithTime(file, dateTime));
+                }
             }
         }
 
-        deletableFiles.sort(FileWithTime::compareTo);
+        Collections.sort(deletableFiles);
         //TODO Assume first is newest
         long totalSizeBytes = 0;
         int keep;
@@ -182,9 +184,9 @@ public class DateTimeFileCreationStrategy implements LogFileCreationStrategy {
 
     private static final class FileWithTime implements Comparable<FileWithTime> {
         public final File file;
-        public final ZonedDateTime time;
+        public final DateTime time;
 
-        private FileWithTime(File file, ZonedDateTime time) {
+        private FileWithTime(File file, DateTime time) {
             this.file = file;
             this.time = time;
         }

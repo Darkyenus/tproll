@@ -9,12 +9,14 @@ autoScalaLibrary := false
 
 crossPaths := false
 
-val slf4jVersion = "1.7.22"
+val slf4jVersion = "1.7.25"
 
 // Provided, because users may want to supply different version
 libraryDependencies += "org.slf4j" % "slf4j-api" % slf4jVersion % "provided"
 
 libraryDependencies += "org.slf4j" % "slf4j-api" % slf4jVersion % "test"
+
+libraryDependencies += "joda-time" % "joda-time" % "2.10.1"
 
 libraryDependencies += "junit" % "junit" % "4.12" % "test"
 
@@ -27,6 +29,15 @@ libraryDependencies += "com.esotericsoftware.minlog" % "minlog" % "1.2" % "provi
 javacOptions in (Compile, compile) ++= Seq(
   "-Xlint",
   "-encoding", "UTF-8",
+  "-source", "1.6",
+  "-target", "1.6",
+  "-g",
+  "-Xdiags:verbose"
+)
+
+javacOptions in (Test, test) ++= Seq(
+  "-Xlint",
+  "-encoding", "UTF-8",
   "-source", "1.8",
   "-target", "1.8",
   "-g",
@@ -35,7 +46,7 @@ javacOptions in (Compile, compile) ++= Seq(
 
 javacOptions in Compile ++= Seq( //For javadoc
   "-encoding", "UTF-8",
-  "-source", "1.8",
+  "-source", "1.6",
   "-Xdoclint:-missing"
 )
 

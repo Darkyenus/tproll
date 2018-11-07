@@ -3,6 +3,7 @@ package com.darkyen.tproll;
 import org.slf4j.ILoggerFactory;
 
 /**
+ * Instantiated by SLF4J to create {@link TPLogger} instances.
  */
 @SuppressWarnings("WeakerAccess")
 public final class TPLoggerFactory implements ILoggerFactory {

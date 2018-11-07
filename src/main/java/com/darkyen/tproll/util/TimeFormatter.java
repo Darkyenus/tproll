@@ -1,32 +1,31 @@
 package com.darkyen.tproll.util;
 
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
-import java.time.temporal.ChronoField;
+
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.DateTimeFormatterBuilder;
 
 /**
- *
+ * Implements formatting of a time value to string.
  */
 public interface TimeFormatter {
+
     void format(long millis, StringBuilder result);
 
     class AbsoluteTimeFormatter implements TimeFormatter {
 
         public static final DateTimeFormatter DEFAULT_DATE_TIME_FORMATTER  = new DateTimeFormatterBuilder()
-            .appendValue(ChronoField.YEAR, 4)
-            .appendLiteral('-')
-            .appendValue(ChronoField.MONTH_OF_YEAR, 2)
-            .appendLiteral('-')
-            .appendValue(ChronoField.DAY_OF_MONTH, 2)
-            .appendLiteral(' ')
-            .appendValue(ChronoField.HOUR_OF_DAY, 2)
-            .appendLiteral(':')
-            .appendValue(ChronoField.MINUTE_OF_HOUR, 2)
-            .appendLiteral(':')
-            .appendValue(ChronoField.SECOND_OF_MINUTE,2)
-            .toFormatter();
+                .appendYear(4, 4)
+                .appendLiteral('-')
+                .appendMonthOfYear(2)
+                .appendLiteral('-')
+                .appendDayOfMonth(2)
+                .appendLiteral(' ')
+                .appendHourOfDay(2)
+                .appendLiteral(':')
+                .appendMinuteOfHour(2)
+                .appendLiteral(':')
+                .appendSecondOfMinute(2)
+                .toFormatter();
 
         private final DateTimeFormatter formatter;
 
@@ -40,7 +39,7 @@ public interface TimeFormatter {
 
         @Override
         public void format(long millis, StringBuilder result) {
-            formatter.formatTo(LocalDateTime.ofEpochSecond(millis/1000, (int)((millis%1000) * 1_000_000), ZoneOffset.UTC), result);
+            formatter.printTo(result, millis);
         }
     }
 

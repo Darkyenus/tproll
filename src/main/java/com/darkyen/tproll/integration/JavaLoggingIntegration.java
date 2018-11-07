@@ -3,7 +3,6 @@ package com.darkyen.tproll.integration;
 import com.darkyen.tproll.TPLogger;
 import com.darkyen.tproll.util.LevelChangeListener;
 import com.darkyen.tproll.util.SimpleMarker;
-import com.esotericsoftware.minlog.Log;
 
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -65,8 +64,6 @@ public class JavaLoggingIntegration {
         }
     }
 
-    /** Calls {@link Log#setLogger} with a logger which uses logger of {@link TPLogger} for logging.
-     * Also sets */
     public static void enable() {
         final Logger rootLogger = Logger.getLogger("");
         for (Handler handler : rootLogger.getHandlers()) {
@@ -99,9 +96,12 @@ public class JavaLoggingIntegration {
 
         rootLogger.setLevel(fromTPLevel(TPLogger.getLogLevel()));
         final LevelChangeListener oldChangeListener = TPLogger.getLevelChangeListener();
-        TPLogger.setLevelChangeListener(to -> {
-            oldChangeListener.levelChanged(to);
-            rootLogger.setLevel(fromTPLevel(to));
+        TPLogger.setLevelChangeListener(new LevelChangeListener() {
+            @Override
+            public void levelChanged(byte to) {
+                oldChangeListener.levelChanged(to);
+                rootLogger.setLevel(fromTPLevel(to));
+            }
         });
     }
 }

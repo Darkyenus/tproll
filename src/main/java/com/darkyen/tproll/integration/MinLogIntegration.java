@@ -27,9 +27,12 @@ public class MinLogIntegration {
     public static void enable() {
         Log.set(TPLogger.getLogLevel());
         final LevelChangeListener oldChangeListener = TPLogger.getLevelChangeListener();
-        TPLogger.setLevelChangeListener(to -> {
-            oldChangeListener.levelChanged(to);
-            Log.set(to);
+        TPLogger.setLevelChangeListener(new LevelChangeListener() {
+            @Override
+            public void levelChanged(byte to) {
+                oldChangeListener.levelChanged(to);
+                Log.set(to);
+            }
         });
         Log.setLogger(new Log.Logger(){
             @Override

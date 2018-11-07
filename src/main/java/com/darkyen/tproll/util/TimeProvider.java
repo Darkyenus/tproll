@@ -1,22 +1,32 @@
 package com.darkyen.tproll.util;
 
-import java.time.ZonedDateTime;
+import org.joda.time.DateTime;
 
-public interface TimeProvider {
+public abstract class TimeProvider {
 
     /** Returns current time. Can be relative or absolute. MUST be thread safe. */
-    long timeMillis();
+    public abstract long timeMillis();
 
     /** Returns absolute time, with timezone of the application. */
-    default ZonedDateTime time() {
-        return ZonedDateTime.now();
+    public DateTime time() {
+        return DateTime.now();
     }
 
-    TimeProvider CURRENT_TIME_PROVIDER = System::currentTimeMillis;
+    public static final TimeProvider CURRENT_TIME_PROVIDER = new TimeProvider() {
+        @Override
+        public long timeMillis() {
+            return System.currentTimeMillis();
+        }
+    };
 
     /** Creates and returns time provider, which counts time from NOW. */
     static TimeProvider relativeTimeProvider() {
         final long now = System.currentTimeMillis();
-        return () -> System.currentTimeMillis() - now;
+        return new TimeProvider() {
+            @Override
+            public long timeMillis() {
+                return System.currentTimeMillis() - now;
+            }
+        };
     }
 }
