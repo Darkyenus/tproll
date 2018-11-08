@@ -16,10 +16,12 @@ public class TerminalColor {
             COLOR_SUPPORTED = "true".equalsIgnoreCase(env);
         } else {
             // No environment variable, do heuristic
-            // If we are on windows, disable, otherwise enable
+            // If we are on windows or on android, disable, otherwise enable
             final String os = System.getProperty("os.name");
+            final String vendor = System.getProperty("java.vendor");
             //noinspection RedundantIfStatement
-            if (os == null || os.toLowerCase().contains("win")) {
+            if (os == null || os.toLowerCase().contains("win")
+                    || (vendor != null && vendor.toLowerCase().contains("android"))) {
                 COLOR_SUPPORTED = false;
             } else {
                 COLOR_SUPPORTED = true;
