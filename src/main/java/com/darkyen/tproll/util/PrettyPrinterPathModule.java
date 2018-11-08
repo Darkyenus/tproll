@@ -1,5 +1,6 @@
 package com.darkyen.tproll.util;
 
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
@@ -27,6 +28,15 @@ public class PrettyPrinterPathModule implements PrettyPrinter.PrettyPrinterModul
 			return;
 		}
 		APPLICATION_ROOT_DIRECTORY = applicationRootDirectory.normalize().toAbsolutePath();
+	}
+
+	/** @see #getApplicationRootDirectory() */
+	public static void setApplicationRootDirectory(File applicationRootDirectory) {
+		if (applicationRootDirectory == null) {
+			APPLICATION_ROOT_DIRECTORY = null;
+			return;
+		}
+		APPLICATION_ROOT_DIRECTORY = applicationRootDirectory.toPath().normalize().toAbsolutePath();
 	}
 
 	private static void appendPath(StringBuilder sb, Path path) {

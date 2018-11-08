@@ -1,6 +1,5 @@
 package com.darkyen.tproll.logfunctions;
 
-import com.darkyen.tproll.LogFunction;
 import com.darkyen.tproll.TPLogger;
 import com.darkyen.tproll.util.TimeProvider;
 import org.joda.time.format.DateTimeFormatter;
@@ -171,7 +170,7 @@ public class LogFileHandler implements ILogFileHandler {
     }
 
     private void logInternalError(String problem, Throwable error){
-        LogFunction.DEFAULT_LOG_FUNCTION.log("com.darkyen.tproll.advanced.LogFileHandler", TimeProvider.CURRENT_TIME_PROVIDER.timeMillis(), TPLogger.ERROR, null, "INTERNAL ERROR: "+problem);
+		SimpleLogFunction.CONSOLE_LOG_FUNCTION.log("com.darkyen.tproll.advanced.LogFileHandler", TimeProvider.CURRENT_TIME_PROVIDER.timeMillis(), TPLogger.ERROR, null, "INTERNAL ERROR: "+problem);
         if (error != null) {
             System.out.flush();
             error.printStackTrace(System.err);

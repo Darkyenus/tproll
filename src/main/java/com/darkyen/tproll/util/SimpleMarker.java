@@ -9,8 +9,9 @@ import java.util.NoSuchElementException;
 /**
  * Simple marker implementation
  */
-@SuppressWarnings("serialVersionUID")
 public abstract class SimpleMarker implements Marker {
+
+    private static final long serialVersionUID = 1L;
 
     private Marker[] references;
 
@@ -60,6 +61,7 @@ public abstract class SimpleMarker implements Marker {
     }
 
     @Override
+    @Deprecated
     public boolean hasChildren() {
         return hasReferences();
     }

@@ -83,6 +83,9 @@ public final class LogFunctionMultiplexer extends LogFunction {
 
     @SuppressWarnings("serialVersionUID")
     public static class MuxMarker extends SimpleMarker {
+
+        private static final long serialVersionUID = 1L;
+
         private final String name;
         private final LogFunctionMultiplexer multiplexer;
         private final long mask;

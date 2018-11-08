@@ -2,11 +2,12 @@ import com.darkyen.tproll.LogFunction;
 import com.darkyen.tproll.TPLogger;
 import com.darkyen.tproll.logfunctions.FileLogFunction;
 import com.darkyen.tproll.logfunctions.LogFunctionMultiplexer;
+import com.darkyen.tproll.logfunctions.SimpleLogFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.Marker;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 
@@ -16,8 +17,11 @@ import java.io.PrintStream;
 public class LogBenchmark {
 
     public static void main(String[] args){
-        final LogFunction NOP_FUNCTION = (name, time, level, marker, content) -> {
-            //NOP
+        final LogFunction NOP_FUNCTION = new LogFunction() {
+            @Override
+            public void log(String name, long time, byte level, Marker marker, CharSequence content) {
+                // NOP
+            }
         };
         TPLogger.setLogFunction(NOP_FUNCTION);
         measure();
@@ -34,12 +38,12 @@ public class LogBenchmark {
         final PrintStream realOut = System.out;
         System.setOut(new PrintStream(new OutputStream() {
             @Override
-            public void write(int b) throws IOException {
+            public void write(int b) {
 
             }
         }));
 
-        TPLogger.setLogFunction(LogFunction.DEFAULT_LOG_FUNCTION);
+        TPLogger.setLogFunction(SimpleLogFunction.CONSOLE_LOG_FUNCTION);
         measure();
         measure();
         measure();
@@ -51,7 +55,7 @@ public class LogBenchmark {
         measure();
         final int file = measure();
 
-        TPLogger.setLogFunction(new LogFunctionMultiplexer(LogFunction.DEFAULT_LOG_FUNCTION, TPLogger.getLogFunction()));
+        TPLogger.setLogFunction(new LogFunctionMultiplexer(SimpleLogFunction.CONSOLE_LOG_FUNCTION, TPLogger.getLogFunction()));
         measure();
         measure();
         measure();
@@ -74,7 +78,7 @@ public class LogBenchmark {
         final int[] ints = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20};
 
         final long start = System.currentTimeMillis();
-        final int statements = 1_000_000;
+        final int statements = 1000000;
         for (int i = 0; i < statements; i++) {
             switch (i & 7) {
                 case 0:

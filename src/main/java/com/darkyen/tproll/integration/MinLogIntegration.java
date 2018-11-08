@@ -15,6 +15,9 @@ public class MinLogIntegration {
     }
 
     public static final SimpleMarker MIN_LOG_MARKER = new SimpleMarker() {
+
+        private static final long serialVersionUID = 1L;
+
         @Override
         public String getName() {
             return "MinLog";

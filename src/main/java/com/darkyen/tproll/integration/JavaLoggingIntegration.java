@@ -20,6 +20,9 @@ public class JavaLoggingIntegration {
     }
 
     public static final SimpleMarker JAVA_LOGGING_MARKER = new SimpleMarker() {
+
+        private static final long serialVersionUID = 1L;
+
         @Override
         public String getName() {
             return "java.util.logging";
