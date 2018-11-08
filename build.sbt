@@ -9,6 +9,7 @@ autoScalaLibrary := false
 
 crossPaths := false
 
+// When changing, update StaticLoggerBinder.REQUESTED_API_VERSION as well
 val slf4jVersion = "1.7.25"
 
 // Provided, because users may want to supply different version
