@@ -4,6 +4,7 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * Implementation of pretty printing of {@link Path}s.
@@ -12,6 +13,10 @@ import java.nio.file.Path;
  */
 @SuppressWarnings("Since15")
 public class PrettyPrinterPathModule implements PrettyPrinter.PrettyPrinterModule {
+
+	static {
+		Path thisLineWillFailAndPreventLoadingOfThisClassOnOldJVM = Paths.get("");
+	}
 
 	private static Path APPLICATION_ROOT_DIRECTORY = null;
 

@@ -5,13 +5,13 @@ Simple logging backend, designed to have minimal overhead and easy setup, while 
 
 ## Install
 This is a SLF4J backend, so make sure you have [SLF4J API](https://search.maven.org/search?q=g:org.slf4j%20AND%20a:slf4j-api&core=gav).
-Then, get it from jitpack: [![](https://jitpack.io/v/Darkyenus/tproll.svg)](https://jitpack.io/#Darkyenus/tproll)
+Then, get it from jitpack: [![](https://jitpack.io/v/com.darkyen/tproll.svg)](https://jitpack.io/#com.darkyen/tproll)
 
 For convenience:
 ```
 jitpack at https://jitpack.io
 org.slf4j:slf4j-api:1.7.25
-com.github.Darkyenus:tproll:1.2.7-java6
+com.github.Darkyenus:tproll:v1.2.7-java6
 ```
 
 ## Use

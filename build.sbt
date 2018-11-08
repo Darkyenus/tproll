@@ -1,7 +1,7 @@
 
 name := "tproll"
 
-version := "1.2.7-java6"
+version := "1.2.7.1-java6"
 
 organization := "com.darkyen"
 
@@ -25,7 +25,6 @@ libraryDependencies += "com.novocode" % "junit-interface" % "0.11" % "test"
 
 //Integrations
 libraryDependencies += "com.esotericsoftware.minlog" % "minlog" % "1.2" % "provided"
-
 
 javacOptions in (Compile, compile) ++= Seq(
   "-Xlint",
