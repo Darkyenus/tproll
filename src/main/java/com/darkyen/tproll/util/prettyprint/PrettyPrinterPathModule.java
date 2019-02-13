@@ -1,4 +1,6 @@
-package com.darkyen.tproll.util;
+package com.darkyen.tproll.util.prettyprint;
+
+import com.darkyen.tproll.util.PrettyPrinter;
 
 import java.io.File;
 import java.nio.file.Files;

@@ -1,7 +1,7 @@
 package unit;
 
 import com.darkyen.tproll.util.PrettyPrinter;
-import com.darkyen.tproll.util.PrettyPrinterPathModule;
+import com.darkyen.tproll.util.prettyprint.PrettyPrinterPathModule;
 import org.junit.Test;
 
 import java.io.File;

@@ -1,25 +1,12 @@
 package com.darkyen.tproll.util;
 
+import com.darkyen.tproll.util.prettyprint.PrettyPrinterFileModule;
+import com.darkyen.tproll.util.prettyprint.PrettyPrinterPathModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.lang.reflect.Array;
-import java.util.AbstractCollection;
-import java.util.AbstractList;
-import java.util.AbstractMap;
-import java.util.AbstractSet;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.RandomAccess;
-import java.util.TreeMap;
-import java.util.TreeSet;
+import java.util.*;
 
 /**
  * Utility class for safe and human readable printing of objects.
@@ -174,43 +161,17 @@ public final class PrettyPrinter {
         return mode;
     }
 
-    private static final ArrayList<PrettyPrinterModule> EXTRA_MODULES = new ArrayList<PrettyPrinterModule>();
-
     /**
-     * Add additional module with pretty printing logic.
-     * The module will be tried after all basic built-in matchers were tried and failed,
-     * but before collection and toString pretty print logic.
+     * Additional modules with application specific pretty printing logic.
+     * Modules will be tried after all basic built-in matchers were tried and did not match,
+     * but before collection and toString logic.
      *
-     * This method is not synchronized/thread safe, so call it before any logging threads are started.
+     * As the collection is provided as is, without any null checks or synchronization,
+     * it is advised to modify it only at the start of your program, from single thread.
      *
-     * @param module not null
+     * Nulls are not permitted.
      */
-    public static void addPrettyPrintModule(PrettyPrinterModule module) {
-        if (module == null) {
-            throw new NullPointerException("module");
-        }
-        EXTRA_MODULES.add(module);
-    }
-
-    private static void appendFile(StringBuilder sb, File file) {
-        final File absoluteFile = file.getAbsoluteFile();
-        File canonicalFile = null;
-        try {
-            canonicalFile = file.getCanonicalFile();
-        } catch (Exception ignored) {}
-
-        if (canonicalFile == null) {
-            sb.append(absoluteFile.getPath());
-        } else {
-            sb.append(canonicalFile.getPath());
-        }
-
-        if (absoluteFile.isDirectory()) {
-            sb.append('/');
-        } else if (!absoluteFile.exists()) {
-            sb.append(" ⌫");
-        }
-    }
+    public static final ArrayList<PrettyPrinterModule> PRETTY_PRINT_MODULES = new ArrayList<PrettyPrinterModule>();
 
     private static <E> int appendCollection(StringBuilder sb, Collection<E> collection, int maxCollectionElements) {
         int written = 0;
@@ -387,10 +348,6 @@ public final class PrettyPrinter {
             sb.append(((Number) item).intValue());
             return;
         }
-        if (item instanceof File) {
-            appendFile(sb, (File) item);
-            return;
-        }
 
         if (maxCollectionElements < 0) {
             maxCollectionElements = Integer.MAX_VALUE;
@@ -450,8 +407,8 @@ public final class PrettyPrinter {
         }
 
         //noinspection ForLoopReplaceableByForEach
-        for (int i = 0; i < EXTRA_MODULES.size(); i++) {
-            if (EXTRA_MODULES.get(i).append(sb, item, maxCollectionElements)) {
+        for (int i = 0; i < PRETTY_PRINT_MODULES.size(); i++) {
+            if (PRETTY_PRINT_MODULES.get(i).append(sb, item, maxCollectionElements)) {
                 return;
             }
         }
@@ -686,7 +643,7 @@ public final class PrettyPrinter {
 
     /**
      * Extra logic for PrettyPrinter, for custom application specific classes.
-     * @see #addPrettyPrintModule(PrettyPrinterModule)
+     * @see #PRETTY_PRINT_MODULES
      */
     public interface PrettyPrinterModule {
         /**
@@ -703,9 +660,11 @@ public final class PrettyPrinter {
     }
 
     static {
+        PRETTY_PRINT_MODULES.add(new PrettyPrinterFileModule());
+
         // Try to load modules for newer Java than 1.6
         try {
-            addPrettyPrintModule(new PrettyPrinterPathModule());
+            PRETTY_PRINT_MODULES.add(new PrettyPrinterPathModule());
         } catch (Throwable ignored) {}
     }
 }
