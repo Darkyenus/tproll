@@ -1,7 +1,7 @@
 
 name := "tproll"
 
-version := "1.2.7.1-java6"
+version := "1.3.0"
 
 organization := "com.darkyen"
 
