@@ -9,6 +9,7 @@ import com.esotericsoftware.minlog.Log;
  * Call {@link #enable()} if you want to route MinLog logs through tproll.
  * You must have MinLog in classpath to use this class.
  */
+@SuppressWarnings("unused")
 public class MinLogIntegration {
 
     private MinLogIntegration() {

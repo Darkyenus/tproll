@@ -482,16 +482,13 @@ public final class PrettyPrinter {
                     }
                     return;
                 } else if (collectionPrettyPrintMode == PrettyPrintMode.YES_RANDOM) {
-                    //noinspection unchecked
                     moreElements = appendCollectionRandom(sb, (List)collection, maxCollectionElements);
                 } else if (collectionPrettyPrintMode == PrettyPrintMode.YES_SYNCHRONIZED) {
-                    //noinspection unchecked
                     moreElements = appendCollectionSynchronized(sb, collection, maxCollectionElements);
                 } else {
                     if (collectionPrettyPrintMode != PrettyPrintMode.YES) {
                         LOG.error("Unexpected PrettyPrintMode: {}", collectionPrettyPrintMode);
                     }
-                    //noinspection unchecked
                     moreElements = appendCollection(sb, collection, maxCollectionElements);
                 }
 
@@ -537,13 +534,11 @@ public final class PrettyPrinter {
                     }
                     return;
                 } else if (mapPrettyPrintMode == PrettyPrintMode.YES_SYNCHRONIZED) {
-                    //noinspection unchecked
                     moreElements = appendMapSynchronized(sb, map, maxCollectionElements);
                 } else {
                     if (mapPrettyPrintMode != PrettyPrintMode.YES) {
                         LOG.error("Unexpected PrettyPrintMode: {}", mapPrettyPrintMode);
                     }
-                    //noinspection unchecked
                     moreElements = appendMap(sb, map, maxCollectionElements);
                 }
 

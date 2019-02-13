@@ -14,6 +14,7 @@ import static com.darkyen.tproll.TPLogger.*;
 /**
  * Call {@link #enable()} if you want to route java.util.logging logs through tproll.
  */
+@SuppressWarnings("unused")
 public class JavaLoggingIntegration {
 
     private JavaLoggingIntegration() {

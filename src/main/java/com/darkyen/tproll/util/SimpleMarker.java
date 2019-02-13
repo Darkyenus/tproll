@@ -56,6 +56,7 @@ public abstract class SimpleMarker implements Marker {
         }
     }
 
+    @SuppressWarnings("unused")
     public void clear() {
         this.references = NO_REFERENCES;
     }

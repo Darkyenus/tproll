@@ -6,6 +6,7 @@ import org.slf4j.Marker;
 /**
  * LogFunction adapter which prepends given message to each line of logged message
  */
+@SuppressWarnings("unused")
 public class Prepender extends LogFunction {
 
     private final LogFunction parent;

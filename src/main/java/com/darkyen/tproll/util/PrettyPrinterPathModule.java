@@ -11,7 +11,7 @@ import java.nio.file.Paths;
  *
  * These are available only on Java 8 and newer, so this class is loaded at runtime, and only when the JVM supports it.
  */
-@SuppressWarnings("Since15")
+@SuppressWarnings({"Since15", "unused"})
 public class PrettyPrinterPathModule implements PrettyPrinter.PrettyPrinterModule {
 
 	static {

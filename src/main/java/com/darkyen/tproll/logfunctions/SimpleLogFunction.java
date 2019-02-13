@@ -34,6 +34,7 @@ public abstract class SimpleLogFunction extends LogFunction {
         relativeTimeFormatter = new TimeFormatter.RelativeTimeFormatter(false, true, true, true, false);
     }
 
+    @SuppressWarnings("unused")
     public SimpleLogFunction(TimeFormatter absoluteTimeFormatter, TimeFormatter relativeTimeFormatter) {
         this.absoluteTimeFormatter = absoluteTimeFormatter;
         this.relativeTimeFormatter = relativeTimeFormatter;

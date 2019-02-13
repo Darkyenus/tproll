@@ -101,9 +101,6 @@ public interface TimeFormatter {
             if (milliseconds) {
                 if (dirty) result.append(':');
                 if (seconds) {
-                    if (millis < 1000) {
-                        result.append('0');
-                    }
                     if (millis < 100) {
                         result.append('0');
                     }
