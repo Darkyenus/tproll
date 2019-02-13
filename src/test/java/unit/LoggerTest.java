@@ -1,5 +1,6 @@
 package unit;
 
+import com.darkyen.tproll.LogFunction;
 import com.darkyen.tproll.TPLogger;
 import com.darkyen.tproll.TPLoggerFactory;
 import org.hamcrest.CustomTypeSafeMatcher;
@@ -7,6 +8,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.Marker;
 
 import java.io.PrintStream;
 import java.io.PrintWriter;
@@ -29,9 +31,12 @@ public class LoggerTest {
     public static void setUp() {
         log = new TPLoggerFactory().getLogger(LOGGER_NAME);
         logOut = new StringBuilder();
-        TPLogger.setLogFunction((name, time, level, marker, content) -> {
-            synchronized (LOGGER_LOCK) {
-                logOut.append(name).append(" ").append(time).append(" [").append(TPLogger.levelName(level)).append("]: ").append(content);
+        TPLogger.setLogFunction(new LogFunction() {
+            @Override
+            public void log(String name, long time, byte level, Marker marker, CharSequence content) {
+                synchronized (LOGGER_LOCK) {
+                    logOut.append(name).append(" ").append(time).append(" [").append(TPLogger.levelName(level)).append("]: ").append(content);
+                }
             }
         });
     }
@@ -48,7 +53,7 @@ public class LoggerTest {
         logOut.setLength(0);
     }
 
-    private void assertLogIs(String logContent) {
+    private void assertLogIs(final String logContent) {
         assertThat(logOut.toString(), new CustomTypeSafeMatcher<String>("matching regex \"" + logContent + "\"") {
             @Override
             protected boolean matchesSafely(String item) {

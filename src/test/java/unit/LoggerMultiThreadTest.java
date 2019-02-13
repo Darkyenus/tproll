@@ -1,9 +1,11 @@
 package unit;
 
+import com.darkyen.tproll.LogFunction;
 import com.darkyen.tproll.TPLogger;
 import com.darkyen.tproll.TPLoggerFactory;
 import org.junit.Assert;
 import org.junit.Test;
+import org.slf4j.Marker;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -18,11 +20,14 @@ public class LoggerMultiThreadTest {
 
     @Test
     public void stressTest() throws InterruptedException {
-        TPLogger log = new TPLoggerFactory().getLogger(LOGGER_NAME);
-        StringBuilder logOut = new StringBuilder();
-        TPLogger.setLogFunction((name, time, level, marker, content) -> {
-            synchronized (LOGGER_LOCK) {
-                logOut.append(content);
+        final TPLogger log = new TPLoggerFactory().getLogger(LOGGER_NAME);
+        final StringBuilder logOut = new StringBuilder();
+        TPLogger.setLogFunction(new LogFunction() {
+            @Override
+            public void log(String name, long time, byte level, Marker marker, CharSequence content) {
+                synchronized (LOGGER_LOCK) {
+                    logOut.append(content);
+                }
             }
         });
 

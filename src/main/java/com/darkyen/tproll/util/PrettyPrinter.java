@@ -1,28 +1,12 @@
 package com.darkyen.tproll.util;
 
+import com.darkyen.tproll.util.prettyprint.PrettyPrinterFileModule;
+import com.darkyen.tproll.util.prettyprint.PrettyPrinterPathModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.lang.reflect.Array;
-import java.nio.file.Files;
-import java.nio.file.LinkOption;
-import java.nio.file.Path;
-import java.util.AbstractCollection;
-import java.util.AbstractList;
-import java.util.AbstractMap;
-import java.util.AbstractSet;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.RandomAccess;
-import java.util.TreeMap;
-import java.util.TreeSet;
+import java.util.*;
 
 /**
  * Utility class for safe and human readable printing of objects.
@@ -68,7 +52,7 @@ public final class PrettyPrinter {
         NO,
     }
 
-    private static final Map<Class<? extends Collection>, PrettyPrintMode> PRETTY_PRINT_COLLECTIONS = Collections.synchronizedMap(new HashMap<>());
+    private static final Map<Class<? extends Collection>, PrettyPrintMode> PRETTY_PRINT_COLLECTIONS = Collections.synchronizedMap(new HashMap<Class<? extends Collection>, PrettyPrintMode>());
     static {
         PRETTY_PRINT_COLLECTIONS.put(AbstractCollection.class, PrettyPrintMode.YES);
         PRETTY_PRINT_COLLECTIONS.put(AbstractList.class, PrettyPrintMode.YES);
@@ -81,7 +65,10 @@ public final class PrettyPrinter {
         PRETTY_PRINT_COLLECTIONS.put(Collections.synchronizedCollection(Collections.emptyList()).getClass(), PrettyPrintMode.YES_SYNCHRONIZED);
         PRETTY_PRINT_COLLECTIONS.put(Collections.synchronizedList(Collections.emptyList()).getClass(), PrettyPrintMode.YES_SYNCHRONIZED);
         PRETTY_PRINT_COLLECTIONS.put(Collections.synchronizedSet(Collections.emptySet()).getClass(), PrettyPrintMode.YES_SYNCHRONIZED);
-        PRETTY_PRINT_COLLECTIONS.put(Collections.synchronizedNavigableSet(Collections.emptyNavigableSet()).getClass(), PrettyPrintMode.YES_SYNCHRONIZED);
+        try {
+            //noinspection Since15
+            PRETTY_PRINT_COLLECTIONS.put(Collections.synchronizedNavigableSet(Collections.emptyNavigableSet()).getClass(), PrettyPrintMode.YES_SYNCHRONIZED);
+        } catch (Throwable ignored) {}
     }
 
     public static PrettyPrintMode setPrettyPrintModeForCollection(Class<? extends Collection> type, PrettyPrintMode mode) {
@@ -122,14 +109,17 @@ public final class PrettyPrinter {
         return mode;
     }
 
-    private static final Map<Class<? extends Map>, PrettyPrintMode> PRETTY_PRINT_MAPS = Collections.synchronizedMap(new HashMap<>());
+    private static final Map<Class<? extends Map>, PrettyPrintMode> PRETTY_PRINT_MAPS = Collections.synchronizedMap(new HashMap<Class<? extends Map>, PrettyPrintMode>());
     static {
         PRETTY_PRINT_MAPS.put(AbstractMap.class, PrettyPrintMode.YES);
         PRETTY_PRINT_MAPS.put(HashMap.class, PrettyPrintMode.YES);
         PRETTY_PRINT_MAPS.put(TreeMap.class, PrettyPrintMode.YES);
 
         PRETTY_PRINT_MAPS.put(Collections.synchronizedMap(Collections.emptyMap()).getClass(), PrettyPrintMode.YES_SYNCHRONIZED);
-        PRETTY_PRINT_MAPS.put(Collections.synchronizedNavigableMap(Collections.emptyNavigableMap()).getClass(), PrettyPrintMode.YES_SYNCHRONIZED);
+        try {
+            //noinspection Since15
+            PRETTY_PRINT_MAPS.put(Collections.synchronizedNavigableMap(Collections.emptyNavigableMap()).getClass(), PrettyPrintMode.YES_SYNCHRONIZED);
+        } catch (Throwable ignored) {}
     }
 
     public static PrettyPrintMode setPrettyPrintModeForMap(Class<? extends Map> type, PrettyPrintMode mode) {
@@ -171,57 +161,17 @@ public final class PrettyPrinter {
         return mode;
     }
 
-    private static Path APPLICATION_ROOT_DIRECTORY = null;
-
-    private static void appendPath(StringBuilder sb, Path path) {
-        path = path.normalize();
-
-        final Path root = APPLICATION_ROOT_DIRECTORY;
-        final Path shownPath;
-        if (root != null && path.startsWith(root)) {
-            shownPath = root.relativize(path);
-        } else {
-            shownPath = path;
-        }
-
-        String showPathString = shownPath.toString();
-        if (showPathString.isEmpty()) {
-            // For empty strings (that is, current directory) write .
-            sb.append('.');
-        } else {
-            sb.append(showPathString);
-        }
-
-        // Not following links, if this returns true, the file is simply not there
-        if (Files.exists(path, LinkOption.NOFOLLOW_LINKS)) {
-            // File exists!
-            if (Files.isDirectory(path)) {
-                // It is a directory, indicate that
-                sb.append('/');
-            }
-
-            if (!Files.exists(path)) {
-                // File does not exist when following links, therefore it is a broken link
-                sb.append(" ⇥");
-            } else {
-                // Where does the file lead when following links?
-                Path leadsToPath = null;
-                try {
-                    final Path realPath = path.toRealPath();
-                    if (!path.toAbsolutePath().equals(realPath)) {
-                        leadsToPath = realPath;
-                    }
-                } catch (Throwable ignored) {}
-
-                if (leadsToPath != null) {
-                    sb.append(" → ").append(leadsToPath.toString());
-                }
-            }
-        } else {
-            // File does not exist
-            sb.append(" ⌫");
-        }
-    }
+    /**
+     * Additional modules with application specific pretty printing logic.
+     * Modules will be tried after all basic built-in matchers were tried and did not match,
+     * but before collection and toString logic.
+     *
+     * As the collection is provided as is, without any null checks or synchronization,
+     * it is advised to modify it only at the start of your program, from single thread.
+     *
+     * Nulls are not permitted.
+     */
+    public static final ArrayList<PrettyPrinterModule> PRETTY_PRINT_MODULES = new ArrayList<PrettyPrinterModule>();
 
     private static <E> int appendCollection(StringBuilder sb, Collection<E> collection, int maxCollectionElements) {
         int written = 0;
@@ -268,7 +218,7 @@ public final class PrettyPrinter {
 
     private static <E> int appendCollectionSynchronized(StringBuilder sb, Collection<E> collection, int maxCollectionElements) {
         final int[] writtenAndRemaining = {0, 0};
-        collection.forEach(element -> {
+        for (E element : collection) {
             if (writtenAndRemaining[0] == maxCollectionElements) {
                 writtenAndRemaining[1]++;
             } else {
@@ -282,7 +232,7 @@ public final class PrettyPrinter {
                 }
                 writtenAndRemaining[0]++;
             }
-        });
+        }
         return writtenAndRemaining[1];
     }
 
@@ -317,7 +267,10 @@ public final class PrettyPrinter {
 
     private static <K, V> int appendMapSynchronized(StringBuilder sb, Map<K, V> map, int maxCollectionElements) {
         final int[] writtenAndRemaining = {0, 0};
-        map.forEach((key, value) -> {
+        for (Map.Entry<K, V> entry : map.entrySet()) {
+            final K key = entry.getKey();
+            final V value = entry.getValue();
+
             if (writtenAndRemaining[0] == maxCollectionElements) {
                 writtenAndRemaining[1]++;
             } else {
@@ -337,7 +290,7 @@ public final class PrettyPrinter {
                 }
                 writtenAndRemaining[0]++;
             }
-        });
+        }
         return writtenAndRemaining[1];
     }
 
@@ -372,35 +325,27 @@ public final class PrettyPrinter {
             return;
         }
         if (item instanceof Boolean) {
-            sb.append((boolean) item);
+            sb.append(((Boolean) item).booleanValue());
             return;
         }
         if (item instanceof Character) {
-            sb.append((char) item);
+            sb.append(((Character) item).charValue());
             return;
         }
         if (item instanceof Long) {
-            sb.append((long) item);
+            sb.append(((Long) item).longValue());
             return;
         }
         if (item instanceof Float) {
-            sb.append((float) item);
+            sb.append(((Float) item).floatValue());
             return;
         }
         if (item instanceof Double) {
-            sb.append((double) item);
+            sb.append(((Double) item).doubleValue());
             return;
         }
         if (item instanceof Integer || item instanceof Short || item instanceof Byte) {
-            sb.append((int) item);
-            return;
-        }
-        if (item instanceof File) {
-            appendPath(sb, ((File) item).toPath());
-            return;
-        }
-        if (item instanceof Path) {
-            appendPath(sb, (Path) item);
+            sb.append(((Number) item).intValue());
             return;
         }
 
@@ -461,6 +406,15 @@ public final class PrettyPrinter {
             }
         }
 
+        //noinspection ForLoopReplaceableByForEach
+        for (int i = 0; i < PRETTY_PRINT_MODULES.size(); i++) {
+            final PrettyPrinterModule module = PRETTY_PRINT_MODULES.get(i);
+            if (module.accepts(item)) {
+                module.append(sb, item, maxCollectionElements);
+                return;
+            }
+        }
+
         prettyPrintCollections:
         if (item instanceof Collection) {
             //noinspection unchecked
@@ -487,16 +441,13 @@ public final class PrettyPrinter {
                     }
                     return;
                 } else if (collectionPrettyPrintMode == PrettyPrintMode.YES_RANDOM) {
-                    //noinspection unchecked
                     moreElements = appendCollectionRandom(sb, (List)collection, maxCollectionElements);
                 } else if (collectionPrettyPrintMode == PrettyPrintMode.YES_SYNCHRONIZED) {
-                    //noinspection unchecked
                     moreElements = appendCollectionSynchronized(sb, collection, maxCollectionElements);
                 } else {
                     if (collectionPrettyPrintMode != PrettyPrintMode.YES) {
                         LOG.error("Unexpected PrettyPrintMode: {}", collectionPrettyPrintMode);
                     }
-                    //noinspection unchecked
                     moreElements = appendCollection(sb, collection, maxCollectionElements);
                 }
 
@@ -542,13 +493,11 @@ public final class PrettyPrinter {
                     }
                     return;
                 } else if (mapPrettyPrintMode == PrettyPrintMode.YES_SYNCHRONIZED) {
-                    //noinspection unchecked
                     moreElements = appendMapSynchronized(sb, map, maxCollectionElements);
                 } else {
                     if (mapPrettyPrintMode != PrettyPrintMode.YES) {
                         LOG.error("Unexpected PrettyPrintMode: {}", mapPrettyPrintMode);
                     }
-                    //noinspection unchecked
                     moreElements = appendMap(sb, map, maxCollectionElements);
                 }
 
@@ -590,7 +539,12 @@ public final class PrettyPrinter {
         return result.toString();
     }
 
-    private static final ThreadLocal<StringBuilderWriter> sbwCache = ThreadLocal.withInitial(StringBuilderWriter::new);
+    private static final ThreadLocal<StringBuilderWriter> sbwCache = new ThreadLocal<StringBuilderWriter>() {
+        @Override
+        protected StringBuilderWriter initialValue() {
+            return new StringBuilderWriter();
+        }
+    };
 
     /**
      * Substitutes given objects into the template, one by one, on places where "{}" characters are.
@@ -690,32 +644,33 @@ public final class PrettyPrinter {
     }
 
     /**
-     * Applications with well specified root directory can put it here. All file paths under this directory will
-     * be printed out by this class in relative form
+     * Extra logic for PrettyPrinter, for custom application specific classes.
+     * @see #PRETTY_PRINT_MODULES
      */
-    public static Path getApplicationRootDirectory() {
-        return APPLICATION_ROOT_DIRECTORY;
+    public interface PrettyPrinterModule {
+
+        /** Check if this module will print given object.
+         * @param item to check, not null */
+        boolean accepts(Object item);
+
+        /**
+         * Print given item to the string builder.
+         * May use {@link PrettyPrinter#append(StringBuilder, Object)} in its implementation.
+         * Must not throw any exceptions.
+         *
+         * @param sb to append the pretty-printed representation to
+         * @param item to be pretty-printed. Not null. Called only after {@link #accepts(Object)} returned true for this instance.
+         * @param maxCollectionElements >=0, if item is a collection, it is advisable to print only this many elements
+         */
+        void append(StringBuilder sb, Object item, int maxCollectionElements);
     }
 
-    /**
-     * @see #getApplicationRootDirectory()
-     */
-    public static void setApplicationRootDirectory(Path applicationRootDirectory) {
-        if (applicationRootDirectory == null) {
-            APPLICATION_ROOT_DIRECTORY = null;
-            return;
-        }
-        APPLICATION_ROOT_DIRECTORY = applicationRootDirectory.normalize().toAbsolutePath();
-    }
+    static {
+        PRETTY_PRINT_MODULES.add(new PrettyPrinterFileModule());
 
-    /**
-     * @see #getApplicationRootDirectory()
-     */
-    public static void setApplicationRootDirectory(File applicationRootDirectory) {
-        if (applicationRootDirectory == null) {
-            APPLICATION_ROOT_DIRECTORY = null;
-            return;
-        }
-        setApplicationRootDirectory(applicationRootDirectory.toPath());
+        // Try to load modules for newer Java than 1.6
+        try {
+            PRETTY_PRINT_MODULES.add(new PrettyPrinterPathModule());
+        } catch (Throwable ignored) {}
     }
 }

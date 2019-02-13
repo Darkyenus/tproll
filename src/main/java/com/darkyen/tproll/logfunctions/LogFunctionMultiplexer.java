@@ -9,9 +9,9 @@ import java.util.Iterator;
 /**
  * Technically a de-multiplexer, allows usage of markers to divert messages to different/multiple log functions.
  */
-public final class LogFunctionMultiplexer implements LogFunction {
+public final class LogFunctionMultiplexer extends LogFunction {
 
-    private static final int MAX_TARGETS = Long.BYTES * 8;
+    private static final int MAX_TARGETS = 8 * 8; //Long.BYTES * 8;
 
     private LogFunction[] muxTargets = {};
     private long optOutMask = 0;
@@ -83,6 +83,9 @@ public final class LogFunctionMultiplexer implements LogFunction {
 
     @SuppressWarnings("serialVersionUID")
     public static class MuxMarker extends SimpleMarker {
+
+        private static final long serialVersionUID = 1L;
+
         private final String name;
         private final LogFunctionMultiplexer multiplexer;
         private final long mask;

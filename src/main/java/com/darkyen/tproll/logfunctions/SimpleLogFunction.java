@@ -4,52 +4,44 @@ import com.darkyen.tproll.LogFunction;
 import com.darkyen.tproll.TPLogger;
 import com.darkyen.tproll.util.TerminalColor;
 import com.darkyen.tproll.util.TimeFormatter;
+import org.joda.time.format.DateTimeFormatterBuilder;
 import org.slf4j.Marker;
 
 import java.io.PrintStream;
-import java.time.format.DateTimeFormatterBuilder;
-import java.time.temporal.ChronoField;
 
 import static com.darkyen.tproll.util.TerminalColor.*;
 
 /**
- * Simple log function, that logs to the stdout and stderr.
+ * Simple log function, basis for other custom implementations.
  * Logging of time is configurable.
+ *
+ * @see SimpleLogFunction#CONSOLE_LOG_FUNCTION for implementation that logs into the console
  */
-public final class ConsoleLogFunction implements LogFunction {
+public abstract class SimpleLogFunction extends LogFunction {
 
     private final StringBuilder sb = new StringBuilder();
     private final TimeFormatter absoluteTimeFormatter;
     private final TimeFormatter relativeTimeFormatter;
 
-    private PrintStream log_lastStream;
-
-    public ConsoleLogFunction() {
+    public SimpleLogFunction() {
         absoluteTimeFormatter = new TimeFormatter.AbsoluteTimeFormatter(new DateTimeFormatterBuilder()
-                .appendValue(ChronoField.HOUR_OF_DAY, 2)
+                .appendHourOfDay(2)
                 .appendLiteral(':')
-                .appendValue(ChronoField.MINUTE_OF_HOUR, 2)
+                .appendMinuteOfHour(2)
                 .appendLiteral(':')
-                .appendValue(ChronoField.SECOND_OF_MINUTE, 2)
+                .appendSecondOfMinute(2)
                 .toFormatter());
         relativeTimeFormatter = new TimeFormatter.RelativeTimeFormatter(false, true, true, true, false);
     }
 
-    public ConsoleLogFunction(TimeFormatter absoluteTimeFormatter, TimeFormatter relativeTimeFormatter) {
+    @SuppressWarnings("unused")
+    public SimpleLogFunction(TimeFormatter absoluteTimeFormatter, TimeFormatter relativeTimeFormatter) {
         this.absoluteTimeFormatter = absoluteTimeFormatter;
         this.relativeTimeFormatter = relativeTimeFormatter;
     }
 
     @Override
-    public synchronized void log(String name, long time, byte level, Marker marker, CharSequence content) {
-        PrintStream out = (level <= TPLogger.INFO || level == TPLogger.LOG || TerminalColor.COLOR_SUPPORTED) ? System.out : System.err;
-        if (log_lastStream != out) {
-            if (log_lastStream != null){
-                log_lastStream.flush();//To preserve out/err order
-            }
-            log_lastStream = out;
-        }
-
+    public final synchronized void log(String name, long time, byte level, Marker marker, CharSequence content) {
         final StringBuilder sb = this.sb;
         black(sb);
         sb.append('[');
@@ -113,8 +105,29 @@ public final class ConsoleLogFunction implements LogFunction {
 
         sb.append(content);
 
-        out.append(sb).append('\n');
+        logLine(level, sb);
 
         sb.setLength(0);
     }
+
+    protected abstract void logLine(byte level, CharSequence formattedContent);
+
+    /** Implementation of {@link SimpleLogFunction} which logs to stdout and stderr. */
+    public static final SimpleLogFunction CONSOLE_LOG_FUNCTION = new SimpleLogFunction() {
+
+        private PrintStream log_lastStream;
+
+        @Override
+        protected void logLine(byte level, CharSequence formattedContent) {
+            PrintStream out = (level <= TPLogger.INFO || level == TPLogger.LOG || TerminalColor.COLOR_SUPPORTED) ? System.out : System.err;
+            if (log_lastStream != out) {
+                if (log_lastStream != null){
+                    log_lastStream.flush();//To preserve out/err order
+                }
+                log_lastStream = out;
+            }
+
+            out.println(formattedContent);
+        }
+    };
 }

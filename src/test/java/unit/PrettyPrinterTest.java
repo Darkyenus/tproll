@@ -1,20 +1,14 @@
 package unit;
 
 import com.darkyen.tproll.util.PrettyPrinter;
+import com.darkyen.tproll.util.prettyprint.PrettyPrinterPathModule;
 import org.junit.Test;
 
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
-import java.util.Set;
+import java.nio.file.Paths;
+import java.util.*;
 
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.is;
@@ -24,7 +18,12 @@ import static org.junit.Assert.assertThat;
 /**
  * Additional pretty-printer tests
  */
+@SuppressWarnings("Since15")
 public class PrettyPrinterTest {
+
+    private static Path file(String path) {
+        return Paths.get(path);
+    }
 
     @Test
     public void simpleAbsoluteFile() {
@@ -33,22 +32,35 @@ public class PrettyPrinterTest {
     }
 
     @Test
-    public void simpleRelativeFile() {
-        assertEquals("./", PrettyPrinter.toString(new File(".")));
-        assertEquals("wo ⌫", PrettyPrinter.toString(new File("./whatever/../wo")));
+    public void simpleAbsolutePath() {
+        assertEquals(file("").toAbsolutePath()+"/", PrettyPrinter.toString(file(".").toAbsolutePath()));
+        assertEquals(file("wo").toAbsolutePath()+" ⌫", PrettyPrinter.toString(file("./whatever/../wo").toAbsolutePath()));
     }
 
     @Test
-    public void rootedFiles() {
-        try {
-            PrettyPrinter.setApplicationRootDirectory(new File("./1234"));
-            assertEquals(new File("").getAbsolutePath() + "/", PrettyPrinter.toString(new File(".").getAbsoluteFile()));
-            assertEquals(new File("wo").getAbsolutePath() + " ⌫", PrettyPrinter.toString(new File("./whatever/../wo").getAbsoluteFile()));
+    public void simpleRelativeFile() {
+        // As File pretty printer does not honor root, it should become absolute
+        assertEquals(file("").toAbsolutePath()+"/", PrettyPrinter.toString(new File(".")));
+        assertEquals(file("").toAbsolutePath()+"/wo ⌫", PrettyPrinter.toString(new File("./whatever/../wo")));
+    }
 
-            assertEquals(". ⌫", PrettyPrinter.toString(new File("./1234/").getAbsoluteFile()));
-            assertEquals("wo ⌫", PrettyPrinter.toString(new File("./1234/whatever/../wo").getAbsoluteFile()));
+    @Test
+    public void simpleRelativePath() {
+        assertEquals("./", PrettyPrinter.toString(file(".")));
+        assertEquals("wo ⌫", PrettyPrinter.toString(file("./whatever/../wo")));
+    }
+
+    @Test
+    public void rootedPaths() {
+        try {
+            PrettyPrinterPathModule.setApplicationRootDirectory(file("./1234"));
+            assertEquals(file("").toAbsolutePath() + "/", PrettyPrinter.toString(file(".").toAbsolutePath()));
+            assertEquals(file("wo").toAbsolutePath() + " ⌫", PrettyPrinter.toString(file("./whatever/../wo").toAbsolutePath()));
+
+            assertEquals(". ⌫", PrettyPrinter.toString(file("./1234/").toAbsolutePath()));
+            assertEquals("wo ⌫", PrettyPrinter.toString(file("./1234/whatever/../wo").toAbsolutePath()));
         } finally {
-            PrettyPrinter.setApplicationRootDirectory((Path) null);
+            PrettyPrinterPathModule.setApplicationRootDirectory((Path) null);
         }
     }
 
@@ -75,7 +87,7 @@ public class PrettyPrinterTest {
         Files.createSymbolicLink(directory_link, directory);
 
         try {
-            PrettyPrinter.setApplicationRootDirectory(tempRoot);
+            PrettyPrinterPathModule.setApplicationRootDirectory(tempRoot);
 
             assertEquals("simple", PrettyPrinter.toString(simple));
             assertEquals("valid_link → "+simple, PrettyPrinter.toString(valid_link));
@@ -84,7 +96,7 @@ public class PrettyPrinterTest {
             assertEquals("directory/", PrettyPrinter.toString(directory));
             assertEquals("directory_link/ → "+directory, PrettyPrinter.toString(directory_link));
         } finally {
-            PrettyPrinter.setApplicationRootDirectory((Path) null);
+            PrettyPrinterPathModule.setApplicationRootDirectory((Path) null);
         }
     }
 
@@ -97,9 +109,9 @@ public class PrettyPrinterTest {
         Files.createFile(simple);
 
         try {
-            PrettyPrinter.setApplicationRootDirectory(tempRoot);
+            PrettyPrinterPathModule.setApplicationRootDirectory(tempRoot);
 
-            final List<Path> arrayList = new ArrayList<>();
+            final List<Path> arrayList = new ArrayList<Path>();
             arrayList.add(simple);
             assertEquals("ArrayList[1 element]", PrettyPrinter.toString(arrayList, 0));
             arrayList.add(simple);
@@ -107,7 +119,7 @@ public class PrettyPrinterTest {
             assertEquals("ArrayList[2 elements]", PrettyPrinter.toString(arrayList, 0));
             assertEquals("ArrayList[simple, ... (1 more)]", PrettyPrinter.toString(arrayList, 1));
 
-            final List<Path> phonyList = new PhonyList<>();
+            final List<Path> phonyList = new PhonyList<Path>();
             phonyList.add(simple);
             assertEquals("PhonyList[1 element]", PrettyPrinter.toString(phonyList, 0));
             phonyList.add(simple);
@@ -116,6 +128,9 @@ public class PrettyPrinterTest {
             assertEquals("PhonyList[simple, ... (1 more)]", PrettyPrinter.toString(phonyList, 1));
 
             final List<Object> customList = new List<Object>() {
+
+                private static final long serialVersionUID = 1L;
+
                 @Override
                 public int size() {
                     return 0;
@@ -238,7 +253,7 @@ public class PrettyPrinterTest {
             };
             assertEquals("Yo-yo, I'm so custom.", PrettyPrinter.toString(customList));
         } finally {
-            PrettyPrinter.setApplicationRootDirectory((Path) null);
+            PrettyPrinterPathModule.setApplicationRootDirectory((Path) null);
         }
     }
 
@@ -251,9 +266,9 @@ public class PrettyPrinterTest {
         Files.createFile(simple);
 
         try {
-            PrettyPrinter.setApplicationRootDirectory(tempRoot);
+            PrettyPrinterPathModule.setApplicationRootDirectory(tempRoot);
 
-            final Map<Object, Object> hashMap = new HashMap<>();
+            final Map<Object, Object> hashMap = new HashMap<Object, Object>();
             hashMap.put("uno", simple);
             assertEquals("HashMap{1 entry}", PrettyPrinter.toString(hashMap, 0));
             assertEquals("HashMap{uno=simple}", PrettyPrinter.toString(hashMap, 1));
@@ -267,7 +282,7 @@ public class PrettyPrinterTest {
                     is("HashMap{simple=dos, ... (1 more)}")
             ));
 
-            final Map<Object, Object> phonyMap = new PhonyMap<>();
+            final Map<Object, Object> phonyMap = new PhonyMap<Object, Object>();
             phonyMap.put("uno", simple);
             assertEquals("PhonyMap{1 entry}", PrettyPrinter.toString(phonyMap, 0));
             assertEquals("PhonyMap{uno=simple}", PrettyPrinter.toString(phonyMap, 1));
@@ -344,7 +359,7 @@ public class PrettyPrinterTest {
             };
             assertEquals("Yo-yo, I'm so custom.", PrettyPrinter.toString(customMap));
         } finally {
-            PrettyPrinter.setApplicationRootDirectory((Path) null);
+            PrettyPrinterPathModule.setApplicationRootDirectory((Path) null);
         }
     }
 

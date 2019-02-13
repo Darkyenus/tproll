@@ -1,14 +1,11 @@
 package com.darkyen.tproll.logfunctions;
 
-import com.darkyen.tproll.LogFunction;
 import com.darkyen.tproll.TPLogger;
 import com.darkyen.tproll.util.TimeProvider;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.DateTimeFormatterBuilder;
 
 import java.io.*;
-import java.nio.file.FileAlreadyExistsException;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
-import java.time.temporal.ChronoField;
 import java.util.zip.GZIPOutputStream;
 
 /**
@@ -17,21 +14,19 @@ import java.util.zip.GZIPOutputStream;
 public class LogFileHandler implements ILogFileHandler {
 
     private static final DateTimeFormatter FILE_ACTION_TIME_FORMATTER = new DateTimeFormatterBuilder()
-            .appendValue(ChronoField.YEAR, 4)
+            .appendYear(4, 4)
             .appendLiteral('-')
-            .appendValue(ChronoField.MONTH_OF_YEAR, 2)
+            .appendMonthOfYear(2)
             .appendLiteral('-')
-            .appendValue(ChronoField.DAY_OF_MONTH, 2)
+            .appendDayOfMonth(2)
             .appendLiteral(' ')
-            .appendValue(ChronoField.HOUR_OF_DAY, 2)
+            .appendHourOfDay(2)
             .appendLiteral(':')
-            .appendValue(ChronoField.MINUTE_OF_HOUR, 2)
+            .appendMinuteOfHour(2)
             .appendLiteral(':')
-            .appendValue(ChronoField.SECOND_OF_MINUTE,2)
+            .appendSecondOfMinute(2)
             .appendLiteral(' ')
-            .appendZoneId()
-            .appendLiteral(' ')
-            .appendOffsetId()
+            .appendTimeZoneId()
             .toFormatter();
 
     private final TPLogger LOG = new TPLogger("LogFileHandler");
@@ -65,11 +60,11 @@ public class LogFileHandler implements ILogFileHandler {
                 if(parentFile != null){
                     if(parentFile.exists()){
                         if(!parentFile.isDirectory()){
-                            throw new FileAlreadyExistsException("Parent file of '"+logFile.getAbsolutePath()+"' exists and is not a directory");
+                            throw new FileNotFoundException("Parent file of '"+logFile.getAbsolutePath()+"' exists and is not a directory");
                         }
                     }else{
                         if(!parentFile.mkdirs()){
-                            throw new Exception("Failed to create parent directories for '"+logFile.getAbsolutePath()+"'");
+                            throw new IOException("Failed to create parent directories for '"+logFile.getAbsolutePath()+"'");
                         }
                     }
                 }
@@ -89,7 +84,7 @@ public class LogFileHandler implements ILogFileHandler {
             fileWriter = new PrintWriter(new FileWriter(logFile, fileCreationStrategy.shouldAppend()), true);
 
             fileWriter.append("Log file opened at ");
-            FILE_ACTION_TIME_FORMATTER.formatTo(TPLogger.getTimeProvider().time(), fileWriter);
+            FILE_ACTION_TIME_FORMATTER.printTo(fileWriter, TPLogger.getTimeProvider().time());
             fileWriter.append('\n');
             fileWriter.flush();
 
@@ -121,10 +116,15 @@ public class LogFileHandler implements ILogFileHandler {
         this.openedFile = null;
 
         if(fileWriter != null){
-
             fileWriter.append("Log file closed at ");
-            FILE_ACTION_TIME_FORMATTER.formatTo(TPLogger.getTimeProvider().time(), fileWriter);
-            fileWriter.append('\n');
+			try {
+				FILE_ACTION_TIME_FORMATTER.printTo(fileWriter, TPLogger.getTimeProvider().time());
+			} catch (IOException e) {
+				System.err.println("Closing timestamp printing failed");
+				e.printStackTrace(System.err);
+				fileWriter.append("<failed to print>");
+			}
+			fileWriter.append('\n');
             fileWriter.flush();
 
             if(fileWriter.checkError()){
@@ -136,16 +136,19 @@ public class LogFileHandler implements ILogFileHandler {
             if (compressOnExit) {
                 final File compressedFile = new File(openedFile.getParentFile(), openedFile.getName()+".gzip");
                 if (!compressedFile.exists()) {
-                    try(GZIPOutputStream out = new GZIPOutputStream(new FileOutputStream(compressedFile))) {
-                        try (FileInputStream in = new FileInputStream(openedFile)) {
-                            final byte[] buffer = new byte[(int)Math.min(4096, openedFile.length())];
-                            while (true) {
-                                final int read = in.read(buffer);
-                                if (read <= 0) break;
-                                out.write(buffer, 0, read);
-                            }
-                            out.close();
-                        }
+					GZIPOutputStream out = null;
+					FileInputStream in = null;
+					try {
+						out = new GZIPOutputStream(new FileOutputStream(compressedFile));
+						in = new FileInputStream(openedFile);
+
+						final byte[] buffer = new byte[(int)Math.min(4096, openedFile.length())];
+						while (true) {
+							final int read = in.read(buffer);
+							if (read <= 0) break;
+							out.write(buffer, 0, read);
+						}
+						out.close();
 
                         if (compressedFile.length() == 0) {
                             //noinspection ResultOfMethodCallIgnored
@@ -155,18 +158,33 @@ public class LogFileHandler implements ILogFileHandler {
                             openedFile.delete();
                         }
                     } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+						System.err.println("Failed to compress log file '"+compressedFile+"'");
+                        e.printStackTrace(System.err);
+                    } finally {
+						close(out);
+						close(in);
+					}
                 }
             }
         }
     }
 
     private void logInternalError(String problem, Throwable error){
-        LogFunction.DEFAULT_LOG_FUNCTION.log("com.darkyen.tproll.advanced.LogFileHandler", TimeProvider.CURRENT_TIME_PROVIDER.timeMillis(), TPLogger.ERROR, null, "INTERNAL ERROR: "+problem);
+		SimpleLogFunction.CONSOLE_LOG_FUNCTION.log("com.darkyen.tproll.advanced.LogFileHandler", TimeProvider.CURRENT_TIME_PROVIDER.timeMillis(), TPLogger.ERROR, null, "INTERNAL ERROR: "+problem);
         if (error != null) {
             System.out.flush();
             error.printStackTrace(System.err);
         }
     }
+
+    private static void close(Closeable closeable) {
+    	if (closeable != null) {
+			try {
+				closeable.close();
+			} catch (IOException e) {
+				System.err.println("close() failed");
+				e.printStackTrace(System.err);
+			}
+		}
+	}
 }

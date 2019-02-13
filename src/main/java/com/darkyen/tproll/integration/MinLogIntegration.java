@@ -9,12 +9,16 @@ import com.esotericsoftware.minlog.Log;
  * Call {@link #enable()} if you want to route MinLog logs through tproll.
  * You must have MinLog in classpath to use this class.
  */
+@SuppressWarnings("unused")
 public class MinLogIntegration {
 
     private MinLogIntegration() {
     }
 
     public static final SimpleMarker MIN_LOG_MARKER = new SimpleMarker() {
+
+        private static final long serialVersionUID = 1L;
+
         @Override
         public String getName() {
             return "MinLog";
@@ -27,9 +31,12 @@ public class MinLogIntegration {
     public static void enable() {
         Log.set(TPLogger.getLogLevel());
         final LevelChangeListener oldChangeListener = TPLogger.getLevelChangeListener();
-        TPLogger.setLevelChangeListener(to -> {
-            oldChangeListener.levelChanged(to);
-            Log.set(to);
+        TPLogger.setLevelChangeListener(new LevelChangeListener() {
+            @Override
+            public void levelChanged(byte to) {
+                oldChangeListener.levelChanged(to);
+                Log.set(to);
+            }
         });
         Log.setLogger(new Log.Logger(){
             @Override

@@ -1,5 +1,6 @@
 package com.darkyen.tproll;
 
+import com.darkyen.tproll.logfunctions.SimpleLogFunction;
 import com.darkyen.tproll.util.LevelChangeListener;
 import com.darkyen.tproll.util.TimeProvider;
 import org.slf4j.Logger;
@@ -15,7 +16,7 @@ import static com.darkyen.tproll.util.PrettyPrinter.patternSubstituteInto;
  *
  * Default log level is INFO, default time provider is {@link TimeProvider#CURRENT_TIME_PROVIDER},
  * default level change listener is {@link LevelChangeListener#LOG} and
- * default log function is {@link LogFunction#DEFAULT_LOG_FUNCTION}.
+ * default log function is {@link com.darkyen.tproll.logfunctions.SimpleLogFunction#CONSOLE_LOG_FUNCTION}.
  */
 @SuppressWarnings({"unused", "WeakerAccess"})
 public final class TPLogger implements Logger {
@@ -41,7 +42,7 @@ public final class TPLogger implements Logger {
     /** Special level which always gets through, used for logging-related messages. */
     public static final byte LOG = 6;
 
-    private static LogFunction logFunction = LogFunction.DEFAULT_LOG_FUNCTION;
+    private static LogFunction logFunction = SimpleLogFunction.CONSOLE_LOG_FUNCTION;
     private static LevelChangeListener levelChangeListener = LevelChangeListener.LOG;
     private static TimeProvider timeProvider = TimeProvider.CURRENT_TIME_PROVIDER;
 
@@ -509,7 +510,7 @@ public final class TPLogger implements Logger {
     
     //------------------------------------- INTERNAL ----------------------------------------------------
 
-    private final ArrayList<Object> arguments = new ArrayList<>();
+    private final ArrayList<Object> arguments = new ArrayList<Object>();
 
     private void _log(String name, long time, byte level, Marker marker, String msg) {
         if(!logFunction.isEnabled(level, marker)) return;
@@ -563,10 +564,13 @@ public final class TPLogger implements Logger {
     public static void attachUnhandledExceptionLogger(){
         final Logger logger = LoggerFactory.getLogger("UnhandledException");
         final Thread.UncaughtExceptionHandler originalHandler = Thread.getDefaultUncaughtExceptionHandler();
-        Thread.setDefaultUncaughtExceptionHandler((t, e) -> {
-            logger.error("{} has crashed with exception: {}",t, e);
-            if(originalHandler != null){
-                originalHandler.uncaughtException(t, e);
+        Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+            @Override
+            public void uncaughtException(Thread t, Throwable e) {
+                logger.error("{} has crashed with exception: {}", t, e);
+                if (originalHandler != null) {
+                    originalHandler.uncaughtException(t, e);
+                }
             }
         });
     }

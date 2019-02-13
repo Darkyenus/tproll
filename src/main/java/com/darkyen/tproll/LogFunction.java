@@ -1,9 +1,12 @@
 package com.darkyen.tproll;
 
-import com.darkyen.tproll.logfunctions.ConsoleLogFunction;
 import org.slf4j.Marker;
 
-public interface LogFunction {
+/**
+ * Implements logging of the message to a medium, depending on the implementation.
+ * For example console, file or other logging system.
+ */
+public abstract class LogFunction {
     /**
      * Called when logger needs to log a message. Called only when that log level is enabled in the logger.
      * Can be called by any thread, and thus MUST be thread safe.
@@ -13,17 +16,14 @@ public interface LogFunction {
      * @param marker provided or null
      * @param content of this message, formatted, without trailing newline. Do not keep around!
      */
-    void log(String name, long time, byte level, Marker marker, CharSequence content);
+    public abstract void log(String name, long time, byte level, Marker marker, CharSequence content);
 
     /**
      * Additional check whether this log function will log message of given level/marker.
      * This is only secondary check, primary level check is done through log level of TPLogger.
      * @return if such message would be logged
      */
-    default boolean isEnabled(byte level, Marker marker){
+    public boolean isEnabled(byte level, Marker marker){
         return true;
     }
-
-    /** Default log function. It is {@link ConsoleLogFunction()}. */
-    LogFunction DEFAULT_LOG_FUNCTION = new ConsoleLogFunction();
 }

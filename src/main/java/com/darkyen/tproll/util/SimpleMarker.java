@@ -5,13 +5,13 @@ import org.slf4j.Marker;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import java.util.function.Consumer;
 
 /**
  * Simple marker implementation
  */
-@SuppressWarnings("serialVersionUID")
 public abstract class SimpleMarker implements Marker {
+
+    private static final long serialVersionUID = 1L;
 
     private Marker[] references;
 
@@ -56,11 +56,13 @@ public abstract class SimpleMarker implements Marker {
         }
     }
 
+    @SuppressWarnings("unused")
     public void clear() {
         this.references = NO_REFERENCES;
     }
 
     @Override
+    @Deprecated
     public boolean hasChildren() {
         return hasReferences();
     }
@@ -78,7 +80,7 @@ public abstract class SimpleMarker implements Marker {
     public Iterator<Marker> iterator() {
         final Marker[] references = this.references;
         if (references.length == 0) {
-            return Collections.emptyIterator();
+            return Collections.<Marker>emptyList().iterator();
         } else {
             return new Iterator<Marker>() {
                 private int index = 0;
@@ -92,6 +94,11 @@ public abstract class SimpleMarker implements Marker {
                 public Marker next() {
                     if (index >= references.length) throw new NoSuchElementException("iteration has ended");
                     return references[index++];
+                }
+
+                @Override
+                public void remove() {
+                    throw new UnsupportedOperationException();
                 }
             };
         }

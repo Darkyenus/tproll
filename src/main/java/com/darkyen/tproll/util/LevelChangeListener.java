@@ -12,7 +12,11 @@ public interface LevelChangeListener {
      * @param to one of {@link TPLogger#TRACE}, {@link TPLogger#DEBUG}, {@link TPLogger#INFO}, {@link TPLogger#WARN} and {@link TPLogger#ERROR} */
     void levelChanged(byte to);
 
-    LevelChangeListener NO_OP = (to) -> {};
+    @SuppressWarnings("unused")
+    LevelChangeListener NO_OP = new LevelChangeListener() {
+        @Override
+        public void levelChanged(byte to) {}
+    };
 
     LevelChangeListener LOG = new LevelChangeListener() {
         final TPLogger LOG = new TPLogger("Log Level");

@@ -1,6 +1,5 @@
 package com.darkyen.tproll.util;
 
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.IllegalFormatException;
@@ -205,17 +204,17 @@ public final class StringBuilderWriter extends PrintWriter {
 
     private static final Writer NOP_WRITER = new Writer() {
         @Override
-        public void write(char[] cbuf, int off, int len) throws IOException {
+        public void write(char[] cbuf, int off, int len) {
             //NOP
         }
 
         @Override
-        public void flush() throws IOException {
+        public void flush() {
             //NOP
         }
 
         @Override
-        public void close() throws IOException {
+        public void close() {
             //NOP
         }
     };

@@ -3,10 +3,10 @@ package com.darkyen.tproll.logfunctions;
 import com.darkyen.tproll.LogFunction;
 import com.darkyen.tproll.TPLogger;
 import com.darkyen.tproll.util.TimeFormatter;
+import org.joda.time.Duration;
 import org.slf4j.Marker;
 
 import java.io.File;
-import java.time.Duration;
 
 /**
  * LogFunction which logs to a file.
@@ -14,7 +14,7 @@ import java.time.Duration;
  *
  * @see LogFileHandler default implementation of ILogFileHandler
  */
-public class FileLogFunction implements LogFunction {
+public class FileLogFunction extends LogFunction {
 
     private final Object LOCK = new Object();
     private final TimeFormatter timeFormatter;
@@ -32,7 +32,12 @@ public class FileLogFunction implements LogFunction {
         this.logFileHandler = logFileHandler;
 
         if (registerShutdownHook) {
-            Runtime.getRuntime().addShutdownHook(new Thread(this::dispose));
+            Runtime.getRuntime().addShutdownHook(new Thread() {
+                @Override
+                public void run() {
+                    dispose();
+                }
+            });
         }
     }
 
@@ -54,7 +59,7 @@ public class FileLogFunction implements LogFunction {
                                 false,
                                 DateTimeFileCreationStrategy.DEFAULT_LOG_FILE_EXTENSION,
                                 512 * 1024,
-                                Duration.ofDays(60)),
+                                Duration.standardDays(60)),
                         true),
                 true);
     }
