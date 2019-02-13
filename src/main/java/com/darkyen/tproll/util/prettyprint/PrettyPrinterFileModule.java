@@ -8,11 +8,14 @@ import java.io.File;
  * Implementation of pretty printing of {@link File}s.
  */
 public class PrettyPrinterFileModule implements PrettyPrinter.PrettyPrinterModule {
+
 	@Override
-	public boolean append(StringBuilder sb, Object item, int maxCollectionElements) {
-		if (!(item instanceof File)) {
-			return false;
-		}
+	public boolean accepts(Object item) {
+		return item instanceof File;
+	}
+
+	@Override
+	public void append(StringBuilder sb, Object item, int maxCollectionElements) {
 		final File file = (File)item;
 
 		final File absoluteFile = file.getAbsoluteFile();
@@ -32,7 +35,5 @@ public class PrettyPrinterFileModule implements PrettyPrinter.PrettyPrinterModul
 		} else if (!absoluteFile.exists()) {
 			sb.append(" ⌫");
 		}
-
-		return true;
 	}
 }

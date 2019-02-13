@@ -408,7 +408,9 @@ public final class PrettyPrinter {
 
         //noinspection ForLoopReplaceableByForEach
         for (int i = 0; i < PRETTY_PRINT_MODULES.size(); i++) {
-            if (PRETTY_PRINT_MODULES.get(i).append(sb, item, maxCollectionElements)) {
+            final PrettyPrinterModule module = PRETTY_PRINT_MODULES.get(i);
+            if (module.accepts(item)) {
+                module.append(sb, item, maxCollectionElements);
                 return;
             }
         }
@@ -646,17 +648,21 @@ public final class PrettyPrinter {
      * @see #PRETTY_PRINT_MODULES
      */
     public interface PrettyPrinterModule {
+
+        /** Check if this module will print given object.
+         * @param item to check, not null */
+        boolean accepts(Object item);
+
         /**
-         * Attempt to print given item to the string builder.
+         * Print given item to the string builder.
          * May use {@link PrettyPrinter#append(StringBuilder, Object)} in its implementation.
+         * Must not throw any exceptions.
          *
          * @param sb to append the pretty-printed representation to
-         * @param item to be pretty-printed. Not null
+         * @param item to be pretty-printed. Not null. Called only after {@link #accepts(Object)} returned true for this instance.
          * @param maxCollectionElements >=0, if item is a collection, it is advisable to print only this many elements
-         * @return true if the item has been appended to sb, false if not and other matchers should be tried,
-         * in which case sb must have not been modified
          */
-        boolean append(StringBuilder sb, Object item, int maxCollectionElements);
+        void append(StringBuilder sb, Object item, int maxCollectionElements);
     }
 
     static {

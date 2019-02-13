@@ -97,11 +97,12 @@ public class PrettyPrinterPathModule implements PrettyPrinter.PrettyPrinterModul
 	}
 
 	@Override
-	public boolean append(StringBuilder sb, Object item, int maxCollectionElements) {
-		if (item instanceof Path) {
-			appendPath(sb, (Path) item);
-			return true;
-		}
-		return false;
+	public boolean accepts(Object item) {
+		return item instanceof Path;
+	}
+
+	@Override
+	public void append(StringBuilder sb, Object item, int maxCollectionElements) {
+		appendPath(sb, (Path) item);
 	}
 }
