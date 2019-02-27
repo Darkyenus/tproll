@@ -1,9 +1,5 @@
 import com.darkyen.tproll.TPLogger;
-import com.darkyen.tproll.logfunctions.DateTimeFileCreationStrategy;
 import com.darkyen.tproll.logfunctions.FileLogFunction;
-import com.darkyen.tproll.logfunctions.LogFileHandler;
-import com.darkyen.tproll.util.TimeFormatter;
-import org.joda.time.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,22 +9,10 @@ import java.util.Random;
 /**
  *
  */
-public class LogFileRotationTest {
+public class LogFileRotationTest2 {
     public static void main(String[] args){
         TPLogger.setLogFunction(
-                new FileLogFunction(
-                        new TimeFormatter.AbsoluteTimeFormatter(),
-                        new LogFileHandler(
-                                new File("test logs"),
-                                new DateTimeFileCreationStrategy(
-                                        DateTimeFileCreationStrategy.DEFAULT_DATE_TIME_FILE_NAME_FORMATTER,
-                                        true,
-                                        ".bacon",
-                                        10, Duration.standardSeconds(10)
-                                ),
-                                false),
-                        true
-                )
+                new FileLogFunction(new File("test logs2"))
         );
         TPLogger.TRACE();
 

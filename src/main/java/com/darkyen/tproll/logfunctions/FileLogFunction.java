@@ -58,7 +58,7 @@ public class FileLogFunction extends LogFunction {
                                 DateTimeFileCreationStrategy.DEFAULT_DATE_FILE_NAME_FORMATTER,
                                 false,
                                 DateTimeFileCreationStrategy.DEFAULT_LOG_FILE_EXTENSION,
-                                512 * 1024,
+                                512 * 1000,
                                 Duration.standardDays(60)),
                         true),
                 true);

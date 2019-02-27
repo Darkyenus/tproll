@@ -31,13 +31,14 @@ Convenience constructor is provided, which could be enough for most applications
 If you need something more advanced/specific, you can create your own `ILogFileHandler` or just `LogFileCreationStrategy` for the default `LogFileHandler`.
 This may look like a lot of classes, but don't worry, most are short and don't do many things, they are split for customizability.
 
-**What if I want to log to a file AND to stdout/err at the same time?** Just use `LogFunctionMultiplexer` with the ultimate logging functions as constructor parameter.
-This class can (and is primarily built to) route various log messages to different LogFunctions using `Marker`s. See the JavaDoc!
+**What if I want to log to a file AND to stdout/err at the same time?** Just use `LogFunctionMultiplexer` with the desired logging functions passed as constructor parameters.
+This class can also route various log messages to different LogFunctions using `Marker`s. See the JavaDoc!
 
 **tproll uses/doesn't use colors, how do I tell it to turn them on/off?**
 Color is used only when outputting to the stdout/err, so don't worry about it polluting log files.
-Color support detection is very basic. To override it, set either Java property `tproll.color` (`$ java -Dtproll.color=true -jar ...`)
-or environment variable `TPROLL_COLOR` to `true` to enable color or `false` to disable.
+Color support detection is somewhat naive, so it may not correctly detect the desired value.
+To override it, set either Java property `tproll.color` (`$ java -Dtproll.color=true -jar ...`)
+or environment variable `TPROLL_COLOR` to `true` to enable color, or `false` to disable.
 
 ## Example
 **TL;DR**, what do I need to copy/paste to leverage this framework?
@@ -51,8 +52,8 @@ private static final Logger LOG = LoggerFactory.getLogger(Main.class);
 public static void main(String[] args) throws Exception {
     TPLogger.setLogFunction(
             new LogFunctionMultiplexer(
-                    LogFunction.DEFAULT_LOG_FUNCTION, // Log to console
-                    new FileLogFunction(new File("test logs")) // & Log to file in "test logs" directory
+                    SimpleLogFunction.CONSOLE_LOG_FUNCTION, // Log to console...
+                    new FileLogFunction(new File("test logs")) // and to a file in "test logs" directory
             ));
 
     LOG.warn("tproll {} !", (System.currentTimeMillis() & 1) == 0 ? "is great" : "rules");
