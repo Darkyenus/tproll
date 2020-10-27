@@ -1,7 +1,7 @@
 # tproll
 Lightweight logging backend for SLF4J
 
-Simple logging backend, designed to have minimal overhead and easy setup, while allowing for huge customizability.
+Simple logging backend, designed to have minimal overhead and easy setup, while being flexible when you need it.
 
 ## Install
 This is a SLF4J backend, so make sure you have [SLF4J API](https://search.maven.org/search?q=g:org.slf4j%20AND%20a:slf4j-api&core=gav).
@@ -15,7 +15,7 @@ com.github.Darkyenus:tproll:v1.3.1
 ```
 
 ## Use
-If you have tproll and SLF4J api on classpath, you can start using SLF4J logging as usual.
+If you have tproll and SLF4J API on classpath, you can start using SLF4J logging as usual.
 By default, the backend is logging to the stdout/err only, and from info level up.
 All configuration is done through code. No XML, no json, no new languages to learn.
 To change log level, call `com.darkyen.tproll.TPLogger.DEBUG()` and other static functions.
