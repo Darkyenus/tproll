@@ -17,7 +17,7 @@
         <!-- When changing, update StaticLoggerBinder.REQUESTED_API_VERSION as well -->
         <slf4j.version>1.7.30</slf4j.version>
         <joda-time.version>2.10.1</joda-time.version>
-        <junit.version>4.12</junit.version>
+        <junit.version>4.13.1</junit.version>
     </properties>
 
     <dependencies>
