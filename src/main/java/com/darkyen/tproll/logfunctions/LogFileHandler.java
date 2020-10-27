@@ -134,7 +134,7 @@ public class LogFileHandler implements ILogFileHandler {
 
 
             if (compressOnExit) {
-                final File compressedFile = new File(openedFile.getParentFile(), openedFile.getName()+".gzip");
+                final File compressedFile = new File(openedFile.getParentFile(), openedFile.getName()+".gz");
                 if (!compressedFile.exists()) {
 					GZIPOutputStream out = null;
 					FileInputStream in = null;

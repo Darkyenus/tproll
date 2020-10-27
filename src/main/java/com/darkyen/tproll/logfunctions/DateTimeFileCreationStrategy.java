@@ -155,7 +155,7 @@ public class DateTimeFileCreationStrategy implements LogFileCreationStrategy {
             }
             position++; // Now after the first dot
             final int extensionAt = fileName.indexOf(extension, position);
-            // Is there an extension? (Arbitrary text can appear after extension, for example archival appends ".gzip")
+            // Is there an extension? (Arbitrary text can appear after extension, for example archival appends ".gz")
             if (extensionAt < position) {
                 // Need an extension, not a log file
                 continue;
