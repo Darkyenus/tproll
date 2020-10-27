@@ -11,7 +11,7 @@ For convenience:
 ```
 jitpack at https://jitpack.io
 org.slf4j:slf4j-api:1.7.30
-com.github.Darkyenus:tproll:v1.3.1
+com.github.Darkyenus:tproll:1.3.2
 ```
 
 ## Use
