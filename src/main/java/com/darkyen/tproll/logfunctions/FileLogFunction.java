@@ -2,17 +2,19 @@ package com.darkyen.tproll.logfunctions;
 
 import com.darkyen.tproll.LogFunction;
 import com.darkyen.tproll.TPLogger;
+import com.darkyen.tproll.util.RenderedMarker;
 import com.darkyen.tproll.util.TimeFormatter;
 import org.joda.time.Duration;
 import org.slf4j.Marker;
 
 import java.io.File;
+import java.util.Iterator;
 
 /**
  * LogFunction which logs to a file.
  * Actual file handling is done through {@link ILogFileHandler} interface.
  *
- * @see LogFileHandler default implementation of ILogFileHandler
+ * @see FileLogFunction default implementation of ILogFileHandler
  */
 public class FileLogFunction extends LogFunction {
 
@@ -80,12 +82,25 @@ public class FileLogFunction extends LogFunction {
                 timeFormatter.format(time, sb);
                 sb.append(' ');
             }
-            sb.append(alignedLevelName(level)).append(']').append(' ').append(name).append(':').append(' ');
+            sb.append(alignedLevelName(level));
+            appendMarker(sb, marker, false);
+            sb.append(']').append(' ').append(name).append(':').append(' ');
             sb.append(content).append('\n');
 
             logFileHandler.log(sb);
 
             sb.setLength(0);
+        }
+    }
+
+    private void appendMarker(StringBuilder sb, Marker marker, boolean startWithSpace) {
+        if (marker instanceof RenderedMarker) {
+            if (startWithSpace) sb.append(' ');
+            sb.append("| ");
+            sb.append(marker.getName());
+        }
+        for (Iterator<Marker> it = marker.iterator(); it.hasNext(); ) {
+            appendMarker(sb, it.next(), true);
         }
     }
 

@@ -2,12 +2,14 @@ package com.darkyen.tproll.logfunctions;
 
 import com.darkyen.tproll.LogFunction;
 import com.darkyen.tproll.TPLogger;
+import com.darkyen.tproll.util.RenderedMarker;
 import com.darkyen.tproll.util.TerminalColor;
 import com.darkyen.tproll.util.TimeFormatter;
 import org.joda.time.format.DateTimeFormatterBuilder;
 import org.slf4j.Marker;
 
 import java.io.PrintStream;
+import java.util.Iterator;
 
 import static com.darkyen.tproll.util.TerminalColor.*;
 
@@ -94,6 +96,8 @@ public abstract class SimpleLogFunction extends LogFunction {
         }
 
         black(sb);
+        appendMarker(sb, marker, false);
+        black(sb);
         sb.append(']');
         purple(sb);
         sb.append(' ');
@@ -108,6 +112,19 @@ public abstract class SimpleLogFunction extends LogFunction {
         logLine(level, sb);
 
         sb.setLength(0);
+    }
+
+    private void appendMarker(StringBuilder sb, Marker marker, boolean startWithSpace) {
+        if (marker instanceof RenderedMarker) {
+            black(sb);
+            if (startWithSpace) sb.append(' ');
+            sb.append("| ");
+            yellow(sb);
+            sb.append(marker.getName());
+        }
+        for (Iterator<Marker> it = marker.iterator(); it.hasNext(); ) {
+            appendMarker(sb, it.next(), true);
+        }
     }
 
     protected abstract void logLine(byte level, CharSequence formattedContent);
