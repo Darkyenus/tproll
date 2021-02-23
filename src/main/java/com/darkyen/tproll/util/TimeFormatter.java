@@ -1,9 +1,13 @@
 package com.darkyen.tproll.util;
 
 
+import com.darkyen.tproll.TPLogger;
 import org.jetbrains.annotations.NotNull;
-import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.DateTimeFormatterBuilder;
+
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.temporal.ChronoField;
 
 /**
  * Implements formatting of a time value to string.
@@ -15,17 +19,19 @@ public interface TimeFormatter {
     class AbsoluteTimeFormatter implements TimeFormatter {
 
         public static final @NotNull DateTimeFormatter DEFAULT_DATE_TIME_FORMATTER  = new DateTimeFormatterBuilder()
-                .appendYear(4, 4)
+                .parseCaseInsensitive()
+                .appendValue(ChronoField.YEAR, 4)
                 .appendLiteral('-')
-                .appendMonthOfYear(2)
+                .appendValue(ChronoField.MONTH_OF_YEAR, 2)
                 .appendLiteral('-')
-                .appendDayOfMonth(2)
+                .appendValue(ChronoField.DAY_OF_MONTH, 2)
                 .appendLiteral(' ')
-                .appendHourOfDay(2)
+                .appendValue(ChronoField.HOUR_OF_DAY, 2)
                 .appendLiteral(':')
-                .appendMinuteOfHour(2)
+                .appendValue(ChronoField.MINUTE_OF_HOUR, 2)
                 .appendLiteral(':')
-                .appendSecondOfMinute(2)
+                .appendValue(ChronoField.SECOND_OF_MINUTE, 2)
+                .parseDefaulting(ChronoField.NANO_OF_SECOND, 0)
                 .toFormatter();
 
         private final @NotNull DateTimeFormatter formatter;
@@ -40,7 +46,7 @@ public interface TimeFormatter {
 
         @Override
         public void format(long millis, @NotNull StringBuilder result) {
-            formatter.printTo(result, millis);
+            formatter.formatTo(Instant.ofEpochMilli(millis).atZone(TPLogger.getTimeProvider().timeZone()), result);
         }
     }
 

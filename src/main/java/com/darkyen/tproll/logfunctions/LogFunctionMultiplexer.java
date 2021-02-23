@@ -122,7 +122,7 @@ public final class LogFunctionMultiplexer extends LogFunction {
         }
     }
 
-    private static long findMuxTargets(@NotNull LogFunctionMultiplexer multiplexer, @NotNull Marker from) {
+    private static long findMuxTargets(@NotNull LogFunctionMultiplexer multiplexer, @Nullable Marker from) {
         if (from == null) return 0;
         long result = 0;
         if (from instanceof MuxMarker) {

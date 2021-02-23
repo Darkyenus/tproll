@@ -57,6 +57,6 @@ public class BasicLoggingTest {
 
         logThings(LOG);
 
-        throw new Exception("Test exception");
+        throw new Exception("Test exception for unhandled exception logger");
     }
 }

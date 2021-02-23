@@ -40,6 +40,11 @@ Color support detection is somewhat naive, so it may not correctly detect the de
 To override it, set either Java property `tproll.color` (`$ java -Dtproll.color=true -jar ...`)
 or environment variable `TPROLL_COLOR` to `true` to enable color, or `false` to disable.
 
+**What is the supported Java version?**
+The code is compiled with language level of Java 8, but the usage of Java 8 APIs is kept to a minimum
+and build so that code fails gracefully when running without them, for example on Android or on a different API-restricted platform.
+One exception is that `java.time` APIs are required. On Android, use [helper library](https://github.com/JakeWharton/ThreeTenABP) or whatever is the suggested workaround nowadays.
+
 ## Example
 **TL;DR**, what do I need to copy/paste to leverage this framework?
 

@@ -6,10 +6,11 @@ import com.darkyen.tproll.util.TerminalColor;
 import com.darkyen.tproll.util.TimeFormatter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.joda.time.format.DateTimeFormatterBuilder;
 import org.slf4j.Marker;
 
 import java.io.PrintStream;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.temporal.ChronoField;
 
 import static com.darkyen.tproll.util.RenderableMarker.appendMarker;
 import static com.darkyen.tproll.util.TerminalColor.*;
@@ -28,11 +29,13 @@ public abstract class SimpleLogFunction extends LogFunction {
 
     public SimpleLogFunction() {
         absoluteTimeFormatter = new TimeFormatter.AbsoluteTimeFormatter(new DateTimeFormatterBuilder()
-                .appendHourOfDay(2)
+                .parseCaseInsensitive()
+                .appendValue(ChronoField.HOUR_OF_DAY, 2)
                 .appendLiteral(':')
-                .appendMinuteOfHour(2)
+                .appendValue(ChronoField.MINUTE_OF_HOUR, 2)
                 .appendLiteral(':')
-                .appendSecondOfMinute(2)
+                .appendValue(ChronoField.SECOND_OF_MINUTE, 2)
+                .parseDefaulting(ChronoField.NANO_OF_SECOND, 0)
                 .toFormatter());
         relativeTimeFormatter = new TimeFormatter.RelativeTimeFormatter(false, true, true, true, false);
     }

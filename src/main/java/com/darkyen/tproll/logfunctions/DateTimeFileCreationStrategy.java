@@ -3,15 +3,19 @@ package com.darkyen.tproll.logfunctions;
 import com.darkyen.tproll.TPLogger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.joda.time.DateTime;
-import org.joda.time.MutableDateTime;
-import org.joda.time.ReadableDuration;
-import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.DateTimeFormatterBuilder;
 
 import java.io.File;
+import java.text.ParsePosition;
+import java.time.DateTimeException;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.temporal.ChronoField;
+import java.time.temporal.TemporalAccessor;
+import java.time.temporal.TemporalAmount;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Comparator;
 
 /**
  * FileCreationStrategy which returns files with current date/time.
@@ -20,25 +24,29 @@ import java.util.Collections;
 public class DateTimeFileCreationStrategy implements LogFileCreationStrategy {
 
     public static final @NotNull DateTimeFormatter DEFAULT_DATE_FILE_NAME_FORMATTER = new DateTimeFormatterBuilder()
-            .appendYear(4, 4)
+            .parseCaseInsensitive()
+            .appendValue(ChronoField.YEAR, 4)
             .appendLiteral('-')
-            .appendMonthOfYear(2)
+            .appendValue(ChronoField.MONTH_OF_YEAR, 2)
             .appendLiteral('-')
-            .appendDayOfMonth(2)
+            .appendValue(ChronoField.DAY_OF_MONTH, 2)
+            .parseDefaulting(ChronoField.NANO_OF_DAY, 0L)
             .toFormatter();
 
     public static final @NotNull DateTimeFormatter DEFAULT_DATE_TIME_FILE_NAME_FORMATTER = new DateTimeFormatterBuilder()
-            .appendYear(4, 4)
+            .parseCaseInsensitive()
+            .appendValue(ChronoField.YEAR, 4)
             .appendLiteral('-')
-            .appendMonthOfYear(2)
+            .appendValue(ChronoField.MONTH_OF_YEAR, 2)
             .appendLiteral('-')
-            .appendDayOfMonth(2)
+            .appendValue(ChronoField.DAY_OF_MONTH, 2)
             .appendLiteral('.')
-            .appendHourOfDay(2)
+            .appendValue(ChronoField.HOUR_OF_DAY, 2)
             .appendLiteral('-')
-            .appendMinuteOfHour(2)
+            .appendValue(ChronoField.MINUTE_OF_HOUR, 2)
             .appendLiteral('-')
-            .appendSecondOfMinute(2)
+            .appendValue(ChronoField.SECOND_OF_MINUTE, 2)
+            .parseDefaulting(ChronoField.NANO_OF_SECOND, 0L)
             .toFormatter();
 
     public static final @NotNull String DEFAULT_LOG_FILE_EXTENSION = "log";
@@ -49,7 +57,7 @@ public class DateTimeFileCreationStrategy implements LogFileCreationStrategy {
     private final boolean allowAppend;
     private final @NotNull String extension;
     private final long folderKiloByteLimit;
-    private final @Nullable ReadableDuration keepLogsAtLeastFor;
+    private final @Nullable TemporalAmount keepLogsAtLeastFor;
 
     /**
      * @param formatter          to use when creating files. Must not be empty
@@ -58,7 +66,7 @@ public class DateTimeFileCreationStrategy implements LogFileCreationStrategy {
      * @param folderKBLimit      how many kilobytes should be tolerated inside the log folder before logs are removed, {@link #FOLDER_SIZE_LIMIT_ZERO} = always remove all other log files, {@link #FOLDER_SIZE_LIMIT_NONE} = never delete. Note that this does not include files which cannot be deleted, i.e. non-log files and files which are too new to be deleted.
      * @param keepLogsAtLeastFor even if the folder is larger than the limit, do not delete logs younger than this
      */
-    public DateTimeFileCreationStrategy(@NotNull DateTimeFormatter formatter, boolean allowAppend, @NotNull String extension, long folderKBLimit, @Nullable ReadableDuration keepLogsAtLeastFor) {
+    public DateTimeFileCreationStrategy(@NotNull DateTimeFormatter formatter, boolean allowAppend, @NotNull String extension, long folderKBLimit, @Nullable TemporalAmount keepLogsAtLeastFor) {
         this.formatter = formatter;
         this.allowAppend = allowAppend;
         this.extension = extension.startsWith(".") ? extension.substring(1) : extension;
@@ -69,7 +77,7 @@ public class DateTimeFileCreationStrategy implements LogFileCreationStrategy {
     @Override
     public @NotNull File getLogFile(@NotNull File logDirectory) throws Exception {
         final StringBuilder sb = new StringBuilder();
-        formatter.printTo(sb, TPLogger.getTimeProvider().time());
+        formatter.formatTo(TPLogger.getTimeProvider().time(), sb);
         sb.append('.');
         final int lengthBeforeSuffix = sb.length();
         sb.append(extension);
@@ -124,7 +132,7 @@ public class DateTimeFileCreationStrategy implements LogFileCreationStrategy {
             return;
         }
 
-        final DateTime now = TPLogger.getTimeProvider().time();
+        final ZonedDateTime now = TPLogger.getTimeProvider().time();
 
         final ArrayList<FileWithTime> deletableFiles = new ArrayList<>();
         considerFile:
@@ -133,18 +141,28 @@ public class DateTimeFileCreationStrategy implements LogFileCreationStrategy {
             if (!file.isFile() || file.isHidden()) continue;
 
             final String fileName = file.getName();
-            final MutableDateTime mutableDateTime = new MutableDateTime();
 
-            int position;
+            ZonedDateTime dateTime;
+            final ParsePosition parsePosition = new ParsePosition(0);
             try {
-                mutableDateTime.setMillis(now);
-                position = formatter.parseInto(mutableDateTime, fileName, 0);
-            } catch (UnsupportedOperationException | IllegalArgumentException ex) {
+                final TemporalAccessor temporalAccessor = formatter.parse(fileName, parsePosition);
+                try {
+                    dateTime = ZonedDateTime.from(temporalAccessor);
+                } catch (DateTimeException ignored) {
+                    try {
+                        dateTime = LocalDateTime.from(temporalAccessor).atZone(now.getZone());
+                    } catch (DateTimeException e) {
+                        logger.error("Failed to extract ZonedDateTime from {}. Provided formatter may not hold enough information.", fileName, e);
+                        continue;
+                    }
+                }
+            } catch (Exception ex) {
                 //Not a log file, probably
                 continue;
             }
 
-            if (position <= 0 || position >= fileName.length()) {
+            int position = parsePosition.getIndex();
+            if (position <= 0 || position >= fileName.length() || parsePosition.getErrorIndex() != -1) {
                 // Not matched anything or matched whole fileName = not a log file (because we need at least extension)
                 continue;
             }
@@ -185,17 +203,15 @@ public class DateTimeFileCreationStrategy implements LogFileCreationStrategy {
                 fileIndex = 1;
             }
 
-            if (mutableDateTime.isAfter(now)) {
-                logger.warn("While trying to clean up, found log file which is from the future: {} ({} is after {}). Keeping.", file, mutableDateTime, now);
+            if (dateTime.isAfter(now)) {
+                logger.warn("While trying to clean up, found log file which is from the future: {} ({} is after {}). Keeping.", file, dateTime, now);
                 continue;
             }
-
-            final DateTime dateTime = mutableDateTime.toDateTime();
 
             if (keepLogsAtLeastFor == null) {
                 deletableFiles.add(new FileWithTime(file, dateTime, fileIndex));
             } else {
-                final DateTime willBeDeletableAtTime = dateTime.plus(keepLogsAtLeastFor);
+                final ZonedDateTime willBeDeletableAtTime = dateTime.plus(keepLogsAtLeastFor);
                 if (willBeDeletableAtTime.isBefore(now)) {
                     //Already deletable
                     deletableFiles.add(new FileWithTime(file, dateTime, fileIndex));
@@ -204,7 +220,7 @@ public class DateTimeFileCreationStrategy implements LogFileCreationStrategy {
         }
 
         // Oldest first
-        Collections.sort(deletableFiles);
+        deletableFiles.sort(Comparator.naturalOrder());
 
         // Go from newest to oldest, stop when the total size is too big
         long totalSizeBytes = 0;
@@ -242,10 +258,10 @@ public class DateTimeFileCreationStrategy implements LogFileCreationStrategy {
 
     private static final class FileWithTime implements Comparable<FileWithTime> {
         public final @NotNull File file;
-        public final @NotNull DateTime time;
+        public final @NotNull ZonedDateTime time;
         public final int index;
 
-        private FileWithTime(@NotNull File file, @NotNull DateTime time, int index) {
+        private FileWithTime(@NotNull File file, @NotNull ZonedDateTime time, int index) {
             this.file = file;
             this.time = time;
             this.index = index;

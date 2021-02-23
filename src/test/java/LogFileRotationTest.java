@@ -3,11 +3,11 @@ import com.darkyen.tproll.logfunctions.DateTimeFileCreationStrategy;
 import com.darkyen.tproll.logfunctions.FileLogFunction;
 import com.darkyen.tproll.logfunctions.LogFileHandler;
 import com.darkyen.tproll.util.TimeFormatter;
-import org.joda.time.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.time.Duration;
 import java.util.Random;
 
 /**
@@ -24,7 +24,7 @@ public class LogFileRotationTest {
                                         DateTimeFileCreationStrategy.DEFAULT_DATE_TIME_FILE_NAME_FORMATTER,
                                         true,
                                         ".bacon",
-                                        10, Duration.standardSeconds(10)
+                                        10, Duration.ofSeconds(10L)
                                 ),
                                 false),
                         true

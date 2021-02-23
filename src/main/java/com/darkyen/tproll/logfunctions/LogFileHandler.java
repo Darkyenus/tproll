@@ -4,10 +4,11 @@ import com.darkyen.tproll.TPLogger;
 import com.darkyen.tproll.util.TimeProvider;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.DateTimeFormatterBuilder;
 
 import java.io.*;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.temporal.ChronoField;
 import java.util.zip.GZIPOutputStream;
 
 /**
@@ -16,19 +17,21 @@ import java.util.zip.GZIPOutputStream;
 public class LogFileHandler implements ILogFileHandler {
 
     private static final @NotNull DateTimeFormatter FILE_ACTION_TIME_FORMATTER = new DateTimeFormatterBuilder()
-            .appendYear(4, 4)
+		    .parseCaseInsensitive()
+            .appendValue(ChronoField.YEAR, 4)
             .appendLiteral('-')
-            .appendMonthOfYear(2)
+            .appendValue(ChronoField.MONTH_OF_YEAR, 2)
             .appendLiteral('-')
-            .appendDayOfMonth(2)
+            .appendValue(ChronoField.DAY_OF_MONTH, 2)
             .appendLiteral(' ')
-            .appendHourOfDay(2)
+            .appendValue(ChronoField.HOUR_OF_DAY, 2)
             .appendLiteral(':')
-            .appendMinuteOfHour(2)
+            .appendValue(ChronoField.MINUTE_OF_HOUR, 2)
             .appendLiteral(':')
-            .appendSecondOfMinute(2)
+            .appendValue(ChronoField.SECOND_OF_MINUTE, 2)
             .appendLiteral(' ')
-            .appendTimeZoneId()
+            .appendZoneOrOffsetId()
+		    .parseDefaulting(ChronoField.NANO_OF_SECOND, 0)
             .toFormatter();
 
     private final TPLogger LOG = new TPLogger("LogFileHandler");
@@ -87,7 +90,7 @@ public class LogFileHandler implements ILogFileHandler {
             fileWriter = new PrintWriter(new FileWriter(logFile, fileCreationStrategy.shouldAppend()), true);
 
             fileWriter.append("Log file opened at ");
-            FILE_ACTION_TIME_FORMATTER.printTo(fileWriter, TPLogger.getTimeProvider().time());
+            FILE_ACTION_TIME_FORMATTER.formatTo(TPLogger.getTimeProvider().time(), fileWriter);
             fileWriter.append('\n');
             fileWriter.flush();
 
@@ -121,8 +124,8 @@ public class LogFileHandler implements ILogFileHandler {
         if(fileWriter != null){
             fileWriter.append("Log file closed at ");
 			try {
-				FILE_ACTION_TIME_FORMATTER.printTo(fileWriter, TPLogger.getTimeProvider().time());
-			} catch (IOException e) {
+				FILE_ACTION_TIME_FORMATTER.formatTo(TPLogger.getTimeProvider().time(), fileWriter);
+			} catch (Exception e) {
 				System.err.println("Closing timestamp printing failed");
 				e.printStackTrace(System.err);
 				fileWriter.append("<failed to print>");

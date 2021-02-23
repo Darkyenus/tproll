@@ -5,10 +5,10 @@ import com.darkyen.tproll.TPLogger;
 import com.darkyen.tproll.util.TimeFormatter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.joda.time.Duration;
 import org.slf4j.Marker;
 
 import java.io.File;
+import java.time.Duration;
 
 import static com.darkyen.tproll.util.RenderableMarker.appendMarker;
 
@@ -58,7 +58,7 @@ public class FileLogFunction extends LogFunction {
                                 false,
                                 DateTimeFileCreationStrategy.DEFAULT_LOG_FILE_EXTENSION,
                                 512 * 1000,
-                                Duration.standardDays(60)),
+                                Duration.ofDays(60)),
                         true),
                 true);
     }

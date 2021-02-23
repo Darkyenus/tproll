@@ -1,7 +1,9 @@
 package com.darkyen.tproll.util;
 
 import org.jetbrains.annotations.NotNull;
-import org.joda.time.DateTime;
+
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 public abstract class TimeProvider {
 
@@ -9,8 +11,13 @@ public abstract class TimeProvider {
     public abstract long timeMillis();
 
     /** Returns absolute time, with timezone of the application. */
-    public @NotNull DateTime time() {
-        return DateTime.now();
+    public @NotNull ZonedDateTime time() {
+        return ZonedDateTime.now(timeZone());
+    }
+
+    /** Returns time zone that is used for all time-zone related operations */
+    public @NotNull ZoneId timeZone() {
+        return ZoneId.systemDefault();
     }
 
     public static final @NotNull TimeProvider CURRENT_TIME_PROVIDER = new TimeProvider() {

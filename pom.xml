@@ -16,7 +16,6 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- When changing, update StaticLoggerBinder.REQUESTED_API_VERSION as well -->
         <slf4j.version>1.7.30</slf4j.version>
-        <joda-time.version>2.10.1</joda-time.version>
         <junit.version>4.13.1</junit.version>
     </properties>
 
@@ -35,12 +34,6 @@
             <artifactId>annotations</artifactId>
             <version>20.1.0</version>
             <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>joda-time</groupId>
-            <artifactId>joda-time</artifactId>
-            <version>${joda-time.version}</version>
         </dependency>
 
         <!-- Integrations -->
