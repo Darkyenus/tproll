@@ -1,6 +1,8 @@
 package com.darkyen.tproll.util.prettyprint;
 
 import com.darkyen.tproll.util.PrettyPrinter;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -13,23 +15,23 @@ import java.nio.file.Paths;
  *
  * These are available only on Java 8 and newer, so this class is loaded at runtime, and only when the JVM supports it.
  */
-@SuppressWarnings({"Since15", "unused"})
+@SuppressWarnings({"unused"})
 public class PrettyPrinterPathModule implements PrettyPrinter.PrettyPrinterModule {
 
 	static {
 		Path thisLineWillFailAndPreventLoadingOfThisClassOnOldJVM = Paths.get("");
 	}
 
-	private static Path APPLICATION_ROOT_DIRECTORY = null;
+	private static @Nullable Path APPLICATION_ROOT_DIRECTORY = null;
 
 	/** Applications with well specified root directory can put it here. All file paths under this directory will
 	 * be printed out by this class in relative form. */
-	public static Path getApplicationRootDirectory() {
+	public static @Nullable Path getApplicationRootDirectory() {
 		return APPLICATION_ROOT_DIRECTORY;
 	}
 
 	/** @see #getApplicationRootDirectory() */
-	public static void setApplicationRootDirectory(Path applicationRootDirectory) {
+	public static void setApplicationRootDirectory(@Nullable Path applicationRootDirectory) {
 		if (applicationRootDirectory == null) {
 			APPLICATION_ROOT_DIRECTORY = null;
 			return;
@@ -38,7 +40,7 @@ public class PrettyPrinterPathModule implements PrettyPrinter.PrettyPrinterModul
 	}
 
 	/** @see #getApplicationRootDirectory() */
-	public static void setApplicationRootDirectory(File applicationRootDirectory) {
+	public static void setApplicationRootDirectory(@Nullable File applicationRootDirectory) {
 		if (applicationRootDirectory == null) {
 			APPLICATION_ROOT_DIRECTORY = null;
 			return;
@@ -46,7 +48,7 @@ public class PrettyPrinterPathModule implements PrettyPrinter.PrettyPrinterModul
 		APPLICATION_ROOT_DIRECTORY = applicationRootDirectory.toPath().normalize().toAbsolutePath();
 	}
 
-	private static void appendPath(StringBuilder sb, Path path) {
+	private static void appendPath(@NotNull StringBuilder sb, @NotNull Path path) {
 		path = path.normalize();
 
 		final Path root = APPLICATION_ROOT_DIRECTORY;
@@ -97,12 +99,12 @@ public class PrettyPrinterPathModule implements PrettyPrinter.PrettyPrinterModul
 	}
 
 	@Override
-	public boolean accepts(Object item) {
+	public boolean accepts(@NotNull Object item) {
 		return item instanceof Path;
 	}
 
 	@Override
-	public void append(StringBuilder sb, Object item, int maxCollectionElements) {
+	public void append(@NotNull StringBuilder sb, @NotNull Object item, int maxCollectionElements) {
 		appendPath(sb, (Path) item);
 	}
 }

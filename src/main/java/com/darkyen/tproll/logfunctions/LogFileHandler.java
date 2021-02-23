@@ -2,6 +2,8 @@ package com.darkyen.tproll.logfunctions;
 
 import com.darkyen.tproll.TPLogger;
 import com.darkyen.tproll.util.TimeProvider;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.DateTimeFormatterBuilder;
 
@@ -13,7 +15,7 @@ import java.util.zip.GZIPOutputStream;
  */
 public class LogFileHandler implements ILogFileHandler {
 
-    private static final DateTimeFormatter FILE_ACTION_TIME_FORMATTER = new DateTimeFormatterBuilder()
+    private static final @NotNull DateTimeFormatter FILE_ACTION_TIME_FORMATTER = new DateTimeFormatterBuilder()
             .appendYear(4, 4)
             .appendLiteral('-')
             .appendMonthOfYear(2)
@@ -31,14 +33,14 @@ public class LogFileHandler implements ILogFileHandler {
 
     private final TPLogger LOG = new TPLogger("LogFileHandler");
 
-    private final File logDirectory;
-    private final LogFileCreationStrategy fileCreationStrategy;
+    private final @NotNull File logDirectory;
+    private final @NotNull LogFileCreationStrategy fileCreationStrategy;
     private final boolean compressOnExit;
 
-    private File openedFile = null;
-    private PrintWriter fileWriter = null;
+    private @Nullable File openedFile = null;
+    private @Nullable PrintWriter fileWriter = null;
 
-    public LogFileHandler(File logDirectory, LogFileCreationStrategy fileCreationStrategy, boolean compressOnExit) {
+    public LogFileHandler(@NotNull File logDirectory, @NotNull LogFileCreationStrategy fileCreationStrategy, boolean compressOnExit) {
         this.logDirectory = logDirectory;
         this.fileCreationStrategy = fileCreationStrategy;
         this.compressOnExit = compressOnExit;
@@ -51,7 +53,8 @@ public class LogFileHandler implements ILogFileHandler {
             final File logFile = fileCreationStrategy.getLogFile(logDirectory);
 
             //Verify that the file is valid
-            if(logFile == null) {
+	        //noinspection ConstantConditions
+	        if(logFile == null) {
                 throw new NullPointerException("File creation strategy returned null");
             } else if(logFile.isDirectory()) {
                 throw new FileNotFoundException("Returned log file at '" + logFile.getAbsolutePath() + "' is a directory");
@@ -98,7 +101,7 @@ public class LogFileHandler implements ILogFileHandler {
     }
 
     @Override
-    public void log(CharSequence message) {
+    public void log(@NotNull CharSequence message) {
         final PrintWriter fileWriter = this.fileWriter;
         if (fileWriter != null) {
             fileWriter.append(message);
@@ -133,7 +136,7 @@ public class LogFileHandler implements ILogFileHandler {
             fileWriter.close();
 
 
-            if (compressOnExit) {
+            if (compressOnExit && openedFile != null) {
                 final File compressedFile = new File(openedFile.getParentFile(), openedFile.getName()+".gz");
                 if (!compressedFile.exists()) {
 					GZIPOutputStream out = null;
@@ -169,7 +172,7 @@ public class LogFileHandler implements ILogFileHandler {
         }
     }
 
-    private void logInternalError(String problem, Throwable error){
+    private void logInternalError(@NotNull String problem, @Nullable Throwable error){
 		SimpleLogFunction.CONSOLE_LOG_FUNCTION.log("com.darkyen.tproll.advanced.LogFileHandler", TimeProvider.CURRENT_TIME_PROVIDER.timeMillis(), TPLogger.ERROR, null, "INTERNAL ERROR: "+problem);
         if (error != null) {
             System.out.flush();
@@ -177,7 +180,7 @@ public class LogFileHandler implements ILogFileHandler {
         }
     }
 
-    private static void close(Closeable closeable) {
+    private static void close(@Nullable Closeable closeable) {
     	if (closeable != null) {
 			try {
 				closeable.close();

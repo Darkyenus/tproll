@@ -1,5 +1,6 @@
 package com.darkyen.tproll.util;
 
+import org.jetbrains.annotations.NotNull;
 import org.joda.time.DateTime;
 
 public abstract class TimeProvider {
@@ -8,11 +9,11 @@ public abstract class TimeProvider {
     public abstract long timeMillis();
 
     /** Returns absolute time, with timezone of the application. */
-    public DateTime time() {
+    public @NotNull DateTime time() {
         return DateTime.now();
     }
 
-    public static final TimeProvider CURRENT_TIME_PROVIDER = new TimeProvider() {
+    public static final @NotNull TimeProvider CURRENT_TIME_PROVIDER = new TimeProvider() {
         @Override
         public long timeMillis() {
             return System.currentTimeMillis();
@@ -20,7 +21,7 @@ public abstract class TimeProvider {
     };
 
     /** Creates and returns time provider, which counts time from NOW. */
-    static TimeProvider relativeTimeProvider() {
+    static @NotNull TimeProvider relativeTimeProvider() {
         final long now = System.currentTimeMillis();
         return new TimeProvider() {
             @Override

@@ -1,10 +1,13 @@
 package com.darkyen.tproll.util;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Marker;
 
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.function.Consumer;
 
 /**
  * Simple marker implementation
@@ -13,18 +16,19 @@ public abstract class SimpleMarker implements Marker {
 
     private static final long serialVersionUID = 1L;
 
-    private Marker[] references;
+    private @NotNull Marker @NotNull [] references;
 
     public SimpleMarker() {
         references = NO_REFERENCES;
     }
 
-    protected SimpleMarker(Marker[] references) {
+    protected SimpleMarker(@NotNull Marker @NotNull [] references) {
         this.references = references;
     }
 
     @Override
-    public synchronized void add(Marker reference) {
+    public synchronized void add(@NotNull Marker reference) {
+        //noinspection ConstantConditions
         if (reference == null) throw new NullPointerException("reference may not be null");
         if (reference == this) return;
         final Marker[] references = this.references;
@@ -40,7 +44,7 @@ public abstract class SimpleMarker implements Marker {
     }
 
     @Override
-    public synchronized boolean remove(Marker reference) {
+    public synchronized boolean remove(@Nullable Marker reference) {
         final Marker[] references = this.references;
         if (reference == null || references.length == 0) {
             return false;
@@ -72,15 +76,15 @@ public abstract class SimpleMarker implements Marker {
         return references.length > 0;
     }
 
-    public Marker[] references() {
+    public @NotNull Marker @NotNull [] references() {
         return this.references;
     }
 
     @Override
-    public Iterator<Marker> iterator() {
+    public @NotNull Iterator<@NotNull Marker> iterator() {
         final Marker[] references = this.references;
         if (references.length == 0) {
-            return Collections.<Marker>emptyList().iterator();
+            return Collections.emptyIterator();
         } else {
             return new Iterator<Marker>() {
                 private int index = 0;
@@ -105,7 +109,7 @@ public abstract class SimpleMarker implements Marker {
     }
 
     @Override
-    public boolean contains(Marker other) {
+    public boolean contains(@Nullable Marker other) {
         if (other == null) return false;
         if (other == this) return true;
         for (Marker marker : references) {
@@ -117,7 +121,7 @@ public abstract class SimpleMarker implements Marker {
     }
 
     @Override
-    public boolean contains(String name) {
+    public boolean contains(@Nullable String name) {
         if (name == null) return false;
         if (name.equals(getName())) return true;
         for (Marker marker : references) {
@@ -126,7 +130,7 @@ public abstract class SimpleMarker implements Marker {
         return false;
     }
 
-    public String toString() {
+    public @NotNull String toString() {
         final Marker[] references = this.references;
         if (references.length == 0) {
             return this.getName();
@@ -147,7 +151,7 @@ public abstract class SimpleMarker implements Marker {
     }
 
     @SuppressWarnings({"unchecked", "WeakerAccess"})
-    public static <T extends Marker> void findMarkersByType(Marker from, Class<T> type, Consumer<T> consumer) {
+    public static <T extends Marker> void findMarkersByType(@Nullable Marker from, @NotNull Class<T> type, @NotNull Consumer<T> consumer) {
         if (from == null) return;
         if (type.isInstance(from)) {
             consumer.accept((T)from);
@@ -170,9 +174,9 @@ public abstract class SimpleMarker implements Marker {
     }
 
 
-    private static final Marker[] NO_REFERENCES = {};
+    private static final @NotNull Marker @NotNull [] NO_REFERENCES = {};
 
-    private static int indexOf(Marker[] in, Marker of) {
+    private static int indexOf(@NotNull Marker[] in, @NotNull Marker of) {
         for (int i = 0; i < in.length; i++) {
             if (in[i] == of) return i;
         }
@@ -180,29 +184,22 @@ public abstract class SimpleMarker implements Marker {
     }
 
     /**
-     * Convenience function, which creates new SimpleRenderableMarker
-     */
-    public static SimpleRenderableMarker withLabel(String label) {
-        return new SimpleRenderableMarker(label);
-    }
-
-    /**
      * SimpleMarker with RenderableMarker interface
      */
-    public static class SimpleRenderableMarker extends SimpleMarker implements RenderableMarker {
-        private final String label;
+    public static class Renderable extends SimpleMarker implements RenderableMarker {
+        private final @NotNull String label;
 
-        public SimpleRenderableMarker(String label) {
+        public Renderable(@NotNull String label) {
             this.label = label;
         }
 
         @Override
-        public String getName() {
+        public @NotNull String getName() {
             return "Renderable[" + label + "]";
         }
 
         @Override
-        public String getLabel() {
+        public @NotNull String getLabel() {
             return label;
         }
     }

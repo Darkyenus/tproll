@@ -1,6 +1,8 @@
 package com.darkyen.tproll.logfunctions;
 
 import com.darkyen.tproll.TPLogger;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.joda.time.DateTime;
 import org.joda.time.MutableDateTime;
 import org.joda.time.ReadableDuration;
@@ -17,7 +19,7 @@ import java.util.Collections;
  */
 public class DateTimeFileCreationStrategy implements LogFileCreationStrategy {
 
-    public static final DateTimeFormatter DEFAULT_DATE_FILE_NAME_FORMATTER = new DateTimeFormatterBuilder()
+    public static final @NotNull DateTimeFormatter DEFAULT_DATE_FILE_NAME_FORMATTER = new DateTimeFormatterBuilder()
             .appendYear(4, 4)
             .appendLiteral('-')
             .appendMonthOfYear(2)
@@ -25,7 +27,7 @@ public class DateTimeFileCreationStrategy implements LogFileCreationStrategy {
             .appendDayOfMonth(2)
             .toFormatter();
 
-    public static final DateTimeFormatter DEFAULT_DATE_TIME_FILE_NAME_FORMATTER = new DateTimeFormatterBuilder()
+    public static final @NotNull DateTimeFormatter DEFAULT_DATE_TIME_FILE_NAME_FORMATTER = new DateTimeFormatterBuilder()
             .appendYear(4, 4)
             .appendLiteral('-')
             .appendMonthOfYear(2)
@@ -39,15 +41,15 @@ public class DateTimeFileCreationStrategy implements LogFileCreationStrategy {
             .appendSecondOfMinute(2)
             .toFormatter();
 
-    public static final String DEFAULT_LOG_FILE_EXTENSION = "log";
+    public static final @NotNull String DEFAULT_LOG_FILE_EXTENSION = "log";
     public static final long FOLDER_SIZE_LIMIT_ZERO = 0L;
     public static final long FOLDER_SIZE_LIMIT_NONE = -1L;
 
-    private final DateTimeFormatter formatter;
+    private final @NotNull DateTimeFormatter formatter;
     private final boolean allowAppend;
-    private final String extension;
+    private final @NotNull String extension;
     private final long folderKiloByteLimit;
-    private final ReadableDuration keepLogsAtLeastFor;
+    private final @Nullable ReadableDuration keepLogsAtLeastFor;
 
     /**
      * @param formatter          to use when creating files. Must not be empty
@@ -56,7 +58,7 @@ public class DateTimeFileCreationStrategy implements LogFileCreationStrategy {
      * @param folderKBLimit      how many kilobytes should be tolerated inside the log folder before logs are removed, {@link #FOLDER_SIZE_LIMIT_ZERO} = always remove all other log files, {@link #FOLDER_SIZE_LIMIT_NONE} = never delete. Note that this does not include files which cannot be deleted, i.e. non-log files and files which are too new to be deleted.
      * @param keepLogsAtLeastFor even if the folder is larger than the limit, do not delete logs younger than this
      */
-    public DateTimeFileCreationStrategy(DateTimeFormatter formatter, boolean allowAppend, String extension, long folderKBLimit, ReadableDuration keepLogsAtLeastFor) {
+    public DateTimeFileCreationStrategy(@NotNull DateTimeFormatter formatter, boolean allowAppend, @NotNull String extension, long folderKBLimit, @Nullable ReadableDuration keepLogsAtLeastFor) {
         this.formatter = formatter;
         this.allowAppend = allowAppend;
         this.extension = extension.startsWith(".") ? extension.substring(1) : extension;
@@ -65,7 +67,7 @@ public class DateTimeFileCreationStrategy implements LogFileCreationStrategy {
     }
 
     @Override
-    public File getLogFile(File logDirectory) throws Exception {
+    public @NotNull File getLogFile(@NotNull File logDirectory) throws Exception {
         final StringBuilder sb = new StringBuilder();
         formatter.printTo(sb, TPLogger.getTimeProvider().time());
         sb.append('.');
@@ -111,7 +113,7 @@ public class DateTimeFileCreationStrategy implements LogFileCreationStrategy {
     }
 
     @Override
-    public void performCleanup(File logDirectory, File currentLogFile, TPLogger logger) {
+    public void performCleanup(@NotNull File logDirectory, @NotNull File currentLogFile, @NotNull TPLogger logger) {
         if (folderKiloByteLimit <= FOLDER_SIZE_LIMIT_NONE) {
             // No cleanup, ever
             return;
@@ -124,7 +126,7 @@ public class DateTimeFileCreationStrategy implements LogFileCreationStrategy {
 
         final DateTime now = TPLogger.getTimeProvider().time();
 
-        final ArrayList<FileWithTime> deletableFiles = new ArrayList<FileWithTime>();
+        final ArrayList<FileWithTime> deletableFiles = new ArrayList<>();
         considerFile:
         for (File file : filesInLogFolder) {
             if (file.equals(currentLogFile)) continue;
@@ -137,10 +139,7 @@ public class DateTimeFileCreationStrategy implements LogFileCreationStrategy {
             try {
                 mutableDateTime.setMillis(now);
                 position = formatter.parseInto(mutableDateTime, fileName, 0);
-            } catch (UnsupportedOperationException ex) {
-                //Not a log file, probably
-                continue;
-            } catch (IllegalArgumentException ex) {
+            } catch (UnsupportedOperationException | IllegalArgumentException ex) {
                 //Not a log file, probably
                 continue;
             }
@@ -242,22 +241,21 @@ public class DateTimeFileCreationStrategy implements LogFileCreationStrategy {
     }
 
     private static final class FileWithTime implements Comparable<FileWithTime> {
-        public final File file;
-        public final DateTime time;
+        public final @NotNull File file;
+        public final @NotNull DateTime time;
         public final int index;
 
-        private FileWithTime(File file, DateTime time, int index) {
+        private FileWithTime(@NotNull File file, @NotNull DateTime time, int index) {
             this.file = file;
             this.time = time;
             this.index = index;
         }
 
         @Override
-        public int compareTo(FileWithTime o) {
+        public int compareTo(@NotNull FileWithTime o) {
             final int cmp = time.compareTo(o.time);
             if (cmp == 0) {
-                // Inlined: Integer.compare(index, o.index);
-                return (index < o.index) ? -1 : ((index == o.index) ? 0 : 1);
+                return Integer.compare(index, o.index);
             }
             return cmp;
         }

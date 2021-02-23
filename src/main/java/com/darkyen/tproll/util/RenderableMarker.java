@@ -1,5 +1,6 @@
 package com.darkyen.tproll.util;
 
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Marker;
 
 import java.util.Iterator;
@@ -8,24 +9,28 @@ import static com.darkyen.tproll.util.TerminalColor.black;
 import static com.darkyen.tproll.util.TerminalColor.yellow;
 
 /**
- * Every Marker implementing this interface will get rendered by the log function
+ * Markers implementing this interface will get rendered by the log function
  */
 public interface RenderableMarker extends Marker {
 
     /**
      * @return the label to be used for rendering with LogFunction
      */
-    default String getLabel() {
+    default @NotNull String getLabel() {
         return getName();
     }
 
-
-    static void appendMarker(StringBuilder sb, Marker marker, boolean firstInList, boolean useColors) {
+    /**
+     * Convenience method to append all {@link RenderableMarker}s into the {@code sb}.
+     * @param firstInList if true, a single space will be added
+     * @param useColors whether ANSI colors should be used
+     */
+    static void appendMarker(@NotNull StringBuilder sb, @NotNull Marker marker, boolean firstInList, boolean useColors) {
         boolean rendered = false;
 
         if (marker instanceof RenderableMarker) {
             if (useColors) black(sb);
-            if (firstInList) sb.append(' ');
+            if (!firstInList) sb.append(' ');
             sb.append("| ");
             if (useColors) yellow(sb);
             sb.append(((RenderableMarker)marker).getLabel());

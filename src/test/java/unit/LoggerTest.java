@@ -4,6 +4,7 @@ import com.darkyen.tproll.LogFunction;
 import com.darkyen.tproll.TPLogger;
 import com.darkyen.tproll.TPLoggerFactory;
 import org.hamcrest.CustomTypeSafeMatcher;
+import org.jetbrains.annotations.NotNull;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -33,7 +34,7 @@ public class LoggerTest {
         logOut = new StringBuilder();
         TPLogger.setLogFunction(new LogFunction() {
             @Override
-            public void log(String name, long time, byte level, Marker marker, CharSequence content) {
+            public void log(@NotNull String name, long time, byte level, Marker marker, @NotNull CharSequence content) {
                 synchronized (LOGGER_LOCK) {
                     logOut.append(name).append(" ").append(time).append(" [").append(TPLogger.levelName(level)).append("]: ").append(content);
                 }

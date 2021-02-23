@@ -4,6 +4,7 @@ import com.darkyen.tproll.util.LevelChangeListener;
 import com.darkyen.tproll.TPLogger;
 import com.darkyen.tproll.util.SimpleMarker;
 import com.esotericsoftware.minlog.Log;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Call {@link #enable()} if you want to route MinLog logs through tproll.
@@ -15,7 +16,7 @@ public class MinLogIntegration {
     private MinLogIntegration() {
     }
 
-    public static final SimpleMarker MIN_LOG_MARKER = new SimpleMarker() {
+    public static final @NotNull SimpleMarker MIN_LOG_MARKER = new SimpleMarker() {
 
         private static final long serialVersionUID = 1L;
 
@@ -24,7 +25,7 @@ public class MinLogIntegration {
             return "MinLog";
         }
     };
-    public static final TPLogger LOGGER = new TPLogger("MinLog");
+    public static final @NotNull TPLogger LOGGER = new TPLogger("MinLog");
 
     /** Calls {@link Log#setLogger} with a logger which uses logger of {@link TPLogger} for logging.
      * Also sets */

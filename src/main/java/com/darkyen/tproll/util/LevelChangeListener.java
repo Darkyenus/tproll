@@ -13,10 +13,7 @@ public interface LevelChangeListener {
     void levelChanged(byte to);
 
     @SuppressWarnings("unused")
-    LevelChangeListener NO_OP = new LevelChangeListener() {
-        @Override
-        public void levelChanged(byte to) {}
-    };
+    LevelChangeListener NO_OP = to -> {};
 
     LevelChangeListener LOG = new LevelChangeListener() {
         final TPLogger LOG = new TPLogger("Log Level");

@@ -1,5 +1,8 @@
 package com.darkyen.tproll.util;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.IllegalFormatException;
@@ -45,22 +48,22 @@ public final class StringBuilderWriter extends PrintWriter {
     }
 
     @Override
-    public void write(char[] buf, int off, int len) {
+    public void write(char @NotNull [] buf, int off, int len) {
         sb.append(buf, off, len);
     }
 
     @Override
-    public void write(char[] buf) {
+    public void write(char @NotNull [] buf) {
         sb.append(buf);
     }
 
     @Override
-    public void write(String s, int off, int len) {
+    public void write(@Nullable String s, int off, int len) {
         sb.append(s, off, len);
     }
 
     @Override
-    public void write(String s) {
+    public void write(@Nullable String s) {
         sb.append(s);
     }
 
@@ -95,17 +98,17 @@ public final class StringBuilderWriter extends PrintWriter {
     }
 
     @Override
-    public void print(char[] s) {
+    public void print(char @NotNull [] s) {
         sb.append(s);
     }
 
     @Override
-    public void print(String s) {
+    public void print(@Nullable String s) {
         sb.append(s);
     }
 
     @Override
-    public void print(Object obj) {
+    public void print(@Nullable Object obj) {
         sb.append(obj);
     }
 
@@ -145,39 +148,39 @@ public final class StringBuilderWriter extends PrintWriter {
     }
 
     @Override
-    public void println(char[] x) {
+    public void println(char @NotNull [] x) {
         sb.append(x).append(LINE_END);
     }
 
     @Override
-    public void println(String x) {
+    public void println(@Nullable String x) {
         sb.append(x).append(LINE_END);
     }
 
     @Override
-    public void println(Object x) {
+    public void println(@Nullable Object x) {
         sb.append(x).append(LINE_END);
     }
 
     @Override
-    public PrintWriter printf(String format, Object... args) {
+    public PrintWriter printf(@NotNull String format, @Nullable Object... args) {
         return format(format, args);
     }
 
     @Override
-    public PrintWriter printf(Locale l, String format, Object... args) {
+    public PrintWriter printf(@Nullable Locale l, @NotNull String format, @Nullable Object... args) {
         return format(l, format, args);
     }
 
     @Override
-    public PrintWriter format(String format, Object... args) {
+    public PrintWriter format(@NotNull String format, @Nullable Object... args) {
         return format(Locale.getDefault(), format, args);
     }
 
     @Override
-    public PrintWriter format(Locale l, String format, Object... args) {
+    public PrintWriter format(@Nullable Locale l, @NotNull String format, @Nullable Object... args) {
         try {
-            sb.append(String.format(format, args));
+            sb.append(String.format(l, format, args));
         } catch (IllegalFormatException e) {
             setError();
         }
@@ -185,13 +188,13 @@ public final class StringBuilderWriter extends PrintWriter {
     }
 
     @Override
-    public PrintWriter append(CharSequence csq) {
+    public PrintWriter append(@Nullable CharSequence csq) {
         sb.append(csq);
         return this;
     }
 
     @Override
-    public PrintWriter append(CharSequence csq, int start, int end) {
+    public PrintWriter append(@Nullable CharSequence csq, int start, int end) {
         sb.append(csq, start, end);
         return this;
     }
@@ -202,7 +205,7 @@ public final class StringBuilderWriter extends PrintWriter {
         return this;
     }
 
-    private static final Writer NOP_WRITER = new Writer() {
+    private static final @NotNull Writer NOP_WRITER = new Writer() {
         @Override
         public void write(char[] cbuf, int off, int len) {
             //NOP

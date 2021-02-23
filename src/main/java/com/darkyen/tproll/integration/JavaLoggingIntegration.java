@@ -3,6 +3,7 @@ package com.darkyen.tproll.integration;
 import com.darkyen.tproll.TPLogger;
 import com.darkyen.tproll.util.LevelChangeListener;
 import com.darkyen.tproll.util.SimpleMarker;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -20,7 +21,7 @@ public class JavaLoggingIntegration {
     private JavaLoggingIntegration() {
     }
 
-    public static final SimpleMarker JAVA_LOGGING_MARKER = new SimpleMarker() {
+    public static final @NotNull SimpleMarker JAVA_LOGGING_MARKER = new SimpleMarker() {
 
         private static final long serialVersionUID = 1L;
 
@@ -29,9 +30,9 @@ public class JavaLoggingIntegration {
             return "java.util.logging";
         }
     };
-    public static final TPLogger LOGGER = new TPLogger("java.util.logging");
+    public static final @NotNull TPLogger LOGGER = new TPLogger("java.util.logging");
 
-    public static byte toTPLevel(Level level) {
+    public static byte toTPLevel(@NotNull Level level) {
         final int levelNum = level.intValue();
         if (levelNum < Level.FINE.intValue()) {
             return TPLogger.TRACE;
@@ -46,7 +47,7 @@ public class JavaLoggingIntegration {
         }
     }
 
-    public static Level fromTPLevel(byte level) {
+    public static @NotNull Level fromTPLevel(byte level) {
         switch (level) {
             case TRACE:
                 return Level.FINER;

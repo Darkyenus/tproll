@@ -1,5 +1,7 @@
 package com.darkyen.tproll.util;
 
+import org.jetbrains.annotations.NotNull;
+
 /**
  * Simple implementation of ANSI terminal colors.
  */
@@ -29,55 +31,55 @@ public class TerminalColor {
         }
     }
 
-    public static void reset(StringBuilder sb) {
+    public static void reset(@NotNull StringBuilder sb) {
         if (COLOR_SUPPORTED) {
             sb.append("\u001B[0m");
         }
     }
 
-    public static void black(StringBuilder sb) {
+    public static void black(@NotNull StringBuilder sb) {
         if (COLOR_SUPPORTED) {
             sb.append("\u001B[30m");
         }
     }
 
-    public static void red(StringBuilder sb) {
+    public static void red(@NotNull StringBuilder sb) {
         if (COLOR_SUPPORTED) {
             sb.append("\u001B[31m");
         }
     }
 
-    public static void green(StringBuilder sb) {
+    public static void green(@NotNull StringBuilder sb) {
         if (COLOR_SUPPORTED) {
             sb.append("\u001B[32m");
         }
     }
 
-    public static void yellow(StringBuilder sb) {
+    public static void yellow(@NotNull StringBuilder sb) {
         if (COLOR_SUPPORTED) {
             sb.append("\u001B[33m");
         }
     }
 
-    public static void blue(StringBuilder sb) {
+    public static void blue(@NotNull StringBuilder sb) {
         if (COLOR_SUPPORTED) {
             sb.append("\u001B[34m");
         }
     }
 
-    public static void purple(StringBuilder sb) {
+    public static void purple(@NotNull StringBuilder sb) {
         if (COLOR_SUPPORTED) {
             sb.append("\u001B[35m");
         }
     }
 
-    public static void cyan(StringBuilder sb) {
+    public static void cyan(@NotNull StringBuilder sb) {
         if (COLOR_SUPPORTED) {
             sb.append("\u001B[36m");
         }
     }
 
-    public static void white(StringBuilder sb) {
+    public static void white(@NotNull StringBuilder sb) {
         if (COLOR_SUPPORTED) {
             sb.append("\u001B[37m");
         }

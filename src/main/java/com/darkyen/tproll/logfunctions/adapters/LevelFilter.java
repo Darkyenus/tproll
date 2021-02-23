@@ -1,6 +1,7 @@
 package com.darkyen.tproll.logfunctions.adapters;
 
 import com.darkyen.tproll.LogFunction;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Marker;
 
 /**
@@ -9,7 +10,7 @@ import org.slf4j.Marker;
 @SuppressWarnings("unused")
 public final class LevelFilter extends LogFunction {
 
-    private final LogFunction parent;
+    private final @NotNull LogFunction parent;
     private final byte minLevel, maxLevel;
 
     /**
@@ -17,7 +18,7 @@ public final class LevelFilter extends LogFunction {
      * @param minLevel of log messages that still gets through
      * @param maxLevel of log messages that still gets through
      */
-    public LevelFilter(LogFunction parent, byte minLevel, byte maxLevel) {
+    public LevelFilter(@NotNull LogFunction parent, byte minLevel, byte maxLevel) {
         this.parent = parent;
         this.minLevel = minLevel;
         this.maxLevel = maxLevel;
@@ -28,14 +29,14 @@ public final class LevelFilter extends LogFunction {
      * @param parent function to call if it passes the check
      * @param minLevel of log messages that still gets through
      */
-    public LevelFilter(LogFunction parent, byte minLevel) {
+    public LevelFilter(@NotNull LogFunction parent, byte minLevel) {
         this.parent = parent;
         this.minLevel = minLevel;
         this.maxLevel = Byte.MAX_VALUE;
     }
 
     @Override
-    public void log(String name, long time, byte level, Marker marker, CharSequence content) {
+    public void log(@NotNull String name, long time, byte level, Marker marker, @NotNull CharSequence content) {
         if (level >= minLevel && level <= maxLevel) {
             parent.log(name, time, level, marker, content);
         }

@@ -1,6 +1,7 @@
 package com.darkyen.tproll.util.prettyprint;
 
 import com.darkyen.tproll.util.PrettyPrinter;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 
@@ -10,12 +11,12 @@ import java.io.File;
 public class PrettyPrinterFileModule implements PrettyPrinter.PrettyPrinterModule {
 
 	@Override
-	public boolean accepts(Object item) {
+	public boolean accepts(@NotNull Object item) {
 		return item instanceof File;
 	}
 
 	@Override
-	public void append(StringBuilder sb, Object item, int maxCollectionElements) {
+	public void append(@NotNull StringBuilder sb, @NotNull Object item, int maxCollectionElements) {
 		final File file = (File)item;
 
 		final File absoluteFile = file.getAbsoluteFile();

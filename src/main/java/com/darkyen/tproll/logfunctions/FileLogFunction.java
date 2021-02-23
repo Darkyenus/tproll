@@ -3,6 +3,8 @@ package com.darkyen.tproll.logfunctions;
 import com.darkyen.tproll.LogFunction;
 import com.darkyen.tproll.TPLogger;
 import com.darkyen.tproll.util.TimeFormatter;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.joda.time.Duration;
 import org.slf4j.Marker;
 
@@ -18,9 +20,9 @@ import static com.darkyen.tproll.util.RenderableMarker.appendMarker;
  */
 public class FileLogFunction extends LogFunction {
 
-    private final Object LOCK = new Object();
-    private final TimeFormatter timeFormatter;
-    private final ILogFileHandler logFileHandler;
+    private final @NotNull Object LOCK = new Object();
+    private final @Nullable TimeFormatter timeFormatter;
+    private final @NotNull ILogFileHandler logFileHandler;
 
     private boolean logFileHandlerInitialized = false;
 
@@ -29,17 +31,12 @@ public class FileLogFunction extends LogFunction {
      * @param logFileHandler for file handling
      * @param registerShutdownHook to automatically call dispose (and flush log files!) when the application shuts down. Recommended: true.
      */
-    public FileLogFunction(TimeFormatter timeFormatter, ILogFileHandler logFileHandler, boolean registerShutdownHook) {
+    public FileLogFunction(@Nullable TimeFormatter timeFormatter, @NotNull ILogFileHandler logFileHandler, boolean registerShutdownHook) {
         this.timeFormatter = timeFormatter;
         this.logFileHandler = logFileHandler;
 
         if (registerShutdownHook) {
-            Runtime.getRuntime().addShutdownHook(new Thread() {
-                @Override
-                public void run() {
-                    dispose();
-                }
-            });
+            Runtime.getRuntime().addShutdownHook(new Thread(this::dispose));
         }
     }
 
@@ -51,7 +48,7 @@ public class FileLogFunction extends LogFunction {
      *
      * @param logDirectory to place logs in
      */
-    public FileLogFunction(File logDirectory) {
+    public FileLogFunction(@NotNull File logDirectory) {
         this(
                 new TimeFormatter.AbsoluteTimeFormatter(),
                 new LogFileHandler(
@@ -66,10 +63,10 @@ public class FileLogFunction extends LogFunction {
                 true);
     }
 
-    private final StringBuilder log_sb = new StringBuilder();
+    private final @NotNull StringBuilder log_sb = new StringBuilder();
 
     @Override
-    public void log(String name, long time, byte level, Marker marker, CharSequence content) {
+    public void log(@NotNull String name, long time, byte level, @Nullable Marker marker, @NotNull CharSequence content) {
         synchronized (LOCK) {
             if (!logFileHandlerInitialized) {
                 logFileHandlerInitialized = true;
@@ -83,7 +80,9 @@ public class FileLogFunction extends LogFunction {
                 sb.append(' ');
             }
             sb.append(alignedLevelName(level));
-            appendMarker(sb, marker, true, false);
+            if (marker != null) {
+                appendMarker(sb, marker, true, false);
+            }
             sb.append(']').append(' ').append(name).append(':').append(' ');
             sb.append(content).append('\n');
 
@@ -103,7 +102,7 @@ public class FileLogFunction extends LogFunction {
         }
     }
 
-    public static String alignedLevelName(byte logLevel){
+    public static @NotNull String alignedLevelName(byte logLevel){
         switch (logLevel) {
             case TPLogger.TRACE: return "TRACE";
             case TPLogger.DEBUG: return "DEBUG";

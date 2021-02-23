@@ -2,6 +2,8 @@ package com.darkyen.tproll.util;
 
 import com.darkyen.tproll.util.prettyprint.PrettyPrinterFileModule;
 import com.darkyen.tproll.util.prettyprint.PrettyPrinterPathModule;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,12 +21,12 @@ public final class PrettyPrinter {
     private static final Logger LOG = LoggerFactory.getLogger("Tproll-PrettyPrinter");
 
     private static final char[] HEX_NUMBERS = {'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
-    public static void appendByteHex(StringBuilder sb, byte b){
+    public static void appendByteHex(@NotNull StringBuilder sb, byte b){
         final char[] HEX_NUMBERS = PrettyPrinter.HEX_NUMBERS;
         sb.append(HEX_NUMBERS[(b >> 4) & 0xF]).append(HEX_NUMBERS[b & 0xF]);
     }
 
-    public static void append(StringBuilder sb, Object item){
+    public static void append(@NotNull StringBuilder sb, @Nullable Object item){
         append(sb, item, Integer.MAX_VALUE);
     }
 
@@ -52,7 +54,7 @@ public final class PrettyPrinter {
         NO,
     }
 
-    private static final Map<Class<? extends Collection>, PrettyPrintMode> PRETTY_PRINT_COLLECTIONS = Collections.synchronizedMap(new HashMap<Class<? extends Collection>, PrettyPrintMode>());
+    private static final @NotNull Map<@NotNull Class<? extends Collection>, @NotNull PrettyPrintMode> PRETTY_PRINT_COLLECTIONS = Collections.synchronizedMap(new HashMap<>());
     static {
         PRETTY_PRINT_COLLECTIONS.put(AbstractCollection.class, PrettyPrintMode.YES);
         PRETTY_PRINT_COLLECTIONS.put(AbstractList.class, PrettyPrintMode.YES);
@@ -66,13 +68,11 @@ public final class PrettyPrinter {
         PRETTY_PRINT_COLLECTIONS.put(Collections.synchronizedList(Collections.emptyList()).getClass(), PrettyPrintMode.YES_SYNCHRONIZED);
         PRETTY_PRINT_COLLECTIONS.put(Collections.synchronizedSet(Collections.emptySet()).getClass(), PrettyPrintMode.YES_SYNCHRONIZED);
         try {
-            //noinspection Since15
             PRETTY_PRINT_COLLECTIONS.put(Collections.synchronizedNavigableSet(Collections.emptyNavigableSet()).getClass(), PrettyPrintMode.YES_SYNCHRONIZED);
         } catch (Throwable ignored) {}
     }
 
-    public static PrettyPrintMode setPrettyPrintModeForCollection(Class<? extends Collection> type, PrettyPrintMode mode) {
-        assert type != null;
+    public static @Nullable PrettyPrintMode setPrettyPrintModeForCollection(@NotNull Class<? extends Collection> type, @Nullable PrettyPrintMode mode) {
         assert Collection.class.isAssignableFrom(type);
         if (mode == null) {
             return PRETTY_PRINT_COLLECTIONS.remove(type);
@@ -81,8 +81,7 @@ public final class PrettyPrinter {
         }
     }
 
-    public static PrettyPrintMode getPrettyPrintModeForCollection(Class<? extends Collection> type) {
-        assert type != null;
+    public static @NotNull PrettyPrintMode getPrettyPrintModeForCollection(@NotNull Class<? extends Collection> type) {
         assert Collection.class.isAssignableFrom(type);
 
         PrettyPrintMode mode = PRETTY_PRINT_COLLECTIONS.get(type);
@@ -109,7 +108,7 @@ public final class PrettyPrinter {
         return mode;
     }
 
-    private static final Map<Class<? extends Map>, PrettyPrintMode> PRETTY_PRINT_MAPS = Collections.synchronizedMap(new HashMap<Class<? extends Map>, PrettyPrintMode>());
+    private static final @NotNull Map<@NotNull Class<? extends Map>, @NotNull PrettyPrintMode> PRETTY_PRINT_MAPS = Collections.synchronizedMap(new HashMap<>());
     static {
         PRETTY_PRINT_MAPS.put(AbstractMap.class, PrettyPrintMode.YES);
         PRETTY_PRINT_MAPS.put(HashMap.class, PrettyPrintMode.YES);
@@ -117,12 +116,11 @@ public final class PrettyPrinter {
 
         PRETTY_PRINT_MAPS.put(Collections.synchronizedMap(Collections.emptyMap()).getClass(), PrettyPrintMode.YES_SYNCHRONIZED);
         try {
-            //noinspection Since15
             PRETTY_PRINT_MAPS.put(Collections.synchronizedNavigableMap(Collections.emptyNavigableMap()).getClass(), PrettyPrintMode.YES_SYNCHRONIZED);
         } catch (Throwable ignored) {}
     }
 
-    public static PrettyPrintMode setPrettyPrintModeForMap(Class<? extends Map> type, PrettyPrintMode mode) {
+    public static @Nullable PrettyPrintMode setPrettyPrintModeForMap(@Nullable Class<? extends Map> type, @Nullable PrettyPrintMode mode) {
         assert type != null;
         assert Map.class.isAssignableFrom(type);
 
@@ -137,8 +135,7 @@ public final class PrettyPrinter {
         }
     }
 
-    public static PrettyPrintMode getPrettyPrintModeForMap(Class<? extends Map> type) {
-        assert type != null;
+    public static @NotNull PrettyPrintMode getPrettyPrintModeForMap(@NotNull Class<? extends Map> type) {
         assert Map.class.isAssignableFrom(type);
 
         PrettyPrintMode mode = PRETTY_PRINT_MAPS.get(type);
@@ -171,9 +168,9 @@ public final class PrettyPrinter {
      *
      * Nulls are not permitted.
      */
-    public static final ArrayList<PrettyPrinterModule> PRETTY_PRINT_MODULES = new ArrayList<PrettyPrinterModule>();
+    public static final @NotNull ArrayList<@NotNull PrettyPrinterModule> PRETTY_PRINT_MODULES = new ArrayList<>();
 
-    private static <E> int appendCollection(StringBuilder sb, Collection<E> collection, int maxCollectionElements) {
+    private static <E> int appendCollection(@NotNull StringBuilder sb, @NotNull Collection<E> collection, int maxCollectionElements) {
         int written = 0;
         for (E element : collection) {
             if (written == maxCollectionElements) {
@@ -193,7 +190,7 @@ public final class PrettyPrinter {
         return 0;
     }
 
-    private static <E> int appendCollectionRandom(StringBuilder sb, List<E> collection, int maxCollectionElements) {
+    private static <E> int appendCollectionRandom(@NotNull StringBuilder sb, @NotNull List<E> collection, int maxCollectionElements) {
         final int collectionSize = collection.size();
         if (collectionSize <= 0) {
             return 0;
@@ -216,7 +213,7 @@ public final class PrettyPrinter {
         return 0;
     }
 
-    private static <E> int appendCollectionSynchronized(StringBuilder sb, Collection<E> collection, int maxCollectionElements) {
+    private static <E> int appendCollectionSynchronized(@NotNull StringBuilder sb, @NotNull Collection<E> collection, int maxCollectionElements) {
         final int[] writtenAndRemaining = {0, 0};
         for (E element : collection) {
             if (writtenAndRemaining[0] == maxCollectionElements) {
@@ -236,7 +233,7 @@ public final class PrettyPrinter {
         return writtenAndRemaining[1];
     }
 
-    private static <K, V> int appendMap(StringBuilder sb, Map<K, V> map, int maxCollectionElements) {
+    private static <K, V> int appendMap(@NotNull StringBuilder sb, @NotNull Map<K, V> map, int maxCollectionElements) {
         int written = 0;
         for (Map.Entry<K, V> entry : map.entrySet()) {
             if (written == maxCollectionElements) {
@@ -265,7 +262,7 @@ public final class PrettyPrinter {
         return 0;
     }
 
-    private static <K, V> int appendMapSynchronized(StringBuilder sb, Map<K, V> map, int maxCollectionElements) {
+    private static <K, V> int appendMapSynchronized(@NotNull StringBuilder sb, @NotNull Map<K, V> map, int maxCollectionElements) {
         final int[] writtenAndRemaining = {0, 0};
         for (Map.Entry<K, V> entry : map.entrySet()) {
             final K key = entry.getKey();
@@ -318,7 +315,7 @@ public final class PrettyPrinter {
      * @param maxCollectionElements to print, when printing arrays or pretty-printed collections.
      *                              0 means print only size, negative means ignore
      */
-    public static void append(StringBuilder sb, Object item, int maxCollectionElements) {
+    public static void append(@NotNull StringBuilder sb, @Nullable Object item, int maxCollectionElements) {
         //To use faster/low-garbage overloads
         if (item == null) {
             sb.append((String) null);
@@ -373,7 +370,7 @@ public final class PrettyPrinter {
                     } else if (length <= 0) {
                         sb.append("[]");
                     } else {
-                        final int printLength = length > maxCollectionElements ? maxCollectionElements : length;
+                        final int printLength = Math.min(length, maxCollectionElements);
 
                         sb.append('[');
                         if (arrayType.equals(Byte.class) || arrayType.equals(byte.class)) {
@@ -527,19 +524,19 @@ public final class PrettyPrinter {
         sb.append(itemString);
     }
 
-    public static String toString(Object object){
+    public static @NotNull String toString(@Nullable Object object){
         final StringBuilder result = new StringBuilder();
         append(result, object);
         return result.toString();
     }
 
-    public static String toString(Object object, int maxCollectionElements){
+    public static @NotNull String toString(@Nullable Object object, int maxCollectionElements){
         final StringBuilder result = new StringBuilder();
         append(result, object, maxCollectionElements);
         return result.toString();
     }
 
-    private static final ThreadLocal<StringBuilderWriter> sbwCache = new ThreadLocal<StringBuilderWriter>() {
+    private static final @NotNull ThreadLocal<@NotNull StringBuilderWriter> sbwCache = new ThreadLocal<StringBuilderWriter>() {
         @Override
         protected StringBuilderWriter initialValue() {
             return new StringBuilderWriter();
@@ -552,7 +549,7 @@ public final class PrettyPrinter {
      * @param template which is appended into out with {} substituted
      * @param objects to substitute into template
      */
-    public static void patternSubstituteInto(StringBuilder out, CharSequence template, List<Object> objects) {
+    public static void patternSubstituteInto(@NotNull StringBuilder out, @NotNull CharSequence template, @NotNull List<Object> objects) {
         if (objects.isEmpty()) {
             out.append(template);
         } else {
@@ -651,7 +648,7 @@ public final class PrettyPrinter {
 
         /** Check if this module will print given object.
          * @param item to check, not null */
-        boolean accepts(Object item);
+        boolean accepts(@NotNull Object item);
 
         /**
          * Print given item to the string builder.
@@ -662,13 +659,13 @@ public final class PrettyPrinter {
          * @param item to be pretty-printed. Not null. Called only after {@link #accepts(Object)} returned true for this instance.
          * @param maxCollectionElements >=0, if item is a collection, it is advisable to print only this many elements
          */
-        void append(StringBuilder sb, Object item, int maxCollectionElements);
+        void append(@NotNull StringBuilder sb, @NotNull Object item, int maxCollectionElements);
     }
 
     static {
         PRETTY_PRINT_MODULES.add(new PrettyPrinterFileModule());
 
-        // Try to load modules for newer Java than 1.6
+        // Try to load modules for newer Java than 1.6 or on Android (maybe?)
         try {
             PRETTY_PRINT_MODULES.add(new PrettyPrinterPathModule());
         } catch (Throwable ignored) {}

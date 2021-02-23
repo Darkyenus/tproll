@@ -1,5 +1,6 @@
 package com.darkyen.tproll.logfunctions;
 
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Marker;
 
 /**
@@ -16,7 +17,7 @@ public interface ILogFileHandler {
 
     /** Called by {@link FileLogFunction#log(String, long, byte, Marker, CharSequence)} with the message which should
      * get logged. */
-    void log(CharSequence message);
+    void log(@NotNull CharSequence message);
 
     /** Called by {@link FileLogFunction#dispose()}. */
     void dispose();

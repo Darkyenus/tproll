@@ -3,6 +3,7 @@ package unit;
 import com.darkyen.tproll.LogFunction;
 import com.darkyen.tproll.TPLogger;
 import com.darkyen.tproll.TPLoggerFactory;
+import org.jetbrains.annotations.NotNull;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Marker;
@@ -24,7 +25,7 @@ public class LoggerMultiThreadTest {
         final StringBuilder logOut = new StringBuilder();
         TPLogger.setLogFunction(new LogFunction() {
             @Override
-            public void log(String name, long time, byte level, Marker marker, CharSequence content) {
+            public void log(@NotNull String name, long time, byte level, Marker marker, @NotNull CharSequence content) {
                 synchronized (LOGGER_LOCK) {
                     logOut.append(content);
                 }

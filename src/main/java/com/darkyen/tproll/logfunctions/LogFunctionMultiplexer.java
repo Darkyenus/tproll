@@ -2,6 +2,8 @@ package com.darkyen.tproll.logfunctions;
 
 import com.darkyen.tproll.LogFunction;
 import com.darkyen.tproll.util.SimpleMarker;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Marker;
 
 import java.util.Iterator;
@@ -13,7 +15,7 @@ public final class LogFunctionMultiplexer extends LogFunction {
 
     private static final int MAX_TARGETS = 8 * 8; //Long.BYTES * 8;
 
-    private LogFunction[] muxTargets = {};
+    private @NotNull LogFunction[] muxTargets = {};
     private long optOutMask = 0;
 
     public LogFunctionMultiplexer() {
@@ -26,16 +28,16 @@ public final class LogFunctionMultiplexer extends LogFunction {
      * loggers.
      *
      * @param defaultOptOutTargets Initial mux targets */
-    public LogFunctionMultiplexer(LogFunction...defaultOptOutTargets) {
+    public LogFunctionMultiplexer(@NotNull LogFunction...defaultOptOutTargets) {
         this.muxTargets = defaultOptOutTargets;
-        this.optOutMask = (1 << defaultOptOutTargets.length) - 1;
+        this.optOutMask = (1L << defaultOptOutTargets.length) - 1L;
     }
 
-    /** Add multiplexing target.
+    /** Add multiplexing target.
      * If optOut is false, only messages with returned marker are logged.
      * If optOut is true, all messages, except those with returned marker are logged.
      * @param function to which this branch should log */
-    public synchronized MuxMarker addMuxTarget(LogFunction function, boolean optOut) {
+    public synchronized @NotNull MuxMarker addMuxTarget(@NotNull LogFunction function, boolean optOut) {
         final LogFunction[] oldTargets = this.muxTargets;
         final int newIndex = oldTargets.length;
         if (newIndex > MAX_TARGETS) throw new IllegalStateException("Too many targets, max is "+MAX_TARGETS);
@@ -45,13 +47,13 @@ public final class LogFunctionMultiplexer extends LogFunction {
         this.muxTargets = newTargets;
 
         if (optOut) {
-            optOutMask |= 1 << newIndex;
+            optOutMask |= 1L << newIndex;
         }
         return new MuxMarker(this, newIndex);
     }
 
     @Override
-    public void log(String name, long time, byte level, Marker marker, CharSequence content) {
+    public void log(@NotNull String name, long time, byte level, @Nullable Marker marker, @NotNull CharSequence content) {
         long remainingTargetMask = findMuxTargets(this, marker);
         remainingTargetMask ^= optOutMask;
         final LogFunction[] muxTargets = this.muxTargets;
@@ -65,7 +67,7 @@ public final class LogFunctionMultiplexer extends LogFunction {
     }
 
     @Override
-    public boolean isEnabled(byte level, Marker marker) {
+    public boolean isEnabled(byte level, @Nullable Marker marker) {
         long remainingTargetMask = findMuxTargets(this, marker);
         remainingTargetMask ^= optOutMask;
         final LogFunction[] muxTargets = this.muxTargets;
@@ -86,41 +88,41 @@ public final class LogFunctionMultiplexer extends LogFunction {
 
         private static final long serialVersionUID = 1L;
 
-        private final String name;
-        private final LogFunctionMultiplexer multiplexer;
+        private final @NotNull String name;
+        private final @NotNull LogFunctionMultiplexer multiplexer;
         private final long mask;
 
-        private MuxMarker(LogFunctionMultiplexer multiplexer, int index) {
+        private MuxMarker(@NotNull LogFunctionMultiplexer multiplexer, int index) {
             super();
             this.multiplexer = multiplexer;
             this.name = "Mux"+index;
-            this.mask = 1 << index;
+            this.mask = 1L << index;
         }
 
-        private MuxMarker(Marker[] references, String name, LogFunctionMultiplexer multiplexer, long mask) {
+        private MuxMarker(@NotNull Marker[] references, @NotNull String name, @NotNull LogFunctionMultiplexer multiplexer, long mask) {
             super(references);
             this.name = name;
             this.multiplexer = multiplexer;
             this.mask = mask;
         }
 
-        public MuxMarker newCompound(Marker with) {
+        public @NotNull MuxMarker newCompound(@NotNull Marker with) {
             final MuxMarker copy = copy();
             copy.add(with);
             return copy;
         }
 
         @Override
-        public String getName() {
+        public @NotNull String getName() {
             return name;
         }
 
-        public MuxMarker copy() {
+        public @NotNull MuxMarker copy() {
             return new MuxMarker(references(), name, multiplexer, mask);
         }
     }
 
-    private static long findMuxTargets(LogFunctionMultiplexer multiplexer, Marker from) {
+    private static long findMuxTargets(@NotNull LogFunctionMultiplexer multiplexer, @NotNull Marker from) {
         if (from == null) return 0;
         long result = 0;
         if (from instanceof MuxMarker) {

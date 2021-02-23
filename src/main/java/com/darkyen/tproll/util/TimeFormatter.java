@@ -1,6 +1,7 @@
 package com.darkyen.tproll.util;
 
 
+import org.jetbrains.annotations.NotNull;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.DateTimeFormatterBuilder;
 
@@ -9,11 +10,11 @@ import org.joda.time.format.DateTimeFormatterBuilder;
  */
 public interface TimeFormatter {
 
-    void format(long millis, StringBuilder result);
+    void format(long millis, @NotNull StringBuilder result);
 
     class AbsoluteTimeFormatter implements TimeFormatter {
 
-        public static final DateTimeFormatter DEFAULT_DATE_TIME_FORMATTER  = new DateTimeFormatterBuilder()
+        public static final @NotNull DateTimeFormatter DEFAULT_DATE_TIME_FORMATTER  = new DateTimeFormatterBuilder()
                 .appendYear(4, 4)
                 .appendLiteral('-')
                 .appendMonthOfYear(2)
@@ -27,9 +28,9 @@ public interface TimeFormatter {
                 .appendSecondOfMinute(2)
                 .toFormatter();
 
-        private final DateTimeFormatter formatter;
+        private final @NotNull DateTimeFormatter formatter;
 
-        public AbsoluteTimeFormatter(DateTimeFormatter formatter) {
+        public AbsoluteTimeFormatter(@NotNull DateTimeFormatter formatter) {
             this.formatter = formatter;
         }
 
@@ -38,7 +39,7 @@ public interface TimeFormatter {
         }
 
         @Override
-        public void format(long millis, StringBuilder result) {
+        public void format(long millis, @NotNull StringBuilder result) {
             formatter.printTo(result, millis);
         }
     }
@@ -56,7 +57,7 @@ public interface TimeFormatter {
         }
 
         @Override
-        public void format(long millis, StringBuilder result) {
+        public void format(long millis, @NotNull StringBuilder result) {
             boolean dirty = false;
 
             if (days) {

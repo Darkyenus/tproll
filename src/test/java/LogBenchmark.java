@@ -3,6 +3,7 @@ import com.darkyen.tproll.TPLogger;
 import com.darkyen.tproll.logfunctions.FileLogFunction;
 import com.darkyen.tproll.logfunctions.LogFunctionMultiplexer;
 import com.darkyen.tproll.logfunctions.SimpleLogFunction;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
@@ -19,7 +20,7 @@ public class LogBenchmark {
     public static void main(String[] args){
         final LogFunction NOP_FUNCTION = new LogFunction() {
             @Override
-            public void log(String name, long time, byte level, Marker marker, CharSequence content) {
+            public void log(@NotNull String name, long time, byte level, Marker marker, @NotNull CharSequence content) {
                 // NOP
             }
         };

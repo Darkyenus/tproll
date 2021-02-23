@@ -1,5 +1,7 @@
 package com.darkyen.tproll;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Marker;
 
 /**
@@ -16,14 +18,14 @@ public abstract class LogFunction {
      * @param marker provided or null
      * @param content of this message, formatted, without trailing newline. Do not keep around!
      */
-    public abstract void log(String name, long time, byte level, Marker marker, CharSequence content);
+    public abstract void log(@NotNull String name, long time, byte level, @Nullable Marker marker, @NotNull CharSequence content);
 
     /**
      * Additional check whether this log function will log message of given level/marker.
      * This is only secondary check, primary level check is done through log level of TPLogger.
      * @return if such message would be logged
      */
-    public boolean isEnabled(byte level, Marker marker){
+    public boolean isEnabled(byte level, @Nullable Marker marker){
         return true;
     }
 }

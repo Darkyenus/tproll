@@ -4,6 +4,8 @@ import com.darkyen.tproll.LogFunction;
 import com.darkyen.tproll.TPLogger;
 import com.darkyen.tproll.util.TerminalColor;
 import com.darkyen.tproll.util.TimeFormatter;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.joda.time.format.DateTimeFormatterBuilder;
 import org.slf4j.Marker;
 
@@ -20,9 +22,9 @@ import static com.darkyen.tproll.util.TerminalColor.*;
  */
 public abstract class SimpleLogFunction extends LogFunction {
 
-    private final StringBuilder sb = new StringBuilder();
-    private final TimeFormatter absoluteTimeFormatter;
-    private final TimeFormatter relativeTimeFormatter;
+    private final @NotNull StringBuilder sb = new StringBuilder();
+    private final @Nullable TimeFormatter absoluteTimeFormatter;
+    private final @Nullable TimeFormatter relativeTimeFormatter;
 
     public SimpleLogFunction() {
         absoluteTimeFormatter = new TimeFormatter.AbsoluteTimeFormatter(new DateTimeFormatterBuilder()
@@ -36,13 +38,13 @@ public abstract class SimpleLogFunction extends LogFunction {
     }
 
     @SuppressWarnings("unused")
-    public SimpleLogFunction(TimeFormatter absoluteTimeFormatter, TimeFormatter relativeTimeFormatter) {
+    public SimpleLogFunction(@Nullable TimeFormatter absoluteTimeFormatter, @Nullable TimeFormatter relativeTimeFormatter) {
         this.absoluteTimeFormatter = absoluteTimeFormatter;
         this.relativeTimeFormatter = relativeTimeFormatter;
     }
 
     @Override
-    public final synchronized void log(String name, long time, byte level, Marker marker, CharSequence content) {
+    public final synchronized void log(@NotNull String name, long time, byte level, @Nullable Marker marker, @NotNull CharSequence content) {
         final StringBuilder sb = this.sb;
         black(sb);
         sb.append('[');
@@ -95,7 +97,9 @@ public abstract class SimpleLogFunction extends LogFunction {
         }
 
         black(sb);
-        appendMarker(sb, marker, true, true);
+        if (marker != null) {
+            appendMarker(sb, marker, true, true);
+        }
         black(sb);
         sb.append(']');
         purple(sb);
@@ -113,15 +117,15 @@ public abstract class SimpleLogFunction extends LogFunction {
         sb.setLength(0);
     }
 
-    protected abstract void logLine(byte level, CharSequence formattedContent);
+    protected abstract void logLine(byte level, @NotNull CharSequence formattedContent);
 
     /** Implementation of {@link SimpleLogFunction} which logs to stdout and stderr. */
     public static final SimpleLogFunction CONSOLE_LOG_FUNCTION = new SimpleLogFunction() {
 
-        private PrintStream log_lastStream;
+        private @Nullable PrintStream log_lastStream;
 
         @Override
-        protected void logLine(byte level, CharSequence formattedContent) {
+        protected void logLine(byte level, @NotNull CharSequence formattedContent) {
             PrintStream out = (level <= TPLogger.INFO || level == TPLogger.LOG || TerminalColor.COLOR_SUPPORTED) ? System.out : System.err;
             if (log_lastStream != out) {
                 if (log_lastStream != null){
