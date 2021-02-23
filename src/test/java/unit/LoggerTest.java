@@ -3,7 +3,6 @@ package unit;
 import com.darkyen.tproll.LogFunction;
 import com.darkyen.tproll.TPLogger;
 import com.darkyen.tproll.TPLoggerFactory;
-import com.darkyen.tproll.util.SimpleMarker;
 import org.hamcrest.CustomTypeSafeMatcher;
 import org.jetbrains.annotations.NotNull;
 import org.junit.AfterClass;
@@ -15,11 +14,12 @@ import org.slf4j.Marker;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * Test for TPLogger
  */
+@SuppressWarnings("PlaceholderCountMatchesArgumentCount")
 public class LoggerTest {
 
     private static final String LOGGER_NAME = "TEST-LOGGER";

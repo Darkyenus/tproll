@@ -81,7 +81,7 @@ public class FileLogFunction extends LogFunction {
             }
             sb.append(alignedLevelName(level));
             if (marker != null) {
-                appendMarker(sb, marker, true, false);
+                appendMarker(sb, false, marker, true);
             }
             sb.append(']').append(' ').append(name).append(':').append(' ');
             sb.append(content).append('\n');

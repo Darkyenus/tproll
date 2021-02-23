@@ -5,9 +5,6 @@ import org.slf4j.Marker;
 
 import java.util.Iterator;
 
-import static com.darkyen.tproll.util.TerminalColor.black;
-import static com.darkyen.tproll.util.TerminalColor.yellow;
-
 /**
  * Markers implementing this interface will get rendered by the log function
  */
@@ -22,24 +19,24 @@ public interface RenderableMarker extends Marker {
 
     /**
      * Convenience method to append all {@link RenderableMarker}s into the {@code sb}.
+     * @param ansiColor whether ANSI colors should be used
      * @param firstInList if true, a single space will be added
-     * @param useColors whether ANSI colors should be used
      */
-    static void appendMarker(@NotNull StringBuilder sb, @NotNull Marker marker, boolean firstInList, boolean useColors) {
+    static void appendMarker(@NotNull StringBuilder sb, boolean ansiColor, @NotNull Marker marker, boolean firstInList) {
         boolean rendered = false;
 
         if (marker instanceof RenderableMarker) {
-            if (useColors) black(sb);
+            if (ansiColor) sb.append(AnsiColor.BLACK);
             if (!firstInList) sb.append(' ');
             sb.append("| ");
-            if (useColors) yellow(sb);
+            if (ansiColor) sb.append(AnsiColor.YELLOW);
             sb.append(((RenderableMarker)marker).getLabel());
             rendered = true;
         }
 
         if (marker.hasReferences()) {
             for (Iterator<Marker> it = marker.iterator(); it.hasNext(); ) {
-                appendMarker(sb, it.next(), firstInList && !rendered, useColors);
+                appendMarker(sb, ansiColor, it.next(), firstInList && !rendered);
             }
         }
     }

@@ -8,17 +8,25 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Map;
+import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 
 /**
  * Additional pretty-printer tests
  */
-@SuppressWarnings("Since15")
+@SuppressWarnings("NullableProblems")
 public class PrettyPrinterTest {
 
     private static Path file(String path) {
@@ -111,7 +119,7 @@ public class PrettyPrinterTest {
         try {
             PrettyPrinterPathModule.setApplicationRootDirectory(tempRoot);
 
-            final List<Path> arrayList = new ArrayList<Path>();
+            final List<Path> arrayList = new ArrayList<>();
             arrayList.add(simple);
             assertEquals("ArrayList[1 element]", PrettyPrinter.toString(arrayList, 0));
             arrayList.add(simple);
@@ -119,7 +127,7 @@ public class PrettyPrinterTest {
             assertEquals("ArrayList[2 elements]", PrettyPrinter.toString(arrayList, 0));
             assertEquals("ArrayList[simple, ... (1 more)]", PrettyPrinter.toString(arrayList, 1));
 
-            final List<Path> phonyList = new PhonyList<Path>();
+            final List<Path> phonyList = new PhonyList<>();
             phonyList.add(simple);
             assertEquals("PhonyList[1 element]", PrettyPrinter.toString(phonyList, 0));
             phonyList.add(simple);
@@ -128,8 +136,6 @@ public class PrettyPrinterTest {
             assertEquals("PhonyList[simple, ... (1 more)]", PrettyPrinter.toString(phonyList, 1));
 
             final List<Object> customList = new List<Object>() {
-
-                private static final long serialVersionUID = 1L;
 
                 @Override
                 public int size() {
@@ -268,7 +274,7 @@ public class PrettyPrinterTest {
         try {
             PrettyPrinterPathModule.setApplicationRootDirectory(tempRoot);
 
-            final Map<Object, Object> hashMap = new HashMap<Object, Object>();
+            final Map<Object, Object> hashMap = new HashMap<>();
             hashMap.put("uno", simple);
             assertEquals("HashMap{1 entry}", PrettyPrinter.toString(hashMap, 0));
             assertEquals("HashMap{uno=simple}", PrettyPrinter.toString(hashMap, 1));
@@ -282,7 +288,7 @@ public class PrettyPrinterTest {
                     is("HashMap{simple=dos, ... (1 more)}")
             ));
 
-            final Map<Object, Object> phonyMap = new PhonyMap<Object, Object>();
+            final Map<Object, Object> phonyMap = new PhonyMap<>();
             phonyMap.put("uno", simple);
             assertEquals("PhonyMap{1 entry}", PrettyPrinter.toString(phonyMap, 0));
             assertEquals("PhonyMap{uno=simple}", PrettyPrinter.toString(phonyMap, 1));
