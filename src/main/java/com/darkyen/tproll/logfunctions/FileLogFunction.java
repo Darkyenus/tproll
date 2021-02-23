@@ -2,13 +2,13 @@ package com.darkyen.tproll.logfunctions;
 
 import com.darkyen.tproll.LogFunction;
 import com.darkyen.tproll.TPLogger;
-import com.darkyen.tproll.util.RenderedMarker;
 import com.darkyen.tproll.util.TimeFormatter;
 import org.joda.time.Duration;
 import org.slf4j.Marker;
 
 import java.io.File;
-import java.util.Iterator;
+
+import static com.darkyen.tproll.util.RenderableMarker.appendMarker;
 
 /**
  * LogFunction which logs to a file.
@@ -83,24 +83,13 @@ public class FileLogFunction extends LogFunction {
                 sb.append(' ');
             }
             sb.append(alignedLevelName(level));
-            appendMarker(sb, marker, false);
+            appendMarker(sb, marker, true, false);
             sb.append(']').append(' ').append(name).append(':').append(' ');
             sb.append(content).append('\n');
 
             logFileHandler.log(sb);
 
             sb.setLength(0);
-        }
-    }
-
-    private void appendMarker(StringBuilder sb, Marker marker, boolean startWithSpace) {
-        if (marker instanceof RenderedMarker) {
-            if (startWithSpace) sb.append(' ');
-            sb.append("| ");
-            sb.append(marker.getName());
-        }
-        for (Iterator<Marker> it = marker.iterator(); it.hasNext(); ) {
-            appendMarker(sb, it.next(), true);
         }
     }
 

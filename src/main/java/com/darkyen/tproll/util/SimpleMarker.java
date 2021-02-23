@@ -178,4 +178,33 @@ public abstract class SimpleMarker implements Marker {
         }
         return -1;
     }
+
+    /**
+     * Convenience function, which creates new SimpleRenderableMarker
+     */
+    public static SimpleRenderableMarker withLabel(String label) {
+        return new SimpleRenderableMarker(label);
+    }
+
+    /**
+     * SimpleMarker with RenderableMarker interface
+     */
+    public static class SimpleRenderableMarker extends SimpleMarker implements RenderableMarker {
+        private final String label;
+
+        public SimpleRenderableMarker(String label) {
+            this.label = label;
+        }
+
+        @Override
+        public String getName() {
+            return "Renderable[" + label + "]";
+        }
+
+        @Override
+        public String getLabel() {
+            return label;
+        }
+    }
+
 }
