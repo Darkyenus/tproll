@@ -8,11 +8,13 @@ import org.slf4j.Marker;
 
 import java.io.File;
 
+import static com.darkyen.tproll.util.RenderableMarker.appendMarker;
+
 /**
  * LogFunction which logs to a file.
  * Actual file handling is done through {@link ILogFileHandler} interface.
  *
- * @see LogFileHandler default implementation of ILogFileHandler
+ * @see FileLogFunction default implementation of ILogFileHandler
  */
 public class FileLogFunction extends LogFunction {
 
@@ -80,7 +82,9 @@ public class FileLogFunction extends LogFunction {
                 timeFormatter.format(time, sb);
                 sb.append(' ');
             }
-            sb.append(alignedLevelName(level)).append(']').append(' ').append(name).append(':').append(' ');
+            sb.append(alignedLevelName(level));
+            appendMarker(sb, marker, true, false);
+            sb.append(']').append(' ').append(name).append(':').append(' ');
             sb.append(content).append('\n');
 
             logFileHandler.log(sb);

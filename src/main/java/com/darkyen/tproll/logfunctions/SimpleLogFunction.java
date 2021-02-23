@@ -9,6 +9,7 @@ import org.slf4j.Marker;
 
 import java.io.PrintStream;
 
+import static com.darkyen.tproll.util.RenderableMarker.appendMarker;
 import static com.darkyen.tproll.util.TerminalColor.*;
 
 /**
@@ -93,6 +94,8 @@ public abstract class SimpleLogFunction extends LogFunction {
             }
         }
 
+        black(sb);
+        appendMarker(sb, marker, true, true);
         black(sb);
         sb.append(']');
         purple(sb);
