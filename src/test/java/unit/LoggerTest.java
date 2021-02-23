@@ -3,6 +3,7 @@ package unit;
 import com.darkyen.tproll.LogFunction;
 import com.darkyen.tproll.TPLogger;
 import com.darkyen.tproll.TPLoggerFactory;
+import com.darkyen.tproll.util.SimpleMarker;
 import org.hamcrest.CustomTypeSafeMatcher;
 import org.jetbrains.annotations.NotNull;
 import org.junit.AfterClass;
@@ -19,7 +20,6 @@ import static org.junit.Assert.assertThat;
 /**
  * Test for TPLogger
  */
-@SuppressWarnings("serial")
 public class LoggerTest {
 
     private static final String LOGGER_NAME = "TEST-LOGGER";
@@ -143,7 +143,6 @@ public class LoggerTest {
         assertLogIs(INFO_PREFIX + "Reason: null");
     }
 
-    @SuppressWarnings("serial")
     private static final class DummyException extends Exception {
         public DummyException(String message) {
             super(message);
