@@ -33,7 +33,7 @@ public final class LogFunctionMultiplexer extends LogFunction {
         this.optOutMask = (1L << defaultOptOutTargets.length) - 1L;
     }
 
-    /** Add multiplexing target.
+    /** Add multiplexing target. May be called only before logging starts.
      * If optOut is false, only messages with returned marker are logged.
      * If optOut is true, all messages, except those with returned marker are logged.
      * @param function to which this branch should log */

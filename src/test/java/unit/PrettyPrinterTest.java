@@ -33,40 +33,44 @@ public class PrettyPrinterTest {
         return Paths.get(path);
     }
 
+    private static void assertPathEquals(String expected, String actual) {
+        assertEquals(expected.replace('\\', '/'), actual.replace('\\', '/'));
+    }
+
     @Test
     public void simpleAbsoluteFile() {
-        assertEquals(new File("").getAbsolutePath()+"/", PrettyPrinter.toString(new File(".").getAbsoluteFile()));
-        assertEquals(new File("wo").getAbsolutePath()+" ⌫", PrettyPrinter.toString(new File("./whatever/../wo").getAbsoluteFile()));
+        assertPathEquals(new File("").getAbsolutePath()+"/", PrettyPrinter.toString(new File(".").getAbsoluteFile()));
+        assertPathEquals(new File("wo").getAbsolutePath()+" ⌫", PrettyPrinter.toString(new File("./whatever/../wo").getAbsoluteFile()));
     }
 
     @Test
     public void simpleAbsolutePath() {
-        assertEquals(file("").toAbsolutePath()+"/", PrettyPrinter.toString(file(".").toAbsolutePath()));
-        assertEquals(file("wo").toAbsolutePath()+" ⌫", PrettyPrinter.toString(file("./whatever/../wo").toAbsolutePath()));
+        assertPathEquals(file("").toAbsolutePath()+"/", PrettyPrinter.toString(file(".").toAbsolutePath()));
+        assertPathEquals(file("wo").toAbsolutePath()+" ⌫", PrettyPrinter.toString(file("./whatever/../wo").toAbsolutePath()));
     }
 
     @Test
     public void simpleRelativeFile() {
         // As File pretty printer does not honor root, it should become absolute
-        assertEquals(file("").toAbsolutePath()+"/", PrettyPrinter.toString(new File(".")));
-        assertEquals(file("").toAbsolutePath()+"/wo ⌫", PrettyPrinter.toString(new File("./whatever/../wo")));
+        assertPathEquals(file("").toAbsolutePath()+"/", PrettyPrinter.toString(new File(".")));
+        assertPathEquals(file("").toAbsolutePath()+"/wo ⌫", PrettyPrinter.toString(new File("./whatever/../wo")));
     }
 
     @Test
     public void simpleRelativePath() {
-        assertEquals("./", PrettyPrinter.toString(file(".")));
-        assertEquals("wo ⌫", PrettyPrinter.toString(file("./whatever/../wo")));
+        assertPathEquals("./", PrettyPrinter.toString(file(".")));
+        assertPathEquals("wo ⌫", PrettyPrinter.toString(file("./whatever/../wo")));
     }
 
     @Test
     public void rootedPaths() {
         try {
             PrettyPrinterPathModule.setApplicationRootDirectory(file("./1234"));
-            assertEquals(file("").toAbsolutePath() + "/", PrettyPrinter.toString(file(".").toAbsolutePath()));
-            assertEquals(file("wo").toAbsolutePath() + " ⌫", PrettyPrinter.toString(file("./whatever/../wo").toAbsolutePath()));
+            assertPathEquals(file("").toAbsolutePath() + "/", PrettyPrinter.toString(file(".").toAbsolutePath()));
+            assertPathEquals(file("wo").toAbsolutePath() + " ⌫", PrettyPrinter.toString(file("./whatever/../wo").toAbsolutePath()));
 
-            assertEquals(". ⌫", PrettyPrinter.toString(file("./1234/").toAbsolutePath()));
-            assertEquals("wo ⌫", PrettyPrinter.toString(file("./1234/whatever/../wo").toAbsolutePath()));
+            assertPathEquals(". ⌫", PrettyPrinter.toString(file("./1234/").toAbsolutePath()));
+            assertPathEquals("wo ⌫", PrettyPrinter.toString(file("./1234/whatever/../wo").toAbsolutePath()));
         } finally {
             PrettyPrinterPathModule.setApplicationRootDirectory((Path) null);
         }
@@ -97,12 +101,12 @@ public class PrettyPrinterTest {
         try {
             PrettyPrinterPathModule.setApplicationRootDirectory(tempRoot);
 
-            assertEquals("simple", PrettyPrinter.toString(simple));
-            assertEquals("valid_link → "+simple, PrettyPrinter.toString(valid_link));
-            assertEquals("non_existent ⌫", PrettyPrinter.toString(non_existent));
-            assertEquals("invalid_link ⇥", PrettyPrinter.toString(invalid_link));
-            assertEquals("directory/", PrettyPrinter.toString(directory));
-            assertEquals("directory_link/ → "+directory, PrettyPrinter.toString(directory_link));
+            assertPathEquals("simple", PrettyPrinter.toString(simple));
+            assertPathEquals("valid_link → "+simple, PrettyPrinter.toString(valid_link));
+            assertPathEquals("non_existent ⌫", PrettyPrinter.toString(non_existent));
+            assertPathEquals("invalid_link ⇥", PrettyPrinter.toString(invalid_link));
+            assertPathEquals("directory/", PrettyPrinter.toString(directory));
+            assertPathEquals("directory_link/ → "+directory, PrettyPrinter.toString(directory_link));
         } finally {
             PrettyPrinterPathModule.setApplicationRootDirectory((Path) null);
         }

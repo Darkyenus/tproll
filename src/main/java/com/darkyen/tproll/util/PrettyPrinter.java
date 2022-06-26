@@ -623,7 +623,6 @@ public final class PrettyPrinter {
                 out.setLength(out.length() - 2);
                 out.append('}');
             }
-            objects.clear();
 
             //Append throwable if any
             if (throwable != null) {

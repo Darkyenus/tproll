@@ -11,7 +11,7 @@ import org.slf4j.Marker;
 public abstract class LogFunction {
     /**
      * Called when logger needs to log a message. Called only when that log level is enabled in the logger.
-     * Can be called by any thread, and thus MUST be thread safe.
+     * Can be called by any thread, even simultaneously, and thus MUST be thread safe.
      * @param name of the logger
      * @param time in ms since start of the app or since 1970
      * @param level of this message

@@ -14,7 +14,8 @@ import java.util.ArrayList;
 import static com.darkyen.tproll.util.PrettyPrinter.patternSubstituteInto;
 
 /**
- * Lightweight, GC friendly and thread-safe logger implementation.
+ * Lightweight, GC friendly and thread-safe (as long as the logging function is thread-safe)
+ * logger implementation.
  *
  * Default log level is INFO, default time provider is {@link TimeProvider#CURRENT_TIME_PROVIDER},
  * default level change listener is {@link LevelChangeListener#LOG} and
@@ -515,53 +516,41 @@ public final class TPLogger implements Logger {
     
     //------------------------------------- INTERNAL ----------------------------------------------------
 
-    private final @NotNull ArrayList<@Nullable Object> arguments = new ArrayList<>();
-
     private void _log(@NotNull String name, long time, byte level, @Nullable Marker marker, @NotNull String msg) {
         if(!logFunction.isEnabled(level, marker)) return;
-        synchronized (arguments) {
-            doLog(name, time, level, marker, msg);
-        }
+        final ThreadLogState state = ThreadLogState.INSTANCE.get();
+        final ArrayList<@Nullable Object> arguments = state.arguments;
+        state.doLog(name, time, level, marker, msg);
     }
 
     private void _log(@NotNull String name, long time, byte level, @Nullable Marker marker, @NotNull String format, @Nullable Object arg) {
         if(!logFunction.isEnabled(level, marker)) return;
-        synchronized (arguments) {
-            arguments.add(arg);
-            doLog(name, time, level, marker, format);
-        }
+        final ThreadLogState state = ThreadLogState.INSTANCE.get();
+        final ArrayList<@Nullable Object> arguments = state.arguments;
+        arguments.add(arg);
+        state.doLog(name, time, level, marker, format);
     }
 
     private void _log(@NotNull String name, long time, byte level, @Nullable Marker marker, @NotNull String format, @Nullable Object argA, @Nullable Object argB) {
         if(!logFunction.isEnabled(level, marker)) return;
-        synchronized (arguments) {
-            arguments.add(argA);
-            arguments.add(argB);
-            doLog(name, time, level, marker, format);
-        }
+        final ThreadLogState state = ThreadLogState.INSTANCE.get();
+        final ArrayList<@Nullable Object> arguments = state.arguments;
+        arguments.add(argA);
+        arguments.add(argB);
+        state.doLog(name, time, level, marker, format);
     }
 
     private void _log(@NotNull String name, long time, byte level, @Nullable Marker marker, @NotNull String format, @Nullable Object @NotNull ... arguments) {
         if(!logFunction.isEnabled(level, marker)) return;
-        synchronized (this.arguments) {
-            this.arguments.ensureCapacity(arguments.length);
-            //noinspection ManualArrayToCollectionCopy
-            for (Object argument : arguments) {
-                //noinspection UseBulkOperation
-                this.arguments.add(argument);
-            }
-            doLog(name, time, level, marker, format);
+        final ThreadLogState state = ThreadLogState.INSTANCE.get();
+        final ArrayList<@Nullable Object> args = state.arguments;
+        args.ensureCapacity(arguments.length);
+        //noinspection ManualArrayToCollectionCopy
+        for (Object argument : arguments) {
+            //noinspection UseBulkOperation
+            args.add(argument);
         }
-    }
-
-    private final @NotNull StringBuilder sb = new StringBuilder(64);
-
-    private void doLog(final @NotNull String name, final long time, final byte level, final @Nullable Marker marker, final @NotNull String message) {
-        final StringBuilder sb = this.sb;
-
-        patternSubstituteInto(sb, message, this.arguments);
-        TPLogger.logFunction.log(name, time, level, marker, sb);
-        sb.setLength(0);
+        state.doLog(name, time, level, marker, format);
     }
 
     /** Will call {@link Thread#setDefaultUncaughtExceptionHandler(Thread.UncaughtExceptionHandler)}
@@ -578,6 +567,25 @@ public final class TPLogger implements Logger {
                 }
             }
         });
+    }
+
+    private static final class ThreadLogState {
+        final @NotNull ArrayList<@Nullable Object> arguments = new ArrayList<>();
+        final @NotNull StringBuilder sb = new StringBuilder(64);
+
+        void doLog(final @NotNull String name, final long time, final byte level, final @Nullable Marker marker, final @NotNull String message) {
+            final StringBuilder sb = this.sb;
+            final ArrayList<@Nullable Object> arguments = this.arguments;
+            try {
+                patternSubstituteInto(sb, message, arguments);
+                TPLogger.logFunction.log(name, time, level, marker, sb);
+            } finally {
+                sb.setLength(0);
+                arguments.clear();
+            }
+        }
+
+        static final @NotNull ThreadLocal<@NotNull ThreadLogState> INSTANCE = ThreadLocal.withInitial(ThreadLogState::new);
     }
 }
 
