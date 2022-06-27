@@ -50,7 +50,6 @@ public class DateTimeFileCreationStrategy implements LogFileCreationStrategy {
             .toFormatter();
 
     public static final @NotNull String DEFAULT_LOG_FILE_EXTENSION = "log";
-    public static final long FOLDER_SIZE_LIMIT_ZERO = 0L;
     public static final long FOLDER_SIZE_LIMIT_NONE = -1L;
 
     private final @NotNull DateTimeFormatter formatter;
@@ -63,7 +62,7 @@ public class DateTimeFileCreationStrategy implements LogFileCreationStrategy {
      * @param formatter          to use when creating files. Must not be empty
      * @param allowAppend        whether logs should be appended to existing files or if new files should be created in case of naming conflict
      * @param extension          of the log files (without leading dot)
-     * @param folderKBLimit      how many kilobytes should be tolerated inside the log folder before logs are removed, {@link #FOLDER_SIZE_LIMIT_ZERO} = always remove all other log files, {@link #FOLDER_SIZE_LIMIT_NONE} = never delete. Note that this does not include files which cannot be deleted, i.e. non-log files and files which are too new to be deleted.
+     * @param folderKBLimit      how many kilobytes should be tolerated inside the log folder before logs are removed, 0 = always remove all other log files, {@link #FOLDER_SIZE_LIMIT_NONE} = never delete. Note that this does not include files which cannot be deleted, i.e. non-log files and files which are too new to be deleted.
      * @param keepLogsAtLeastFor even if the folder is larger than the limit, do not delete logs younger than this
      */
     public DateTimeFileCreationStrategy(@NotNull DateTimeFormatter formatter, boolean allowAppend, @NotNull String extension, long folderKBLimit, @Nullable TemporalAmount keepLogsAtLeastFor) {

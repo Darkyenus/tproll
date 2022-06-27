@@ -27,27 +27,31 @@ public class FileLogFunction extends LogFunction {
     private boolean logFileHandlerInitialized = false;
 
     /**
-     * @param timeFormatter used for displaying time, null for no time
-     * @param logFileHandler for file handling
      * @param registerShutdownHook to automatically call dispose (and flush log files!) when the application shuts down. Recommended: true.
+     * @deprecated registerShutdownHook is no longer used here
      */
+    @Deprecated
     public FileLogFunction(@Nullable TimeFormatter timeFormatter, @NotNull ILogFileHandler logFileHandler, boolean registerShutdownHook) {
-        this.timeFormatter = timeFormatter;
-        this.logFileHandler = logFileHandler;
-
-        if (registerShutdownHook) {
-            Runtime.getRuntime().addShutdownHook(new Thread(this::dispose));
-        }
+        this(timeFormatter, logFileHandler);
     }
 
     /**
-     * Shortcut constructor for most common usage.
-     * Messages are logged with absolute time, to files with date in name and default extension (.log).
-     * These files are not appended to, as they are compressed on exit.
-     * When logs take over 512MB, oldest ones are deleted, but not those younger than 60 days.
-     *
-     * @param logDirectory to place logs in
+     * @param timeFormatter used for displaying time, null for no time
+     * @param logFileHandler for file handling
      */
+    public FileLogFunction(@Nullable TimeFormatter timeFormatter, @NotNull ILogFileHandler logFileHandler) {
+        this.timeFormatter = timeFormatter;
+        this.logFileHandler = logFileHandler;
+    }
+
+        /**
+         * Shortcut constructor for most common usage.
+         * Messages are logged with absolute time, to files with date in name and default extension (.log).
+         * These files are not appended to, as they are compressed on exit.
+         * When logs take over 512MB, oldest ones are deleted, but not those younger than 60 days.
+         *
+         * @param logDirectory to place logs in
+         */
     public FileLogFunction(@NotNull File logDirectory) {
         this(
                 new TimeFormatter.AbsoluteTimeFormatter(),
@@ -59,8 +63,7 @@ public class FileLogFunction extends LogFunction {
                                 DateTimeFileCreationStrategy.DEFAULT_LOG_FILE_EXTENSION,
                                 512 * 1000,
                                 Duration.ofDays(60)),
-                        true),
-                true);
+                        true, 500_000_000/*500MB*/));
     }
 
     private final @NotNull StringBuilder log_sb = new StringBuilder();
@@ -92,14 +95,21 @@ public class FileLogFunction extends LogFunction {
         }
     }
 
-    @SuppressWarnings("WeakerAccess")
-    public void dispose(){
+    @Override
+    public void stop() {
         synchronized (LOCK) {
             if (logFileHandlerInitialized) {
                 logFileHandler.dispose();
                 logFileHandlerInitialized = false;
             }
         }
+    }
+
+    /** @deprecated no longer used, start/stop mechanism used instead */
+    @Deprecated
+    @SuppressWarnings("WeakerAccess")
+    public void dispose(){
+        stop();
     }
 
     public static @NotNull String alignedLevelName(byte logLevel){

@@ -26,9 +26,7 @@ public class LogFileRotationTest {
                                         ".bacon",
                                         10, Duration.ofSeconds(10L)
                                 ),
-                                false),
-                        true
-                )
+                                false, 500_000_000/*500MB*/))
         );
         TPLogger.TRACE();
 

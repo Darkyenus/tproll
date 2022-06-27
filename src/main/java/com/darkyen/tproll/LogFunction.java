@@ -28,4 +28,10 @@ public abstract class LogFunction {
     public boolean isEnabled(byte level, @Nullable Marker marker){
         return true;
     }
+
+    /** Called when the {@link LogFunction} is assigned to {@link TPLogger#setLogFunction(LogFunction)} */
+    public void start() {}
+
+    /** Called when the {@link LogFunction} is overridden from active by {@link TPLogger#setLogFunction(LogFunction)} or on system shutdown. */
+    public void stop() {}
 }

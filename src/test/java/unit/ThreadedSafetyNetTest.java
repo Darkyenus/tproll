@@ -2,6 +2,7 @@ package unit;
 
 import com.darkyen.tproll.LogFunction;
 import com.darkyen.tproll.TPLogger;
+import com.darkyen.tproll.logfunctions.SimpleLogFunction;
 import com.darkyen.tproll.logfunctions.adapters.ThreadedSafetyNet;
 import com.vmlens.api.AllInterleavings;
 import org.jetbrains.annotations.NotNull;
@@ -42,7 +43,6 @@ public class ThreadedSafetyNetTest {
         if (useSafetyNet) {
             safetyNet = new ThreadedSafetyNet(parent, 256, -1L, -1L);
             TPLogger.setLogFunction(safetyNet);
-            safetyNet.startLogThread();
         } else {
             TPLogger.setLogFunction(parent);
         }
@@ -81,9 +81,7 @@ public class ThreadedSafetyNetTest {
             t.join();
         }
 
-        if (safetyNet != null) {
-            safetyNet.stopLogThread(true, true);
-        }
+        TPLogger.setLogFunction(SimpleLogFunction.CONSOLE_LOG_FUNCTION);
 
         Assert.assertEquals(threadCount * messagesPerThread, logCount.get());
         double nsPerMessage = (double) (System.nanoTime() - startTime) / (messagesPerThread * threadCount);
@@ -131,7 +129,6 @@ public class ThreadedSafetyNetTest {
         };
         final ThreadedSafetyNet net = new ThreadedSafetyNet(parent, 100, -1, 100);
         TPLogger.setLogFunction(net);
-        net.startLogThread();
 
 
         final Logger a = LoggerFactory.getLogger("a");
@@ -150,7 +147,7 @@ public class ThreadedSafetyNetTest {
         b.info(".");//b
         b.info(".");
 
-        net.stopLogThread(true, true);
+        TPLogger.setLogFunction(SimpleLogFunction.CONSOLE_LOG_FUNCTION);
 
         Assert.assertEquals(result.toString(), "abcbab");
     }

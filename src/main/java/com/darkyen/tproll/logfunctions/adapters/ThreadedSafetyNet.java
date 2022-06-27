@@ -2,6 +2,7 @@ package com.darkyen.tproll.logfunctions.adapters;
 
 import com.darkyen.tproll.LogFunction;
 import com.darkyen.tproll.TPLogger;
+import com.darkyen.tproll.logfunctions.AbstractAdapterLogFunction;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Marker;
@@ -17,9 +18,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  * It also collapses duplicate messages.
  */
-public class ThreadedSafetyNet extends LogFunction {
+public final class ThreadedSafetyNet extends AbstractAdapterLogFunction {
 
-    private final LogFunction parent;
     private final long maxWaitUntilDropMs;
     private final long deduplicationMs;
 
@@ -34,36 +34,14 @@ public class ThreadedSafetyNet extends LogFunction {
      * @param deduplicationMs sequential identical messages (identical in all but time) that arrive within this many milliseconds will be collapsed into one message. -1 to disable collapsing.
      */
     public ThreadedSafetyNet(LogFunction parent, int capacity, long maxWaitUntilDropMs, long deduplicationMs) {
-        this.parent = parent;
+        super(parent);
         this.queue = new ArrayBlockingQueue<>(capacity, false);
         this.maxWaitUntilDropMs = maxWaitUntilDropMs;
         this.deduplicationMs = deduplicationMs;
     }
 
-    private synchronized void ensureStarted() {
-        if (logThread != null) {
-            return;
-        }
-        startLogThread();
-        startedAutomatically = true;
-
-        Runtime.getRuntime().addShutdownHook(new Thread("ThreadedSafetyNetShutdownHook") {
-            @Override
-            public void run() {
-                synchronized (ThreadedSafetyNet.this) {
-                    startedAutomatically = false;
-                    stopLogThread(true, true);
-                }
-            }
-        });
-    }
-
     @Override
     public void log(@NotNull String name, long time, byte level, @Nullable Marker marker, @NotNull CharSequence content) {
-        if (logThread == null) {
-            ensureStarted();
-        }
-
         final MessageData data = new MessageData();
         data.name = name;
         data.time = time;
@@ -85,22 +63,18 @@ public class ThreadedSafetyNet extends LogFunction {
         dropped.incrementAndGet();
     }
 
-    private boolean started = false;
-    private boolean startedAutomatically = false;
     private volatile LogThread logThread = null;
 
     private final class LogThread extends Thread {
 
-        private LogThread oldLogThread;
         private static final int STATE_RUNNING = 0;
         private static final int STATE_BLOCKING = 1;
         private static final int STATE_RUNNING_UNTIL_EMPTY = 2;
         private static final int STATE_STOP = 3;
         public final AtomicInteger state = new AtomicInteger(STATE_RUNNING);
 
-        public LogThread(LogThread logThread) {
+        public LogThread() {
             super("ThreadedSafetyNet");
-            this.oldLogThread = logThread;
             setPriority(Thread.MIN_PRIORITY + 2);
             setDaemon(true);
         }
@@ -134,12 +108,6 @@ public class ThreadedSafetyNet extends LogFunction {
 
         @Override
         public void run() {
-            final LogThread oldThread = this.oldLogThread;
-            if (oldThread != null) {
-                this.oldLogThread = null;
-                oldThread.stopAndJoin(false, true);
-            }
-
             MessageData nextData = null;
             final LogFunction parent = ThreadedSafetyNet.this.parent;
             final ArrayBlockingQueue<MessageData> queue = ThreadedSafetyNet.this.queue;
@@ -240,41 +208,18 @@ public class ThreadedSafetyNet extends LogFunction {
         }
     }
 
-    /**
-     * Manually starts the log thread.
-     * There is no need to call it, but when you do, call {@link #stopLogThread} when you are done.
-     * If first log message arrives before this call, the log thread will start and stop automatically,
-     * in which case this cannot be called again on this instance.
-     */
-    public synchronized void startLogThread() {
-        if (startedAutomatically) {
-            throw new IllegalStateException("Log thread already started automatically");
-        }
-        if (started) {
-            throw new IllegalStateException("Log thread is already running");
-        }
-        started = true;
-        (this.logThread = new LogThread(this.logThread)).start();
-    }
-
-    public synchronized void stopLogThread(boolean runUntilEmpty, boolean join) {
-        if (startedAutomatically) {
-            throw new IllegalStateException("Can't stop automatically started thread");
-        }
-        if (!started) {
-            throw new IllegalStateException("Log thread is already running");
-        }
-        started = false;
-        final LogThread thread = this.logThread;
-        thread.stopAndJoin(runUntilEmpty, join);
-    }
-
-    /**
-     * This call is not serialized and is passed through to parent directly.
-     */
     @Override
-    public boolean isEnabled(byte level, @Nullable Marker marker) {
-        return parent.isEnabled(level, marker);
+    public void start() {
+        super.start();
+        (this.logThread = new LogThread()).start();
+    }
+
+    @Override
+    public void stop() {
+        super.stop();
+        final LogThread thread = this.logThread;
+        thread.stopAndJoin(true, true);
+        this.logThread = null;
     }
 
     private static final class MessageData {

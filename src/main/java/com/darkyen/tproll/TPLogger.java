@@ -46,8 +46,13 @@ public final class TPLogger implements Logger {
     public static final byte LOG = 6;
 
     private static @NotNull LogFunction logFunction = SimpleLogFunction.CONSOLE_LOG_FUNCTION;
+    static {
+        logFunction.start();
+    }
     private static @NotNull LevelChangeListener levelChangeListener = LevelChangeListener.LOG;
     private static @NotNull TimeProvider timeProvider = TimeProvider.CURRENT_TIME_PROVIDER;
+
+    private static @Nullable Thread shutdownHook = null;
 
     private static byte logLevel = INFO;
     private static boolean trace = false;
@@ -111,10 +116,49 @@ public final class TPLogger implements Logger {
         return logLevel;
     }
 
+    /**
+     * Like {@link #setLogFunction(LogFunction, boolean)} with setupShutdownHook=true.
+     */
     public static void setLogFunction(@NotNull LogFunction logFunction) {
+        setLogFunction(logFunction, true);
+    }
+
+    /**
+     * Set the new log function to use. This invokes {@link LogFunction#start()} and {@link LogFunction#stop()}.
+     * @param logFunction to log to now
+     * @param setupShutdownHook when true, the last logFunction will be stopped on JVM exit
+     */
+    public static synchronized void setLogFunction(@NotNull LogFunction logFunction, boolean setupShutdownHook) {
         //noinspection ConstantConditions
         if (logFunction == null) throw new NullPointerException("logFunction may not be null");
+
+        final LogFunction oldLogFunction = TPLogger.logFunction;
+        if (oldLogFunction == logFunction) {
+            return;
+        }
+        final Thread oldShutdownHook = TPLogger.shutdownHook;
+        if (oldShutdownHook != null) {
+            TPLogger.shutdownHook = null;
+            Runtime.getRuntime().removeShutdownHook(oldShutdownHook);
+        }
+
+        TPLogger.logFunction = SimpleLogFunction.CONSOLE_LOG_FUNCTION;// Temporary, nothing should log now anyway
+        oldLogFunction.stop();
+        logFunction.start();
         TPLogger.logFunction = logFunction;
+
+        if (setupShutdownHook) {
+            Runtime.getRuntime().addShutdownHook(shutdownHook = new Thread(TPLogger::autoShutdown, "TPLoggerShutdownHook"));
+        }
+    }
+
+    private static synchronized void autoShutdown() {
+        if (shutdownHook == Thread.currentThread()) {
+            shutdownHook = null;
+            final LogFunction shutdownFunction = TPLogger.logFunction;
+            TPLogger.logFunction = SimpleLogFunction.CONSOLE_LOG_FUNCTION;
+            shutdownFunction.stop();
+        }
     }
 
     public static @NotNull LogFunction getLogFunction() {

@@ -83,6 +83,20 @@ public final class LogFunctionMultiplexer extends LogFunction {
         return false;
     }
 
+    @Override
+    public void start() {
+        for (LogFunction target : muxTargets) {
+            target.start();
+        }
+    }
+
+    @Override
+    public void stop() {
+        for (LogFunction target : muxTargets) {
+            target.stop();
+        }
+    }
+
     @SuppressWarnings("serialVersionUID")
     public static class MuxMarker extends SimpleMarker {
 

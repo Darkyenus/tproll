@@ -1,6 +1,7 @@
 package com.darkyen.tproll.logfunctions.adapters;
 
 import com.darkyen.tproll.LogFunction;
+import com.darkyen.tproll.logfunctions.AbstractAdapterLogFunction;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Marker;
@@ -9,13 +10,12 @@ import org.slf4j.Marker;
  * LogFunction adapter which prepends given message to each line of logged message
  */
 @SuppressWarnings("unused")
-public class Prepender extends LogFunction {
+public final class Prepender extends AbstractAdapterLogFunction {
 
-    private final @NotNull LogFunction parent;
     private final @NotNull String prepend;
 
     public Prepender(@NotNull LogFunction parent, @NotNull String prepend) {
-        this.parent = parent;
+        super(parent);
         this.prepend = prepend;
     }
 
@@ -32,10 +32,5 @@ public class Prepender extends LogFunction {
             }
         }
         parent.log(name, time, level, marker, sb);
-    }
-
-    @Override
-    public boolean isEnabled(byte level, @Nullable Marker marker) {
-        return parent.isEnabled(level, marker);
     }
 }

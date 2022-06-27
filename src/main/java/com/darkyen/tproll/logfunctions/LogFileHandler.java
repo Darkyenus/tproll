@@ -39,14 +39,24 @@ public class LogFileHandler implements ILogFileHandler {
     private final @NotNull File logDirectory;
     private final @NotNull LogFileCreationStrategy fileCreationStrategy;
     private final boolean compressOnExit;
+    private final long reservedFilesystemBytes;
 
     private @Nullable File openedFile = null;
     private @Nullable PrintWriter fileWriter = null;
 
-    public LogFileHandler(@NotNull File logDirectory, @NotNull LogFileCreationStrategy fileCreationStrategy, boolean compressOnExit) {
+    private long remainingBytes = 0L;
+
+    /**
+     * @param logDirectory in which the log files should be created
+     * @param fileCreationStrategy how the files in logDirectory should be created
+     * @param compressOnExit whether the log files should be compressed when they are closed
+     * @param reservedFilesystemBytes do not log any more if the filesystem has less than this many free bytes
+     */
+    public LogFileHandler(@NotNull File logDirectory, @NotNull LogFileCreationStrategy fileCreationStrategy, boolean compressOnExit, long reservedFilesystemBytes) {
         this.logDirectory = logDirectory;
         this.fileCreationStrategy = fileCreationStrategy;
         this.compressOnExit = compressOnExit;
+        this.reservedFilesystemBytes = reservedFilesystemBytes;
     }
 
     @Override
@@ -103,11 +113,54 @@ public class LogFileHandler implements ILogFileHandler {
         }
     }
 
+    private static final int CAPACITY_CHECK_EACH_BYTES = 1000_000;//1MB
+    private int nextCapacityCheckInBytes = 0;
+    private long nextCapacityCheckInMs = System.currentTimeMillis();
+
+    private static final byte CAPACITY_OK = 0;
+    private static final byte CAPACITY_FULL = 1;
+    private static final byte CAPACITY_JUST_FILLED = 2;
+
+    private byte hasCapacity(int bytesWritten) {
+        final File openedFile = this.openedFile;
+        if (openedFile == null) {
+            return CAPACITY_FULL;
+        }
+
+        if (reservedFilesystemBytes <= 0) {
+            return CAPACITY_OK;
+        }
+
+        nextCapacityCheckInBytes -= bytesWritten;
+        if (nextCapacityCheckInBytes <= 0 || System.currentTimeMillis() >= nextCapacityCheckInMs) {
+            nextCapacityCheckInBytes = CAPACITY_CHECK_EACH_BYTES;
+            nextCapacityCheckInMs = System.currentTimeMillis() + 10000L;
+
+            final boolean hadRemainingBytes = remainingBytes > 0;
+            remainingBytes = Math.max(openedFile.getFreeSpace() - reservedFilesystemBytes, 0L);
+            final boolean hasRemainingBytes = remainingBytes > 0;
+            if (hadRemainingBytes && !hasRemainingBytes) {
+                // No more space, logging will stop after this, log one last message (so that we have a timestamp)
+                return CAPACITY_JUST_FILLED;
+            }
+            return hasRemainingBytes ? CAPACITY_OK : CAPACITY_FULL;
+        }
+        return remainingBytes > 0 ? CAPACITY_OK : CAPACITY_FULL;
+    }
+
     @Override
     public void log(@NotNull CharSequence message) {
         final PrintWriter fileWriter = this.fileWriter;
         if (fileWriter != null) {
+            final byte cap = hasCapacity(message.length() /*chars != bytes, but close enough, most of the time it will be ascii anyway*/);
+            if (cap == CAPACITY_FULL) {
+                return;
+            }
             fileWriter.append(message);
+            if (cap == CAPACITY_JUST_FILLED) {
+                fileWriter.print("<filesystem capacity exhausted>\n");
+                fileWriter.flush();
+            }
         } else {
             System.err.append("com.darkyen.tproll.advanced.LogFileHandler: broken, using stderr:\n");
             System.err.append(message);

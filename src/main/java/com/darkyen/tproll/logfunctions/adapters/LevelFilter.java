@@ -1,6 +1,7 @@
 package com.darkyen.tproll.logfunctions.adapters;
 
 import com.darkyen.tproll.LogFunction;
+import com.darkyen.tproll.logfunctions.AbstractAdapterLogFunction;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Marker;
 
@@ -8,9 +9,8 @@ import org.slf4j.Marker;
  * LogFunction adapter, which allows filtering of messages with too low or too high log level
  */
 @SuppressWarnings("unused")
-public final class LevelFilter extends LogFunction {
+public final class LevelFilter extends AbstractAdapterLogFunction {
 
-    private final @NotNull LogFunction parent;
     private final byte minLevel, maxLevel;
 
     /**
@@ -19,7 +19,7 @@ public final class LevelFilter extends LogFunction {
      * @param maxLevel of log messages that still gets through
      */
     public LevelFilter(@NotNull LogFunction parent, byte minLevel, byte maxLevel) {
-        this.parent = parent;
+        super(parent);
         this.minLevel = minLevel;
         this.maxLevel = maxLevel;
     }
@@ -30,9 +30,7 @@ public final class LevelFilter extends LogFunction {
      * @param minLevel of log messages that still gets through
      */
     public LevelFilter(@NotNull LogFunction parent, byte minLevel) {
-        this.parent = parent;
-        this.minLevel = minLevel;
-        this.maxLevel = Byte.MAX_VALUE;
+        this(parent, minLevel, Byte.MAX_VALUE);
     }
 
     @Override

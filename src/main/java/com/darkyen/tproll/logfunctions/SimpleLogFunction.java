@@ -151,5 +151,13 @@ public abstract class SimpleLogFunction extends LogFunction {
 
             out.println(formattedContent);
         }
+
+        @Override
+        public void stop() {
+            final PrintStream lastStream = this.log_lastStream;
+            if (lastStream != null) {
+                lastStream.flush();
+            }
+        }
     };
 }
