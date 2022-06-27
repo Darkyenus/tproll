@@ -19,7 +19,7 @@ public final class StaticLoggerBinder implements LoggerFactoryBinder {
      * against. The value of this field is usually modified with each release.
      * Do NOT make this final (compiler constant folding problems).
      */
-    public static @NotNull String REQUESTED_API_VERSION = "1.7.30";
+    public static @NotNull String REQUESTED_API_VERSION = "1.7.36";
 
     private StaticLoggerBinder() {
     }
