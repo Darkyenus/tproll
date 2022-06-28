@@ -16,6 +16,7 @@ import java.time.temporal.TemporalAccessor;
 import java.time.temporal.TemporalAmount;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.UUID;
 
 /**
  * FileCreationStrategy which returns files with current date/time.
@@ -74,49 +75,75 @@ public class DateTimeFileCreationStrategy implements LogFileCreationStrategy {
     }
 
     @Override
-    public @NotNull File getLogFile(@NotNull File logDirectory) throws Exception {
+    public @NotNull File getLogFile(@NotNull File logDirectory, long maxFileSize) {
         final StringBuilder sb = new StringBuilder();
         formatter.formatTo(TPLogger.getTimeProvider().time(), sb);
         sb.append('.');
-        final int lengthBeforeSuffix = sb.length();
-        sb.append(extension);
-
-        String currentName = sb.toString();
-        if (allowAppend) {
-            // If appending is allowed, just return existing file
-            return new File(logDirectory, currentName);
-        }
 
         final String[] existingFiles = logDirectory.list();
         if (existingFiles == null) {
+            sb.append("001.");
+            sb.append(extension);
             // Directory (hopefully) does not exist, so default filename is definitely safe
-            return new File(logDirectory, currentName);
+            return new File(logDirectory, sb.toString());
         }
-        int nextFileNumber = 2;
 
-        while (true) {
-            fileExists:
-            {
-                for (String file : existingFiles) {
-                    if (file.startsWith(currentName)) {
-                        // Such file exists
-                        break fileExists;
-                    }
-                }
-                //No such file exists! We can use it.
-                break;
+        final String baseName = sb.toString();
+        int lastFileNumber = 0;
+        for (String file : existingFiles) {
+            if (!file.startsWith(baseName)) {
+                continue;
             }
-            // Try different file, if not exhausted
-            sb.setLength(lengthBeforeSuffix);
-            sb.append(nextFileNumber).append('.').append(extension);
-            currentName = sb.toString();
-            nextFileNumber++;
-            if (nextFileNumber >= 10000) {
-                //Can't find anything that does not exist
-                throw new Exception("Failed to create log file, all variants exist");
+            int numberEnd = sb.length();
+            char c;
+            while (numberEnd < file.length() && (c = file.charAt(numberEnd)) >= '0' && c <= '9') {
+                numberEnd++;
+            }
+
+            final int number;
+            if (sb.length() == numberEnd) {
+                number = 1;
+            } else {
+                try {
+                    number = Integer.parseInt(file.substring(sb.length(), numberEnd));
+                } catch (NumberFormatException e) {
+                    continue;
+                }
+            }
+            if (number > lastFileNumber) {
+                lastFileNumber = number;
             }
         }
-        return new File(logDirectory, currentName);
+
+        if (lastFileNumber == Integer.MAX_VALUE) {
+            sb.append(UUID.randomUUID()).append('.').append(extension);
+        } else {
+            if (allowAppend) {
+                // If previous file exists (=is not compressed) and has good size, use it
+                final int lengthBeforeSuffix = sb.length();
+                if (lastFileNumber < 10) {
+                    sb.append("00");
+                } else if (lastFileNumber < 100) {
+                    sb.append('0');
+                }
+                sb.append(lastFileNumber).append('.').append(extension);
+                final File appendFile = new File(logDirectory, sb.toString());
+                // Don't return file for appending that is already at 75% capacity or more
+                if (appendFile.isFile() && appendFile.length() < (maxFileSize - maxFileSize / 4)) {
+                    return appendFile;
+                }
+                sb.setLength(lengthBeforeSuffix);
+            }
+
+            if (lastFileNumber + 1 < 10) {
+                sb.append("00");
+            } else if (lastFileNumber + 1 < 100) {
+                sb.append('0');
+            }
+            sb.append(lastFileNumber + 1).append('.').append(extension);
+        }
+
+        return new File(logDirectory, sb.toString());
     }
 
     @Override

@@ -20,8 +20,9 @@ public class LogBenchmark {
     public static void main(String[] args){
         final LogFunction NOP_FUNCTION = new LogFunction() {
             @Override
-            public void log(@NotNull String name, long time, byte level, Marker marker, @NotNull CharSequence content) {
+            public boolean log(@NotNull String name, long time, byte level, Marker marker, @NotNull CharSequence content) {
                 // NOP
+                return true;
             }
         };
         TPLogger.setLogFunction(NOP_FUNCTION);

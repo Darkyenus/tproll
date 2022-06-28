@@ -12,8 +12,11 @@ import java.io.File;
  */
 public interface LogFileCreationStrategy {
 
-    /** Select a file from given directory to log to. The file may or may not exist yet. */
-    @NotNull File getLogFile(@NotNull File logDirectory) throws Exception;
+    /**
+     * Select a file from given directory to log to. The file may or may not exist yet.
+     * @param maxFileSize if the strategy returns file for appending, don't return files whose size is near or greater than this
+     */
+    @NotNull File getLogFile(@NotNull File logDirectory, long maxFileSize);
 
     /** After the file is created, old files may need to be removed or otherwise handled.
      * This should do it, if applicable.
@@ -22,7 +25,7 @@ public interface LogFileCreationStrategy {
      * @param logger for internal logging, use "LOG" message level for important messages */
     void performCleanup(@NotNull File logDirectory, @NotNull File currentLogFile, @NotNull TPLogger logger);
 
-    /** Whether or not is the file returned by {@link #getLogFile(File)} meant for appending or overwriting. */
+    /** Whether or not is the file returned by {@link #getLogFile(File, long)} meant for appending or overwriting. */
     boolean shouldAppend();
 
 }

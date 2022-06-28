@@ -58,78 +58,81 @@ public abstract class SimpleLogFunction extends LogFunction {
     }
 
     @Override
-    public final synchronized void log(@NotNull String name, long time, byte level, @Nullable Marker marker, @NotNull CharSequence content) {
+    public final synchronized boolean log(@NotNull String name, long time, byte level, @Nullable Marker marker, @NotNull CharSequence content) {
         final boolean color = this.ansiColor;
         final StringBuilder sb = this.sb;
-        if (color) sb.append(AnsiColor.BLACK);
-        sb.append('[');
-        if (color) sb.append(AnsiColor.BLUE);
-        if (relativeTimeFormatter != null && (time < (1000L * 60 * 60 * 24 * 365 * 20) || absoluteTimeFormatter == null)) {
-            // Less than 20 years? (lets assume that no system with this logger will have more years of uptime)
-            relativeTimeFormatter.format(time, sb);
+        try {
+            if (color) sb.append(AnsiColor.BLACK);
+            sb.append('[');
+            if (color) sb.append(AnsiColor.BLUE);
+            if (relativeTimeFormatter != null && (time < (1000L * 60 * 60 * 24 * 365 * 20) || absoluteTimeFormatter == null)) {
+                // Less than 20 years? (lets assume that no system with this logger will have more years of uptime)
+                relativeTimeFormatter.format(time, sb);
+                sb.append(' ');
+            } else if (absoluteTimeFormatter != null) {
+                absoluteTimeFormatter.format(time, sb);
+                sb.append(' ');
+            }
+
+            switch (level) {
+                case TPLogger.TRACE: {
+                    if (color) sb.append(AnsiColor.WHITE);
+                    sb.append("TRACE");
+                    break;
+                }
+                case TPLogger.DEBUG: {
+                    if (color) sb.append(AnsiColor.GREEN);
+                    sb.append("DEBUG");
+                    break;
+                }
+                case TPLogger.INFO: {
+                    if (color) sb.append(AnsiColor.CYAN);
+                    sb.append("INFO ");
+                    break;
+                }
+                case TPLogger.WARN: {
+                    if (color) sb.append(AnsiColor.YELLOW);
+                    sb.append("WARN ");
+                    break;
+                }
+                case TPLogger.ERROR: {
+                    if (color) sb.append(AnsiColor.RED);
+                    sb.append("ERROR");
+                    break;
+                }
+                case TPLogger.LOG: {
+                    if (color) sb.append(AnsiColor.BLUE);
+                    sb.append("LOG  ");
+                    break;
+                }
+                default: {
+                    if (color) sb.append(AnsiColor.RED);
+                    sb.append("UNKNOWN LEVEL ").append(level);
+                    break;
+                }
+            }
+
+            if (color) sb.append(AnsiColor.BLACK);
+            if (marker != null) {
+                appendMarker(sb, color, marker, true);
+            }
+            if (color) sb.append(AnsiColor.BLACK);
+            sb.append(']');
+            if (color) sb.append(AnsiColor.PURPLE);
             sb.append(' ');
-        } else if (absoluteTimeFormatter != null) {
-            absoluteTimeFormatter.format(time, sb);
+            sb.append(name);
+            if (color) sb.append(AnsiColor.BLACK);
+            sb.append(':');
             sb.append(' ');
+            if (color) sb.append(AnsiColor.RESET);
+
+            sb.append(content);
+
+            logLine(level, sb);
+            return true;
+        } finally {
+            sb.setLength(0);
         }
-
-        switch (level) {
-            case TPLogger.TRACE: {
-                if (color) sb.append(AnsiColor.WHITE);
-                sb.append("TRACE");
-                break;
-            }
-            case TPLogger.DEBUG: {
-                if (color) sb.append(AnsiColor.GREEN);
-                sb.append("DEBUG");
-                break;
-            }
-            case TPLogger.INFO: {
-                if (color) sb.append(AnsiColor.CYAN);
-                sb.append("INFO ");
-                break;
-            }
-            case TPLogger.WARN: {
-                if (color) sb.append(AnsiColor.YELLOW);
-                sb.append("WARN ");
-                break;
-            }
-            case TPLogger.ERROR: {
-                if (color) sb.append(AnsiColor.RED);
-                sb.append("ERROR");
-                break;
-            }
-            case TPLogger.LOG: {
-                if (color) sb.append(AnsiColor.BLUE);
-                sb.append("LOG  ");
-                break;
-            }
-            default:  {
-                if (color) sb.append(AnsiColor.RED);
-                sb.append("UNKNOWN LEVEL ").append(level);
-                break;
-            }
-        }
-
-        if (color) sb.append(AnsiColor.BLACK);
-        if (marker != null) {
-            appendMarker(sb, color, marker, true);
-        }
-        if (color) sb.append(AnsiColor.BLACK);
-        sb.append(']');
-        if (color) sb.append(AnsiColor.PURPLE);
-        sb.append(' ');
-        sb.append(name);
-        if (color) sb.append(AnsiColor.BLACK);
-        sb.append(':');
-        sb.append(' ');
-        if (color) sb.append(AnsiColor.RESET);
-
-        sb.append(content);
-
-        logLine(level, sb);
-
-        sb.setLength(0);
     }
 
     protected abstract void logLine(byte level, @NotNull CharSequence formattedContent);
@@ -157,6 +160,19 @@ public abstract class SimpleLogFunction extends LogFunction {
             final PrintStream lastStream = this.log_lastStream;
             if (lastStream != null) {
                 lastStream.flush();
+            }
+        }
+    };
+
+    public static final SimpleLogFunction EMERGENCY_LOG_FUNCTION = new SimpleLogFunction(false) {
+        @Override
+        protected void logLine(byte level, @NotNull CharSequence formattedContent) {
+            PrintStream out = System.err;
+            try {
+                out.println(formattedContent);
+                out.flush();
+            } catch (Throwable ignored) {
+                // What can we do? Nothing.
             }
         }
     };

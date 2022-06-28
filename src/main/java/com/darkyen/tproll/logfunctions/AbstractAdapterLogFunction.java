@@ -18,8 +18,8 @@ public abstract class AbstractAdapterLogFunction extends LogFunction {
     }
 
     @Override
-    public void log(@NotNull String name, long time, byte level, @Nullable Marker marker, @NotNull CharSequence content) {
-        parent.log(name, time, level, marker, content);
+    public boolean log(@NotNull String name, long time, byte level, @Nullable Marker marker, @NotNull CharSequence content) {
+        return parent.log(name, time, level, marker, content);
     }
 
     @Override

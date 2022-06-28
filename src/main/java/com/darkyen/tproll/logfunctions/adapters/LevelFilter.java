@@ -34,10 +34,11 @@ public final class LevelFilter extends AbstractAdapterLogFunction {
     }
 
     @Override
-    public void log(@NotNull String name, long time, byte level, Marker marker, @NotNull CharSequence content) {
+    public boolean log(@NotNull String name, long time, byte level, Marker marker, @NotNull CharSequence content) {
         if (level >= minLevel && level <= maxLevel) {
-            parent.log(name, time, level, marker, content);
+            return parent.log(name, time, level, marker, content);
         }
+        return true;
     }
 
     @Override

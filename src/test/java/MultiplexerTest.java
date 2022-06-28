@@ -60,8 +60,8 @@ public class MultiplexerTest {
         }
 
         @Override
-        public void log(@NotNull String name, long time, byte level, Marker marker, @NotNull CharSequence content) {
-            SimpleLogFunction.CONSOLE_LOG_FUNCTION.log(name, time, level, marker, prefix+content);
+        public boolean log(@NotNull String name, long time, byte level, Marker marker, @NotNull CharSequence content) {
+            return SimpleLogFunction.CONSOLE_LOG_FUNCTION.log(name, time, level, marker, prefix+content);
         }
     }
 }

@@ -41,7 +41,7 @@ public final class ThreadedSafetyNet extends AbstractAdapterLogFunction {
     }
 
     @Override
-    public void log(@NotNull String name, long time, byte level, @Nullable Marker marker, @NotNull CharSequence content) {
+    public boolean log(@NotNull String name, long time, byte level, @Nullable Marker marker, @NotNull CharSequence content) {
         final MessageData data = new MessageData();
         data.name = name;
         data.time = time;
@@ -52,15 +52,16 @@ public final class ThreadedSafetyNet extends AbstractAdapterLogFunction {
         try {
             if (maxWaitUntilDropMs < 0) {
                 queue.put(data);
-                return;
+                return true;
             } else {
                 if (queue.offer(data, maxWaitUntilDropMs, TimeUnit.MILLISECONDS)) {
-                    return;
+                    return true;
                 }
             }
         } catch (InterruptedException ignored) {}
 
         dropped.incrementAndGet();
+        return false;
     }
 
     private volatile LogThread logThread = null;
@@ -169,15 +170,16 @@ public final class ThreadedSafetyNet extends AbstractAdapterLogFunction {
                     if ((state == STATE_RUNNING || state == STATE_RUNNING_UNTIL_EMPTY) && this.state.compareAndSet(state, STATE_BLOCKING)) {
                         try {
                             final long timeout = System.nanoTime() + deduplicationMs * 1000000;
+                            boolean noWait = state == STATE_RUNNING_UNTIL_EMPTY;
                             while (true) {
                                 try {
-                                    nextData = queue.poll(timeout - System.nanoTime(), TimeUnit.NANOSECONDS);
+                                    nextData = noWait ? queue.poll() : queue.poll(timeout - System.nanoTime(), TimeUnit.NANOSECONDS);
                                     if (nextData == null) {
                                         break;
                                     }
                                 } catch (InterruptedException e) {
-                                    nextData = null;
-                                    break;
+                                    noWait = true;
+                                    continue;
                                 }
 
                                 if (messageData.matches(nextData)) {

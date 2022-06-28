@@ -20,7 +20,7 @@ public final class Prepender extends AbstractAdapterLogFunction {
     }
 
     @Override
-    public void log(@NotNull String name, long time, byte level, @Nullable Marker marker, @NotNull CharSequence content) {
+    public boolean log(@NotNull String name, long time, byte level, @Nullable Marker marker, @NotNull CharSequence content) {
         final int contentLen = content.length();
         final StringBuilder sb = new StringBuilder(prepend.length() << 2 + contentLen);
         sb.append(prepend);
@@ -31,6 +31,6 @@ public final class Prepender extends AbstractAdapterLogFunction {
                 sb.append(prepend);
             }
         }
-        parent.log(name, time, level, marker, sb);
+        return parent.log(name, time, level, marker, sb);
     }
 }

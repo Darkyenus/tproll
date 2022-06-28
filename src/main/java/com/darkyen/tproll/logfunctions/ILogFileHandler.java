@@ -13,13 +13,16 @@ import org.slf4j.Marker;
 public interface ILogFileHandler {
 
     /** Called before first {@link #log(CharSequence)} invocation */
-    void initialize();
+    void start();
 
-    /** Called by {@link FileLogFunction#log(String, long, byte, Marker, CharSequence)} with the message which should
-     * get logged. */
-    void log(@NotNull CharSequence message);
+    /**
+     * Called by {@link FileLogFunction#log(String, long, byte, Marker, CharSequence)}
+     * with the message which should get logged.
+     * @return true if successful, false if not (destination is full, for example)
+     */
+    boolean log(@NotNull CharSequence message);
 
-    /** Called by {@link FileLogFunction#dispose()}. */
-    void dispose();
+    /** Called by {@link FileLogFunction#stop()}. */
+    void stop();
 
 }

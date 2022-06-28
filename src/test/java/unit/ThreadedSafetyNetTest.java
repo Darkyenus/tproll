@@ -26,7 +26,7 @@ public class ThreadedSafetyNetTest {
         final AtomicInteger logCount = new AtomicInteger(0);
         final LogFunction parent = new LogFunction() {
             @Override
-            public void log(@NotNull String name, long time, byte level, @Nullable Marker marker, @NotNull CharSequence content) {
+            public boolean log(@NotNull String name, long time, byte level, @Nullable Marker marker, @NotNull CharSequence content) {
                 if (name.equals("test")) {
                     synchronized(logCount) {
                         logCount.incrementAndGet();
@@ -36,6 +36,7 @@ public class ThreadedSafetyNetTest {
                         }
                     }
                 }
+                return true;
             }
         };
 
@@ -119,15 +120,16 @@ public class ThreadedSafetyNetTest {
         final StringBuilder result = new StringBuilder();
         final LogFunction parent = new LogFunction() {
             @Override
-            public void log(@NotNull String name, long time, byte level, @Nullable Marker marker, @NotNull CharSequence content) {
+            public boolean log(@NotNull String name, long time, byte level, @Nullable Marker marker, @NotNull CharSequence content) {
                 if (name.length() == 1) {
                     synchronized(result) {
                         result.append(name);
                     }
                 }
+                return true;
             }
         };
-        final ThreadedSafetyNet net = new ThreadedSafetyNet(parent, 100, -1, 100);
+        final ThreadedSafetyNet net = new ThreadedSafetyNet(parent, 100, -1, 10000);
         TPLogger.setLogFunction(net);
 
 
@@ -149,7 +151,7 @@ public class ThreadedSafetyNetTest {
 
         TPLogger.setLogFunction(SimpleLogFunction.CONSOLE_LOG_FUNCTION);
 
-        Assert.assertEquals(result.toString(), "abcbab");
+        Assert.assertEquals("abcbab", result.toString());
     }
 
 }

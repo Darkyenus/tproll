@@ -45,7 +45,7 @@ public final class TPLogger implements Logger {
     /** Special level which always gets through, used for logging-related messages. */
     public static final byte LOG = 6;
 
-    private static @NotNull LogFunction logFunction = SimpleLogFunction.CONSOLE_LOG_FUNCTION;
+    private static @NotNull LogFunction logFunction = SimpleLogFunction.EMERGENCY_LOG_FUNCTION;
     static {
         logFunction.start();
     }
@@ -142,7 +142,7 @@ public final class TPLogger implements Logger {
             Runtime.getRuntime().removeShutdownHook(oldShutdownHook);
         }
 
-        TPLogger.logFunction = SimpleLogFunction.CONSOLE_LOG_FUNCTION;// Temporary, nothing should log now anyway
+        TPLogger.logFunction = SimpleLogFunction.EMERGENCY_LOG_FUNCTION;// Temporary, nothing should log now anyway
         oldLogFunction.stop();
         logFunction.start();
         TPLogger.logFunction = logFunction;
@@ -156,7 +156,7 @@ public final class TPLogger implements Logger {
         if (shutdownHook == Thread.currentThread()) {
             shutdownHook = null;
             final LogFunction shutdownFunction = TPLogger.logFunction;
-            TPLogger.logFunction = SimpleLogFunction.CONSOLE_LOG_FUNCTION;
+            TPLogger.logFunction = SimpleLogFunction.EMERGENCY_LOG_FUNCTION;
             shutdownFunction.stop();
         }
     }
@@ -622,7 +622,9 @@ public final class TPLogger implements Logger {
             final ArrayList<@Nullable Object> arguments = this.arguments;
             try {
                 patternSubstituteInto(sb, message, arguments);
-                TPLogger.logFunction.log(name, time, level, marker, sb);
+                if (!TPLogger.logFunction.log(name, time, level, marker, sb)) {
+                    SimpleLogFunction.EMERGENCY_LOG_FUNCTION.log(name, time, level, marker, sb);
+                }
             } finally {
                 sb.setLength(0);
                 arguments.clear();

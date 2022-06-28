@@ -17,8 +17,9 @@ public abstract class LogFunction {
      * @param level of this message
      * @param marker provided or null
      * @param content of this message, formatted, without trailing newline. Do not keep around!
+     * @return true if logged, false if not logged because of an error
      */
-    public abstract void log(@NotNull String name, long time, byte level, @Nullable Marker marker, @NotNull CharSequence content);
+    public abstract boolean log(@NotNull String name, long time, byte level, @Nullable Marker marker, @NotNull CharSequence content);
 
     /**
      * Additional check whether this log function will log message of given level/marker.

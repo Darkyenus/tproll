@@ -25,10 +25,11 @@ public class LoggerMultiThreadTest {
         final StringBuilder logOut = new StringBuilder();
         TPLogger.setLogFunction(new LogFunction() {
             @Override
-            public void log(@NotNull String name, long time, byte level, Marker marker, @NotNull CharSequence content) {
+            public boolean log(@NotNull String name, long time, byte level, Marker marker, @NotNull CharSequence content) {
                 synchronized (LOGGER_LOCK) {
                     logOut.append(content);
                 }
+                return true;
             }
         });
 

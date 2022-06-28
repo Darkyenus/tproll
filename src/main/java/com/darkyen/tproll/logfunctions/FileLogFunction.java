@@ -24,16 +24,7 @@ public class FileLogFunction extends LogFunction {
     private final @Nullable TimeFormatter timeFormatter;
     private final @NotNull ILogFileHandler logFileHandler;
 
-    private boolean logFileHandlerInitialized = false;
-
-    /**
-     * @param registerShutdownHook to automatically call dispose (and flush log files!) when the application shuts down. Recommended: true.
-     * @deprecated registerShutdownHook is no longer used here
-     */
-    @Deprecated
-    public FileLogFunction(@Nullable TimeFormatter timeFormatter, @NotNull ILogFileHandler logFileHandler, boolean registerShutdownHook) {
-        this(timeFormatter, logFileHandler);
-    }
+    private boolean logging = false;
 
     /**
      * @param timeFormatter used for displaying time, null for no time
@@ -48,7 +39,8 @@ public class FileLogFunction extends LogFunction {
          * Shortcut constructor for most common usage.
          * Messages are logged with absolute time, to files with date in name and default extension (.log).
          * These files are not appended to, as they are compressed on exit.
-         * When logs take over 512MB, oldest ones are deleted, but not those younger than 60 days.
+         * When logs take over 500MB, oldest ones are deleted, but not those younger than 60 days.
+         * The logging will stop when there is less than 500MB remaining on disk.
          *
          * @param logDirectory to place logs in
          */
@@ -61,55 +53,59 @@ public class FileLogFunction extends LogFunction {
                                 DateTimeFileCreationStrategy.DEFAULT_DATE_FILE_NAME_FORMATTER,
                                 false,
                                 DateTimeFileCreationStrategy.DEFAULT_LOG_FILE_EXTENSION,
-                                512 * 1000,
+                                500 * 1000,
                                 Duration.ofDays(60)),
-                        true, 500_000_000/*500MB*/));
+                        true, 500_000_000/*500MB*/, 500_000_000/*500MB*/, true));
     }
 
     private final @NotNull StringBuilder log_sb = new StringBuilder();
 
     @Override
-    public void log(@NotNull String name, long time, byte level, @Nullable Marker marker, @NotNull CharSequence content) {
+    public boolean log(@NotNull String name, long time, byte level, @Nullable Marker marker, @NotNull CharSequence content) {
         synchronized (LOCK) {
-            if (!logFileHandlerInitialized) {
-                logFileHandlerInitialized = true;
-                logFileHandler.initialize();
+            if (logging) {
+                return false;
             }
-
             final StringBuilder sb = this.log_sb;
-            sb.append('[');
-            if (timeFormatter != null) {
-                timeFormatter.format(time, sb);
-                sb.append(' ');
-            }
-            sb.append(alignedLevelName(level));
-            if (marker != null) {
-                appendMarker(sb, false, marker, true);
-            }
-            sb.append(']').append(' ').append(name).append(':').append(' ');
-            sb.append(content).append('\n');
+            try {
+                logging = true;// Do not log to file when something inside this logs
 
-            logFileHandler.log(sb);
+                sb.append('[');
+                if (timeFormatter != null) {
+                    timeFormatter.format(time, sb);
+                    sb.append(' ');
+                }
+                sb.append(alignedLevelName(level));
+                if (marker != null) {
+                    appendMarker(sb, false, marker, true);
+                }
+                sb.append(']').append(' ').append(name).append(':').append(' ');
+                sb.append(content).append('\n');
 
-            sb.setLength(0);
+                return logFileHandler.log(sb);
+            } finally {
+                logging = false;
+                sb.setLength(0);
+            }
         }
     }
 
     @Override
-    public void stop() {
-        synchronized (LOCK) {
-            if (logFileHandlerInitialized) {
-                logFileHandler.dispose();
-                logFileHandlerInitialized = false;
-            }
+    public synchronized void start() {
+        try {
+            logFileHandler.start();
+        } finally {
+            super.start();
         }
     }
 
-    /** @deprecated no longer used, start/stop mechanism used instead */
-    @Deprecated
-    @SuppressWarnings("WeakerAccess")
-    public void dispose(){
-        stop();
+    @Override
+    public synchronized void stop() {
+        try {
+            logFileHandler.stop();
+        } finally {
+            super.stop();
+        }
     }
 
     public static @NotNull String alignedLevelName(byte logLevel){

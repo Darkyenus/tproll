@@ -52,18 +52,25 @@ public final class LogFunctionMultiplexer extends LogFunction {
         return new MuxMarker(this, newIndex);
     }
 
+    /**
+     * @return true if at least one target was successful (false if there are no targets)
+     */
     @Override
-    public void log(@NotNull String name, long time, byte level, @Nullable Marker marker, @NotNull CharSequence content) {
+    public boolean log(@NotNull String name, long time, byte level, @Nullable Marker marker, @NotNull CharSequence content) {
         long remainingTargetMask = findMuxTargets(this, marker);
         remainingTargetMask ^= optOutMask;
         final LogFunction[] muxTargets = this.muxTargets;
+        boolean success = false;
         int target = 0;
         for (long mask = 1; remainingTargetMask != 0; mask <<= 1, target++) {
             if ((remainingTargetMask & mask) != 0) {
                 remainingTargetMask &= ~mask;
-                muxTargets[target].log(name, time, level, marker, content);
+                if (muxTargets[target].log(name, time, level, marker, content)) {
+                    success = true;
+                }
             }
         }
+        return success;
     }
 
     @Override

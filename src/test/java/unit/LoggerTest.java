@@ -34,10 +34,11 @@ public class LoggerTest {
         logOut = new StringBuilder();
         TPLogger.setLogFunction(new LogFunction() {
             @Override
-            public void log(@NotNull String name, long time, byte level, Marker marker, @NotNull CharSequence content) {
+            public boolean log(@NotNull String name, long time, byte level, Marker marker, @NotNull CharSequence content) {
                 synchronized (LOGGER_LOCK) {
                     logOut.append(name).append(" ").append(time).append(" [").append(TPLogger.levelName(level)).append("]: ").append(content);
                 }
+                return true;
             }
         });
     }
