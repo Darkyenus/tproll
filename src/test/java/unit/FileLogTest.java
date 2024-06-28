@@ -18,8 +18,13 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.time.Duration;
 import java.util.Arrays;
+
+import static com.darkyen.tproll.logfunctions.DateTimeFileCreationStrategy.FOLDER_SIZE_LIMIT_NONE;
 
 public class FileLogTest {
 
@@ -144,6 +149,56 @@ public class FileLogTest {
 
         for (File file : files) {
             Assert.assertTrue(file.getName()+" ends with .gz", file.getName().endsWith(".gz"));
+        }
+    }
+
+    private static CharSequence generateMessage(int bytes) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("MSG(").append(bytes).append(")=");
+        final String cycle = "0123456789ABCDEFGHIJKLMNOPQRTUVWXYZ";
+        for (int i = 0; i < bytes; i++) {
+            sb.append(cycle.charAt(i % cycle.length()));
+        }
+        return sb;
+    }
+
+    @Test
+    public void hugeMessages() throws IOException {
+        final int steps = 1000;
+        final int byteIncrement = 100;
+
+        for (File file : logDir.listFiles()) {
+            file.delete();
+        }
+
+        TPLogger.setLogFunction(new FileLogFunction(new TimeFormatter.RelativeTimeFormatter(false, false, false, false, true),
+                new LogFileHandler(
+                        logDir,
+                        new DateTimeFileCreationStrategy(
+                                DateTimeFileCreationStrategy.DEFAULT_DATE_FILE_NAME_FORMATTER,
+                                false,
+                                DateTimeFileCreationStrategy.DEFAULT_LOG_FILE_EXTENSION,
+                                FOLDER_SIZE_LIMIT_NONE,
+                                Duration.ofDays(60)),
+                        false, 500_000_000/*500MB*/, 500_000_000/*500MB*/, false)));
+
+        for (int i = 0; i < steps; i++) {
+            LOG.info("{}", generateMessage(i * byteIncrement));
+        }
+
+        TPLogger.setLogFunction(SimpleLogFunction.CONSOLE_LOG_FUNCTION);
+
+        StringBuilder allLoggedData = new StringBuilder();
+        for (File file : logDir.listFiles()) {
+            allLoggedData.append(new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8));
+        }
+
+        int index = 0;
+        for (int i = 0; i < steps; i++) {
+            String msg = generateMessage(i * byteIncrement).toString();
+            int foundAt = allLoggedData.indexOf(msg, index);
+            Assert.assertNotEquals("Message "+i+" not found", -1, foundAt);
+            index = foundAt + msg.length();
         }
     }
 }

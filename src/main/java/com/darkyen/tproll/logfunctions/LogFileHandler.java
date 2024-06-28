@@ -107,8 +107,8 @@ public class LogFileHandler implements ILogFileHandler {
 
         @Override
         public void write(byte @NotNull [] b, int off, int len) throws IOException {
-            int remainingBufferCapacity = buffer.length - bufferFilled;
             while (true) {
+                int remainingBufferCapacity = buffer.length - bufferFilled;
                 final int writeNow = Math.min(len, remainingBufferCapacity);
                 System.arraycopy(b, off, buffer, bufferFilled, writeNow);
                 len -= writeNow;

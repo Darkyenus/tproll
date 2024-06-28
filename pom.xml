@@ -5,7 +5,7 @@
 
     <groupId>com.darkyen</groupId>
     <artifactId>tproll</artifactId>
-    <version>1.5.2</version>
+    <version>1.5.3</version>
 
     <name>tproll</name>
     <description>A lightweight SLF4J backend.</description>
